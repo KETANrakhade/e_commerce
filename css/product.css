@@ -1,0 +1,128 @@
+ .navbar-brand {
+     font-family: 'Times New Roman', serif;
+     font-size: 1.8rem;
+     font-weight: bold;
+     letter-spacing: 2px;
+ }
+
+ .icon-btns {
+     position: relative;
+     margin-left: 20px;
+     font-size: 1.4rem;
+     font-weight: 900;
+     color: 5px solid black;
+     cursor: pointer;
+     transition: transform 0.2s ease;
+ }
+
+ .icon-btns:hover {
+     transform: scale(1.2);
+     color: #5F9FB6;
+ }
+
+ body {
+
+     font-family: "Roboto", sans-serif;
+ }
+
+ .nav-link {
+     font-weight: 500;
+     position: relative;
+     transition: color 0.3s ease;
+ }
+
+ .nav-link::after {
+     content: "";
+     position: absolute;
+     left: 0;
+     bottom: -5px;
+     width: 0;
+     height: 2px;
+     background: #5F9FB6;
+     transition: width 0.3s ease;
+ }
+
+ .nav-link:hover {
+     color: #5F9FB6 !important;
+ }
+
+ .nav-link:hover::after {
+     width: 100%;
+ }
+
+
+ .product-page {
+     margin-top: 40px;
+ }
+
+ .product-images {
+     display: flex;
+ }
+
+ .product-images img {
+     width: 50%;
+     border-radius: 8px;
+     margin-bottom: 15px;
+ }
+
+ .price {
+     font-size: 24px;
+     font-weight: bold;
+     color: #222;
+ }
+
+ .mrp {
+     text-decoration: line-through;
+     color: gray;
+     margin-left: 10px;
+     font-size: 18px;
+ }
+
+ .discount {
+     color: #ff3f6c;
+     font-size: 18px;
+     font-weight: 500;
+     margin-left: 10px;
+ }
+
+ .size-options button {
+     margin: 5px;
+     border: 1px solid #ccc;
+     border-radius: 50%;
+     width: 45px;
+     height: 45px;
+     background: #fff;
+     cursor: pointer;
+ }
+
+ .size-options button:hover {
+     border: 2px solid #ff3f6c;
+ }
+
+ .action-buttons button {
+     padding: 12px 30px;
+     border-radius: 8px;
+     font-size: 16px;
+     margin-right: 10px;
+ }
+
+ .add-to-bag {
+     background: #ff3f6c;
+     color: white;
+     border: none;
+ }
+
+ .wishlist-btn {
+     background: #fff;
+     border: 1px solid #ccc;
+ }
+
+ .delivery {
+     margin-top: 20px;
+     font-size: 14px;
+     color: #333;
+ }
+
+ .product-details {
+     padding: 0 250px;
+ }

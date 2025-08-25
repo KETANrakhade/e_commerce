@@ -1,0 +1,149 @@
+  body {
+      background: #f8f9fa;
+      font-family: 'Poppins', sans-serif;
+  }
+
+  .card-form {
+      padding: 30px 0;
+  }
+
+  .top-line {
+      backdrop-filter: blur(10px);
+      background-color: rgba(255, 255, 255, 0.533);
+  }
+
+  * {
+      margin: 0;
+      padding: 0;
+  }
+
+  .auth-card {
+      max-width: 450px;
+      margin: auto;
+      margin-top: 5%;
+      border-radius: 15px;
+  }
+
+  #loginForm {
+      line-height: 30px;
+  }
+
+  .login-btn {
+      background-color: #65AAC3;
+  }
+
+  .nav-tabs .nav-link.active {
+      background: #65AAC3;
+      color: #fff;
+      border-radius: 10px 10px 0 0;
+  }
+
+  .navbar-brand {
+      font-family: 'Times New Roman', serif;
+      font-size: 1.8rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+  }
+
+  .nav-link {
+      font-weight: 500;
+      position: relative;
+      transition: color 0.3s ease;
+  }
+
+  .nav-link::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -5px;
+      width: 0;
+      height: 2px;
+      background: #65AAC3;
+      transition: width 0.3s ease;
+  }
+
+  .nav-link:hover {
+      color: #65AAC3 !important;
+  }
+
+  .nav-link:hover::after {
+      width: 100%;
+  }
+
+  .icon-btn {
+      position: relative;
+      margin-left: 20px;
+      font-size: 1.4rem;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+  }
+
+  .icon-btn:hover {
+      transform: scale(1.2);
+      color: #65AAC3;
+  }
+
+  footer {
+      background-color: black;
+      color: white;
+      margin-top: 50px;
+      padding: 30px 0;
+  }
+
+  .subscribe-btn {
+      background-color: rgb(75, 75, 75);
+      color: white;
+      padding: 10px 25px;
+      font-size: 13px;
+      border: none;
+      margin: 10px 0 0 5px;
+  }
+
+  .subscribe-btn:hover {
+      background-color: #65AAC3;
+  }
+
+  .list-item ul {
+      list-style-type: none;
+      line-height: 35px;
+      padding: 0 0 0 20px;
+  }
+
+  .social-icons {
+      display: flex;
+      justify-content: left;
+      font-size: 30px;
+      margin-top: 20px;
+      cursor: pointer;
+  }
+
+  .social-icons i {
+      padding-right: 20px;
+      transition: color 0.3s ease;
+  }
+
+  .social-icons i:hover {
+      color: #65AAC3;
+  }
+
+  .webiste-list {
+      padding: 10px 7px;
+  }
+
+  .footer-login {
+      margin: 0 30px;
+  }
+
+  .factory-detail p {
+      margin: 10px 0;
+  }
+
+  .discount-detail input {
+      border-color: aliceblue;
+      color: azure;
+      border-radius: 15px;
+  }
+
+  .discount-detail {
+      padding-top: 16px;
+  }

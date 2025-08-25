@@ -1,0 +1,176 @@
+.navbar-brand {
+  font-family: 'Times New Roman', serif;
+  font-size: 1.8rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+.icon-btns {
+    position: relative;
+    margin-left: 20px;
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: 5px solid black;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+
+  .icon-btns:hover {
+    transform: scale(1.2);
+    color: #5F9FB6;
+  }
+
+body {
+ 
+  font-family: "Roboto", sans-serif;
+}
+
+.nav-link {
+    font-weight: 500;
+    position: relative;
+    transition: color 0.3s ease;
+  }
+
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -5px;
+    width: 0;
+    height: 2px;
+    background: #5F9FB6;
+    transition: width 0.3s ease;
+  }
+
+  .nav-link:hover {
+    color:#5F9FB6 !important;
+  }
+
+  .nav-link:hover::after {
+    width: 100%;
+  }
+
+/* Icons */
+.icon-btn {
+  position: relative;
+  margin-left: 20px;
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.icon-btn:hover {
+  transform: scale(1.2);
+  color: #dc3545;
+}
+
+
+.men-images {
+  width: 80%;
+  height: 500px;
+
+}
+
+.men-collection {
+  display: flex;
+  height: 600px;
+}
+
+.cloth-detail-men {
+  text-align: left;
+  padding: 0 20px;
+  margin-top: 493px;
+}
+
+.social-icons {
+  display: flex;
+  justify-content: space-evenly;
+  font-size: 40px;
+  margin-top: 30px;
+  cursor: pointer;
+}
+
+ul {
+  list-style-type: none;
+  cursor: pointer;
+}
+
+footer {
+  background-color: black;
+  color: white;
+  padding: 30px 50px;
+
+}
+
+footer li:hover {
+  text-decoration: underline;
+}
+
+.filter-in {
+  display: flex;
+  align-items: center;
+  margin-right: 15px;
+  cursor: pointer;
+}
+
+.filter-header {
+  justify-content: space-between;
+}
+
+/* replace */
+/* Hover Swap Effect */
+.swap-on-hover {
+  position: relative;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.swap-on-hover img {
+  position: absolute;
+  top: 0;
+  left: 30px;
+  height: 500px;
+  object-fit: cover;
+}
+
+.swap-on-hover__front-image {
+  z-index: 2;
+  transition: opacity ease;
+}
+
+.swap-on-hover:hover .swap-on-hover__front-image {
+  opacity: 0;
+}
+.top-line {
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.533);
+}
+.heart-wish {
+  right: 0;
+  display: flex;
+  align-items: center;
+
+}
+
+.price-part {
+  width: 70%;
+}
+
+.heart-wish i {
+  font-size: 30px;
+  cursor: pointer;
+  color: rgb(0, 0, 0);
+  transition: color 0.3s ease;
+  margin-bottom: 25px;
+} 
+ .social-icons {
+    display: flex;
+    justify-content: space-evenly;
+    font-size: 40px;
+    margin-top: 30px;
+    cursor: pointer;
+  }
+
+  .social-icons i:hover {
+
+    color: #71BDD9;
+  }

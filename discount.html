@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PYRAMID OFFERS | Online Fassion Brand</title>
+    <link rel="icon" type="image/x-icon" href="/img/pyramidal.png">
+    <link rel="stylesheet" href="css/discount.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="icons//flaticon/flaticon.css" />
+    <link rel="stylesheet" href="icons/line-awesome/line-awesome.min.css" />
+    <link rel="stylesheet" href="icons/themify-icons.css" />
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg shadow-sm sticky-top top-line">
+        <div class="container">
+            <img class="mx-2" src="img/pyramidal.png" width="40px" height="40px">
+            <a class="navbar-brand text-uppercase fs-2"  href="#">Pyramid</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item" id="viewHome"><a class="nav-link" href="#">Home</a></li>
+                    <li class="nav-item" id="viewMen"><a class="nav-link" href="#">Men</a></li>
+                    <li class="nav-item" id="viewWomen"><a class="nav-link" href="#">Women</a></li>
+                    <!-- <li class="nav-item"><a class="nav-link" href="#">Kids</a></li> -->
+                    <li class="nav-item"id="discountSale"><a class="nav-link"  href="#">Sale</a></li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <span class="icon-btn"><i class="fa-regular fa-user"></i></span>
+                    <span class="icon-btn position-relative" id="viewWishlist">
+                        <i class="fa-regular fa-heart"></i>
+                        <span class="badge" id=""></span>
+                    </span>
+                    <span class="icon-btns position-relative" id="viewCart">
+                   <i class="bi bi-cart"></i>
+                        <span class="badge"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <section class="py-3">
+        <div class="container">
+            <div class="filter-header d-flex">
+                <h1><b>NEW IN</b></h1>
+                <div class="filter-in" data-bs-toggle="offcanvas" data-bs-target="#filterSidebar"
+                    aria-controls="filterSidebar">
+                    <h5>FILTERS</h5>
+                    <img id="onclick" src="img/bars.png" class="my-2" width="30px" height="20px">
+                </div>
+                <div class="offcanvas offcanvas-end" tabindex="-1" id="filterSidebar"
+                    aria-labelledby="filterSidebarLabel">
+                    <div class="offcanvas-header">
+                        <h5 id="filterSidebarLabel">Apply Filters</h5>
+                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+
+                        <p><b>Price Range</b></p>
+                        <input type="range" class="form-range" min="500" max="5000">
+
+                        <p class="mt-3"><b>Category</b></p>
+                        <div>
+                            <input type="checkbox" id="shirts"> <label for="shirts">Shirts</label><br>
+                            <input type="checkbox" id="tshirts"> <label for="tshirts">T-Shirts</label><br>
+                            <input type="checkbox" id="jeans"> <label for="jeans">Jeans</label>
+                        </div>
+
+                        <p class="mt-3"><b>Sort By</b></p>
+                        <select class="form-select">
+                            <option value="low">Price: Low to High</option>
+                            <option value="high">Price: High to Low</option>
+                            <option value="new">Newest First</option>
+                        </select>
+                    </div>
+                </div>
+
+
+            </div>
+
+
+            <div class="row men-collection ">
+                <div class="col-md-4 text-center py-3 swap-on-hover">
+                    <img src="img/men/untitled folder/b12032614ab1045387427949fa4a46be492c4e48.avif"
+                        class="swap-on-hover__front-image ">
+                    <img src="img/men/untitled folder/163d7085fdf4b0cf1a54015732c984d12a50af3c.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>Loose Fit Cargo trousers</h5>
+                            <p>RS:1599</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-md-4 text-center py-3 swap-on-hover">
+                    <img src="img/men/untitled folder/9645e8eaebb79df50341cd28ab490e607da08070.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/men/untitled folder/783ed8dc5fc4c2f21dd17a98d7e0f960ec4003e9.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>Loose Fit Linen-blend trousers </h5>
+                            <p>RS:1299</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center py-3 swap-on-hover">
+                    <img src="img/men/untitled folder/603de1cd060923c9c2db97948301122b240b84d1.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/men/untitled folder/107ccd0bc94d5e20d22f229c53226bfe9cd54fbf.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>Relaxed Jeans</h5>
+                            <p>RS:1299</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row men-collection">
+                <div class="col-md-4 text-center py-3 swap-on-hover">
+                    <img src="img/men/untitled folder/c05ae32f218c5eecc40a220ff7b49b8f7ed0772b.avif"
+                        class="swap-on-hover__front-image ">
+                    <img src="img/men/untitled folder/d08fee30b0bb8a8565dbb7a6c3470cda96509830.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>PLAIN SHIRT</h5>
+                            <p>RS:1199</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-md-4 text-center py-3 swap-on-hover">
+                    <img src="img/men/untitled folder/17bd3e7da965213e8ca5fa276cb55e8c16b73fc0.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/men/untitled folder/19056c998386e18aeed4455faa61d98d37a24fec.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>REGULAR COMBO </h5>
+                            <p>RS:2299</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center py-3 swap-on-hover">
+                    <img src="img/men/untitled folder/7da7442d9319870fa860aea56aebbd18e67cb391.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/men/untitled folder/debde7ca69060b5c3a4a53f3f301016ee673f01a.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>REGULAR COMBO </h5>
+                            <p>RS:2599</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="  row men-collection">
+                <div class="col-md-4 text-center py-3 swap-on-hover">
+                    <img src="img/men/untitled folder/655adb624c05673ec8beb940ce9294f4a76ec6b4.avif"
+                        class="swap-on-hover__front-image ">
+                    <img src="img/men/untitled folder/a628282d3795642d3779ee152dae10b66674e063.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>Relaxed Fit Cotton chinos</h5>
+                            <p>RS:1199</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-md-4 text-center py-3 swap-on-hover">
+                    <img src="img/men/untitled folder/043a99f91c3f2a1539115ffe69c85eef2e1753ca.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/men/untitled folder/d357ae6dcda8a6e8759dcbf8c164e4546e66320b.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>Relaxed Jeans </h5>
+                            <p>RS:1299</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center py-3 swap-on-hover">
+                    <img src="img/men/untitled folder/a1c4ccf123dd7ca392bf25d43a3d41601bc81921.avif"
+                        class="swap-on-hover__front-image ">
+                    <img src="img/men/untitled folder/41eb68272261143edead1680553e9d5f9b38cda8.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>Loose Straight Jeans</h5>
+                            <p>RS:1299</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class=" row men-collection">
+                <div class="col-md-4 text-center swap-on-hover">
+                    <img src="img/women/728839f93e2386fa9dc4da713114db7f035203ff.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/6132292e3a676ece89d6b9603eefe64684732512.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>Loose Fit Cargo trousers</h5>
+                            <p>RS:1599</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-md-4 text-center swap-on-hover">
+                    <img src="img/women/89c6a143ec001272f58f5a8f26c2ac1dd6ccec88.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/6b5a4d748e192d79eeaee7ecbb2715b4a5770d9b.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>Loose Fit Linen-blend trousers </h5>
+                            <p>RS:1299</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col-md-4 text-center swap-on-hover">
+                    <img src="img/women/1f8d6a806d6a451f9775e8fc097a444a86d65a97.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/9c2fa1691b0656db5a32c8ca08763828bcb9ef97_xxl-1.jpg"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>Relaxed Jeans</h5>
+                            <p>RS:1299</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="  row men-collection">
+                <div class="col-md-4 text-center swap-on-hover">
+                    <img src="img/women/acf17b75c46881731cab64c2e392cfffbbeb3ab3.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/9fc3bf28988d52d398f1b424fdc11750e42c1d89.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>Flounce-detail blouse</h5>
+                            <p>RS:1199</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-md-4 text-center swap-on-hover">
+                    <img src="img/women/c2f847228a423c7988c998a7b3cb2b1a90b11a0e.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/4004fde593c535a2993db9f3a3dd08f967c6fb43.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>Frill-trimmed denim jacket</h5>
+                            <p>RS:1999</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center swap-on-hover">
+                    <img src="img/women/93869b314ddc034a3988fc3327e5c04763df1b93.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/fb6fe4e94939e3ce9a2cf112950941eb0d732ada.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>Frill-collared blouse </h5>
+                            <p>RS:1599</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="  row men-collection">
+                <div class="col-md-4 text-center swap-on-hover">
+                    <img src="img/women/b2a096332ec94e374d42eb78eb5c1d4cf8f50c42.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/1ea3fc0beff702c767461b9549661d60f3f55f4f.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>Relaxed Fit Cotton chinos</h5>
+                            <p>RS:1299</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-md-4 text-center swap-on-hover">
+                    <img src="img/women/f46e33609cb86ec4172edf1bff3a860c1b2b1cbc.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/564e21dd773b9171cc876378d16cf078d725a3e6.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>Relaxed Jeans </h5>
+                            <p>RS:1599</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center swap-on-hover">
+                    <img src="img/women/558b199791f64a1f84b6b16e36b85d9a038caeda.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/c7451998c3d555fcc0eda7bb3317d7a9f4b894cc.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men d-flex">
+                        <div class="price-part">
+                            <h5>Loose Straight Jeans</h5>
+                            <p>RS:1599</p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script>
+        document.getElementById("viewMen").addEventListener("click", function () {
+            window.location.href = "Men-product.html";
+        });
+        document.getElementById("viewHome").addEventListener("click", function () {
+            window.location.href = "index.html";
+        });
+        document.getElementById("viewWomen").addEventListener("click", function () {
+            window.location.href = "women-product.html";
+        });
+        document.getElementById("viewCart").addEventListener("click", function () {
+            window.location.href = "cart.html";
+        });
+        document.getElementById("viewWishlist").addEventListener("click", function () {
+            window.location.href = "wishlist.html";
+        });
+        function toggleHeart(element) {
+            let icon = element.querySelector("i");
+
+            if (icon.classList.contains("fa-regular")) {
+                icon.classList.remove("fa-regular");
+                icon.classList.add("fa-solid");
+                icon.style.color = "red";
+            } else {
+                icon.classList.remove("fa-solid");
+                icon.classList.add("fa-regular");
+                icon.style.color = "black";
+            }
+        }
+    </script>
+</body>
+
+</html>

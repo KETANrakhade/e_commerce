@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PYRAMID WOMEN'S | Online Fassion Brand</title>
+    <link rel="icon" type="image/x-icon" href="/img/pyramidal.png">
+    <link rel="stylesheet" href="css/women.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="icons//flaticon/flaticon.css" />
+    <link rel="stylesheet" href="icons/line-awesome/line-awesome.min.css" />
+    <link rel="stylesheet" href="icons/themify-icons.css" />
+</head>
+
+<body>
+
+
+    <nav class="navbar navbar-expand-lg shadow-sm sticky-top top-line">
+        <div class="container">
+            <img class="mx-2" src="img/pyramidal.png" width="40px" height="40px">
+            <a class="navbar-brand text-uppercase fs-2"  href="#">Pyramid</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item" id="viewHome"><a class="nav-link" href="#">Home</a></li>
+                    <li class="nav-item" id="viewMen"><a class="nav-link" href="#">Men</a></li>
+                    <li class="nav-item" id="viewWomen"><a class="nav-link" href="#">Women</a></li>
+                    <!-- <li class="nav-item"><a class="nav-link" href="#">Kids</a></li> -->
+                    <li class="nav-item" id="discountSale"><a class="nav-link" href="#">Sale</a></li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <span class="icon-btn"><i class="fa-regular fa-user"></i></span>
+                    <span class="icon-btn position-relative" id="viewWishlist">
+                        <i class="fa-regular fa-heart"></i>
+                        <span class="badge" id=""></span>
+                    </span>
+                    <span class="icon-btns position-relative" id="viewCart">
+                        <i class="bi bi-cart"></i>
+                        <span class="badge"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <section class="py-3">
+        <div class="container">
+            <div class="filter-header d-flex">
+                <h1><b>NEW IN</b></h1>
+                <div class="filter-in" data-bs-toggle="offcanvas" data-bs-target="#filterSidebar"
+                    aria-controls="filterSidebar">
+                    <h5>FILTERS</h5>
+                    <img id="onclick" src="img/bars.png" class="my-2" width="30px" height="20px">
+                </div>
+            </div>
+            <div class="  row men-collection">
+                <div class=" col-md-4 text-center swap-on-hover">
+                    <img src="img/women/026af28eeaf63d3e188f1c311b13a2260d39b351.avif"
+                        class="swap-on-hover__front-image ">
+                    <img src="img/women/57704613766cc5a975cab7483b7320d16ba7d203.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men ">
+                        <div class="price-part">
+                            <h5>Oversized cotton shirt</h5>
+                            <p>RS:<b>1599</b></p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-md-4 text-center swap-on-hover">
+                    <img src="img/women/8f4672d898a135f5de7c52981739edee204bf966.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/63c673e89ddab4e70a84c31db78c617086ccc787.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men ">
+                        <div class="price-part">
+                            <h5>Flared-skirt dress </h5>
+                   
+                             <p>RS:<b>1299</b></p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+                <div class=" col-md-4 text-center swap-on-hover">
+                    <img src="img/women/73f2600d53217d5bb4fccfbec4aa98c0cb612c6e.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/a2e1a27676b7c0c9ee159a681a32a3479c3ab568.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men">
+                        <div class="price-part">
+                            <h5>Crêpe blouse</h5>
+                         <p>RS:<b>1299</b></p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="  row men-collection">
+                <div class=" col-md-4 text-center swap-on-hover">
+                    <img src="img/women/d9bb6a092a8f720aa5b2015eaf5730bf4b256c38.avif"
+                        class="swap-on-hover__front-image ">
+                    <img src="img/women/4b730b6b54c4dbc4faf629ac350a2625f00dce11.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men ">
+                        <div class="price-part">
+                            <h5>Oversized printed shirt</h5>
+                             <p>RS:<b>1599</b></p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+
+                </div>
+                <div class=" col-md-4 text-center swap-on-hover">
+                    <img src="img/women/d24aa7660be51f38f81d778ed07e53e913fe22af.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/b5a51c34ee1a126d91161491d7fa13118451c252.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men ">
+                        <div class="price-part">
+                            <h5>REGULAR FIT JACKET </h5>
+                           <p>RS:<b>1799</b></p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+                <div class=" col-md-4 text-center swap-on-hover">
+                    <img src="img/women/e2d18aa62be84ed806229c3da616803962c08919.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/62db1ac7303f82a54c7352767ad4e935ba555fb3.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men ">
+                        <div class="price-part">
+                            <h5>Long blazer</h5>
+                         <p>RS:<b>1999</b></p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class=" row men-collection">
+                <div class="col-md-4 text-center swap-on-hover">
+                    <img src="img/women/728839f93e2386fa9dc4da713114db7f035203ff.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/6132292e3a676ece89d6b9603eefe64684732512.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men ">
+                        <div class="price-part">
+                            <h5>Loose Fit Cargo trousers</h5>
+                         <p>RS:<b>1599</b></p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+
+                </div>
+                <div class=" col-md-4 text-center swap-on-hover">
+                    <img src="img/women/89c6a143ec001272f58f5a8f26c2ac1dd6ccec88.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/6b5a4d748e192d79eeaee7ecbb2715b4a5770d9b.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men ">
+                        <div class="price-part">
+                            <h5>Loose Fit Linen-blend trousers </h5>
+                            <p>RS:<b>1299</b></p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+
+                    </div>
+                </div>
+                <div class=" col-md-4 text-center swap-on-hover">
+                    <img src="img/women/1f8d6a806d6a451f9775e8fc097a444a86d65a97.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/9c2fa1691b0656db5a32c8ca08763828bcb9ef97_xxl-1.jpg"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men ">
+                        <div class="price-part">
+                            <h5>Relaxed Jeans</h5>
+                            <p>RS:<b>1299</b></p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="  row men-collection">
+                <div class=" col-md-4 text-center swap-on-hover">
+                    <img src="img/women/acf17b75c46881731cab64c2e392cfffbbeb3ab3.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/9fc3bf28988d52d398f1b424fdc11750e42c1d89.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men ">
+                        <div class="price-part">
+                            <h5>Flounce-detail blouse</h5>
+                        <p>RS:<b>1199</b></p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+
+                </div>
+                <div class=" col-md-4 text-center swap-on-hover">
+                    <img src="img/women/c2f847228a423c7988c998a7b3cb2b1a90b11a0e.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/4004fde593c535a2993db9f3a3dd08f967c6fb43.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men ">
+                        <div class="price-part">
+                            <h5>Frill-trimmed denim jacket</h5>
+                        <p>RS:<b>1999</b></p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center swap-on-hover">
+                    <img src="img/women/93869b314ddc034a3988fc3327e5c04763df1b93.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/fb6fe4e94939e3ce9a2cf112950941eb0d732ada.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men ">
+                        <div class="price-part">
+                            <h5>Frill-collared blouse </h5>
+                       <p>RS:<b>1599</b></p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="  row men-collection">
+                <div class="col-md-4 text-center swap-on-hover">
+                    <img src="img/women/b2a096332ec94e374d42eb78eb5c1d4cf8f50c42.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/1ea3fc0beff702c767461b9549661d60f3f55f4f.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men ">
+                        <div class="price-part">
+                            <h5>Relaxed Fit Cotton chinos</h5>
+                  <p>RS:<b>1299</b></p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+
+                </div>
+                <div class=" col-md-4 text-center swap-on-hover">
+                    <img src="img/women/f46e33609cb86ec4172edf1bff3a860c1b2b1cbc.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/564e21dd773b9171cc876378d16cf078d725a3e6.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men ">
+                        <div class="price-part">
+                            <h5>Relaxed Jeans </h5>
+                         <p>RS:<b>1599</b></p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+                <div class=" col-md-4 text-center swap-on-hover">
+                    <img src="img/women/558b199791f64a1f84b6b16e36b85d9a038caeda.avif"
+                        class="swap-on-hover__front-image">
+                    <img src="img/women/c7451998c3d555fcc0eda7bb3317d7a9f4b894cc.avif"
+                        class="swap-on-hover__back-image">
+                    <div class="cloth-detail-men ">
+                        <div class="price-part">
+                            <h5>Loose Straight Jeans</h5>
+                          <p>RS:<b>1599</b></p>
+                        </div>
+                        <div class="heart-wish" onclick="toggleHeart(this)">
+                            <i class="fa-regular fa-heart "></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="filterSidebar" aria-labelledby="filterSidebarLabel">
+            <div class="offcanvas-header">
+                <h5 id="filterSidebarLabel">Apply Filters</h5>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                    aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+
+                <p><b>Price Range</b></p>
+                <input type="range" class="form-range" min="500" max="5000">
+
+                <p class="mt-3"><b>Category</b></p>
+                <div>
+                    <input type="checkbox" id="shirts"> <label for="shirts">Shirts</label><br>
+                    <input type="checkbox" id="tshirts"> <label for="tshirts">T-Shirts</label><br>
+                    <input type="checkbox" id="jeans"> <label for="jeans">Jeans</label>
+                </div>
+
+                <p class="mt-3"><b>Sort By</b></p>
+                <select class="form-select">
+                    <option value="low">Price: Low to High</option>
+                    <option value="high">Price: High to Low</option>
+                    <option value="new">Newest First</option>
+                </select>
+            </div>
+        </div>
+    </section>
+   <footer>
+        <div class="row">
+            <div class="col-md-3">
+                <ul>
+                    <li>Contact us</li>
+                    <li>Promotions & Sale</li>
+                    <li>Track Order</li>
+                    <li>Shoe Care</li>
+                    <li>Tech Glossary</li>
+                    <li>Initiate Return / Exchange</li>
+                    <li>Cookie Settings</li>
+                    <li>Nitro</li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <ul>
+                    <li>FAQs</li>
+                    <li>My Account</li>
+                    <li>Exchange & Return Policy</li>
+                    <li>Privacy Policy</li>
+                    <li> Terms & Conditions</li>
+                    <li>Brands</li>
+                    <li>Sitemap</li>
+                    <li>Discounts</li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <ul>
+                    <li>Go Wild</li>
+                    <li>Company</li>
+                    <li>Corporate News</li>
+                    <li>Press Centers</li>
+                    <li>Investors</li>
+                    <li>sustunability</li>
+                    <li>careers</li>
+                    <li>Store Locator</li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <div class="social-icons">
+                    <i class="fa-brands fa-youtube"></i>
+                  <i class="fa-brands fa-square-twitter"></i>
+                    <i class="fa-brands fa-instagram"></i>
+                    <i class="fa-brands fa-facebook"></i>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById("discountSale").addEventListener("click", function () {
+            window.location.href = "discount.html";
+        });
+        document.getElementById("viewHome").addEventListener("click", function () {
+            window.location.href = "index.html";
+        });
+        document.getElementById("viewMen").addEventListener("click", function () {
+            window.location.href = "Men-product.html";
+        });
+        document.getElementById("viewCart").addEventListener("click", function () {
+            window.location.href = "cart.html";
+        });
+        document.getElementById("viewWishlist").addEventListener("click", function () {
+            window.location.href = "wishlist.html";
+        });
+        function toggleHeart(element) {
+            let icon = element.querySelector("i");
+
+            if (icon.classList.contains("fa-regular")) {
+                icon.classList.remove("fa-regular");
+                icon.classList.add("fa-solid");
+                icon.style.color = "red";
+            } else {
+                icon.classList.remove("fa-solid");
+                icon.classList.add("fa-regular");
+                icon.style.color = "black";
+            }
+        }
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
