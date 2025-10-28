@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <title>PYRAMID MEN"S | Online Fassion Brand</title>
+  <link rel="icon" type="image/x-icon" href="/img/bars.png">
+  <link rel="stylesheet" href="css/women-item.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide/dist/css/splide.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide/dist/js/splide.min.js"></script>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap"
+    rel="stylesheet">
+
+  <style>
+    /* Enhanced Animations and Effects - Women's Product Detail */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #ffeef8 0%, #f0e6ff 50%, #e6f3ff 100%);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated Background Particles */
+    .bg-particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      animation: float-particle 8s infinite linear;
+    }
+
+    .particle:nth-child(odd) {
+      width: 6px;
+      height: 6px;
+      background: rgba(219, 112, 147, 0.3);
+      animation-delay: 0.5s;
+    }
+
+    .particle:nth-child(even) {
+      width: 4px;
+      height: 4px;
+      background: rgba(186, 85, 211, 0.3);
+      animation-delay: 1s;
+    }
+
+    .particle:nth-child(3n) {
+      width: 8px;
+      height: 8px;
+      background: rgba(255, 182, 193, 0.3);
+      animation-delay: 1.5s;
+    }
+
+    @keyframes float-particle {
+      0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      90% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(-100px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* Enhanced Product Page Animations */
+    .product-page {
+      animation: fadeInUp 0.8s ease-out;
+      margin-top: 40px;
+      display: flex;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+
+    /* Enhanced Product Details */
+    .product-details {
+      animation: slideInRight 0.8s ease-out 0.4s both;
+      position: relative;
+      width: 50%;
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(50px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .product-details h2 {
+      font-weight: 700;
+      color: #e91e63;
+      margin-bottom: 20px;
+      position: relative;
+      animation: fadeInUp 0.6s ease-out 0.6s both;
+    }
+
+    .product-details h2::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 3px;
+      background: linear-gradient(135deg, #ff9a9e, #fecfef);
+      animation: expandLine 1s ease-out 1.2s both;
+    }
+
+    @keyframes expandLine {
+      to {
+        width: 60px;
+      }
+    }
+
+    /* Enhanced Price Section */
+    .price {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #e91e63;
+      animation: bounceIn 0.6s ease-out 0.8s both;
+      position: relative;
+    }
+
+    .mrp {
+      text-decoration: line-through;
+      color: #95a5a6;
+      font-size: 1.2rem;
+      margin-left: 15px;
+      animation: fadeIn 0.6s ease-out 1s both;
+    }
+
+    .discount {
+      background: linear-gradient(135deg, #ff9a9e, #fecfef);
+      color: white;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-left: 15px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes bounceIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.3);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.05);
+      }
+
+      70% {
+        transform: scale(0.9);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    /* Enhanced Size Options */
+    .size-options {
+      animation: fadeInUp 0.6s ease-out 1.2s both;
+      margin: 20px 0;
+    }
+
+    .size-options button {
+      margin: 5px;
+      border: 2px solid #bdc3c7;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .size-options button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: linear-gradient(135deg, #ff9a9e, #fecfef);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      transform: translate(-50%, -50%);
+      z-index: -1;
+    }
+
+    .size-options button:hover::before {
+      width: 100%;
+      height: 100%;
+    }
+
+    .size-options button:hover {
+      color: white;
+      border-color: #ff9a9e;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(255, 154, 158, 0.3);
+    }
+
+    .size-options button.selected {
+      background: linear-gradient(135deg, #ff9a9e, #fecfef);
+      color: white;
+      border-color: #ff9a9e;
+      transform: scale(1.1);
+      box-shadow: 0 8px 25px rgba(255, 154, 158, 0.4);
+    }
+
+    /* Enhanced Action Buttons */
+    .action-buttons {
+      animation: fadeInUp 0.6s ease-out 1.4s both;
+      margin: 30px 0;
+    }
+
+    .add-to-bag {
+      background: linear-gradient(135deg, #ff9a9e, #fecfef);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      margin-right: 15px;
+    }
+
+    .add-to-bag::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .add-to-bag:hover::before {
+      left: 100%;
+    }
+
+    .add-to-bag:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(255, 154, 158, 0.4);
+    }
+
+    .add-to-bag:active {
+      transform: translateY(-1px);
+      animation: addToBagSuccess 0.6s ease-out;
+    }
+
+    @keyframes addToBagSuccess {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .wishlist-btn {
+      background: white;
+      color: #ff9a9e;
+      border: 2px solid #ff9a9e;
+      padding: 15px 30px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wishlist-btn:hover {
+      background: #ff9a9e;
+      color: white;
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(255, 154, 158, 0.3);
+    }
+
+    /* Enhanced Delivery Section */
+    .delivery {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 25px;
+      margin-top: 30px;
+      border: 1px solid rgba(255, 154, 158, 0.2);
+      animation: fadeInUp 0.6s ease-out 1.6s both;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .delivery p {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      color: #2c3e50;
+      font-weight: 500;
+    }
+
+    .delivery i {
+      margin-right: 10px;
+      color: #ff9a9e;
+      font-size: 1.2rem;
+    }
+
+    .delivery input {
+      border: 2px solid #e1e5e9;
+      border-radius: 8px;
+      padding: 12px 15px;
+      transition: all 0.3s ease;
+    }
+
+    .delivery input:focus {
+      outline: none;
+      border-color: #ff9a9e;
+      box-shadow: 0 0 0 3px rgba(255, 154, 158, 0.1);
+    }
+
+    /* Enhanced Navbar */
+    .navbar {
+      backdrop-filter: blur(20px);
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      animation: slideDown 0.6s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-100%);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .navbar-brand {
+      font-weight: 800;
+      background: linear-gradient(135deg, #ff9a9e, #fecfef);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-link {
+      font-weight: 500;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(135deg, #ff9a9e, #fecfef);
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    .icon-btn,
+    .icon-btns {
+      position: relative;
+      margin-left: 20px;
+      font-size: 1.4rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: #2c3e50;
+    }
+
+    .icon-btn:hover,
+    .icon-btns:hover {
+      transform: scale(1.2);
+      color: #ff9a9e;
+    }
+
+    /* Loading Animation */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.5s ease-out;
+    }
+
+    .loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loader {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Success Animation for Add to Cart */
+    .success-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.8);
+      transition: all 0.3s ease;
+    }
+
+    .success-popup.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .success-popup i {
+      color: #e91e63;
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    /* Responsive Enhancements */
+    @media (max-width: 768px) {
+      .product-page {
+        margin-top: 20px;
+      }
+
+      .product-details {
+        padding: 20px 15px;
+        margin-top: 30px;
+      }
+
+      .price {
+        font-size: 1.5rem;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .add-to-bag,
+      .wishlist-btn {
+        width: 100%;
+        margin-right: 0;
+      }
+
+      .size-options button {
+        width: 45px;
+        height: 45px;
+      }
+
+    }
+
+    /* new */
+  .splide__slide img {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  object-fit: contain; /* better for fashion product images */
+  background: #fff; /* optional to avoid gaps */
+}
+
+
+    #thumbnail_slider .splide__slide {
+      opacity: 0.6;
+      cursor: pointer;
+    }
+
+    #thumbnail_slider .splide__slide.is-active {
+      opacity: 1;
+      border: 2px solid #e91e63;
+    }
+
+    .slider-show {
+      display: flex;
+      width: 70%;
+    }
+
+    .primary_slider {
+      object-fit: cover !important;
+    }
+
+    .img_product {
+      width: 40%;
+      object-fit: contain;
+    }
+
+    /* Slides: let the container control height; make images fill it */
+    .splide__slide img {
+      display: block;
+      width: 100%;
+      height: 80%;
+      border-radius: 12px;
+      object-fit: cover !important;
+    }
+
+    /* Ensure the primary slides have a fixed, responsive height */
+    #primary_slider .splide__track,
+    #primary_slider .splide__list,
+    #primary_slider .splide__slide {
+      height: 580px;
+    }
+
+    /* Override the 40% width that shrinks the main images */
+    .img_product {
+      width: 100%;
+      height: 100%;
+      object-fit: cover !important;
+    }
+
+    /* Responsive heights for different screens */
+    @media (max-width: 1200px) {
+
+      #primary_slider .splide__track,
+      #primary_slider .splide__list,
+      #primary_slider .splide__slide {
+        height: 560px;
+      }
+    }
+
+    @media (max-width: 992px) {
+
+      #primary_slider .splide__track,
+      #primary_slider .splide__list,
+      #primary_slider .splide__slide {
+        height: 480px;
+      }
+    }
+
+    @media (max-width: 768px) {
+
+      #primary_slider .splide__track,
+      #primary_slider .splide__list,
+      #primary_slider .splide__slide {
+        height: 420px;
+      }
+    }
+
+    @media (max-width: 576px) {
+
+      #primary_slider .splide__track,
+      #primary_slider .splide__list,
+      #primary_slider .splide__slide {
+        height: 340px;
+      }
+    }
+  </style>
+
+</head>
+
+<body>
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loader"></div>
+  </div>
+
+  <!-- Animated Background Particles -->
+  <div class="bg-particles" id="bgParticles"></div>
+
+  <!-- Success Popup -->
+  <div class="success-popup" id="successPopup">
+    <div style="text-align: center;">
+      <i class="fas fa-check-circle"></i>
+      <h4>Added to Cart!</h4>
+      <p>Item successfully added to your cart</p>
+    </div>
+  </div>
+
+  <nav class="navbar navbar-expand-lg shadow-sm sticky-top top-line">
+    <div class="container">
+      <img class="mx-2" src="img/pyramidal.png" width="40px" height="40px">
+      <a class="navbar-brand text-uppercase fs-2" href="#">Pyramid</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mx-auto">
+          <li class="nav-item" id="viewHome"><a class="nav-link" href="#">Home</a></li>
+          <li class="nav-item" id="viewMen"><a class="nav-link" href="#">Men</a></li>
+          <li class="nav-item" id="viewWomen"><a class="nav-link" href="#">Women</a></li>
+          <!-- <li class="nav-item"><a class="nav-link" href="#">Kids</a></li> -->
+          <li class="nav-item" id="discountSale"><a class="nav-link" href="#">Sale</a></li>
+        </ul>
+        <div class="d-flex align-items-center">
+          <span class="icon-btn"><i class="fa-regular fa-user"></i></span>
+          <span class="icon-btn position-relative" id="viewWishlist">
+            <i class="fa-regular fa-heart"></i>
+            <span class="badge" id=""></span>
+          </span>
+          <span class="icon-btns position-relative" id="viewCart">
+            <i class="bi bi-cart"></i>
+            <span class="badge"></span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <div class="container product-page">
+    <div class="row slider-show">
+      <div class="col-md-6" style="width: 70%; margin: auto;">
+        <div id="primary_slider" class="splide mb-3">
+          <div class="splide__track">
+            <ul class="splide__list" id="primaryList"></ul>
+          </div>
+        </div>
+
+        <div id="thumbnail_slider" class="splide mt-3">
+          <div class="splide__track">
+            <ul class="splide__list" id="thumbnailList"></ul>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+
+
+    <div class="col-md-6 product-details px-5">
+      <h2 id="productName"></h2>
+      <div class="d-flex align-items-center mt-3">
+        <span class="price" id="productPrice"></span>
+        <span class="mrp" id="productMrp"></span>
+        <span class="discount" id="productDiscount"></span>
+      </div>
+
+      <p class="mt-3">inclusive of all taxes</p>
+
+      <h6 class="mt-4">SELECT SIZE</h6>
+      <div class="size-options">
+        <button>39</button><button>40</button><button>42</button><button>44</button>
+      </div>
+
+      <div class="action-buttons mt-4">
+        <button class="add-to-bag"><i class="bi bi-bag-fill"></i> ADD TO BAG</button>
+        <button class="wishlist-btn" onclick="addToWishlist()"><i class="bi bi-heart"></i> WISHLIST</button>
+      </div>
+
+      <div class="delivery mt-4">
+        <p><b>Delivery Options</b></p>
+        <input type="text" class="form-control w-50 mb-2" placeholder="Enter Pincode">
+        <div class="delivary-date d-flex">
+          <p><i class="bi bi-truck"></i> Get it by
+          <div id="futureDate" class="date px-2 fw-bold mt-1">—</div>
+          </p>
+        </div>
+        <p><i class="bi bi-cash"></i> Pay on delivery available</p>
+        <p><i class="bi bi-arrow-repeat"></i> Easy 7 days return & exchange</p>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <script>
+
+    const products = [
+      {
+        id: 42,
+        name: "Wide trousersPointelle-knit beach dress",
+        price: 1199,
+        mrp: 1699,
+        discount: "60% OFF",
+        images: [
+          "img/women/new images/img-1-a.jpg",
+          "img/women/new images/img-1-b.jpg",
+          "img/women/new images/img-1-c.jpg",
+          "img/women/new images/img-1-main.jpg",
+          "img/women/new images/img-1-d.jpg"
+
+        ]
+      },
+      {
+        id: 43,
+        name: "Flared-skirt dress - Olive green",
+        price: 1299,
+        mrp: 1999,
+        discount: "35% OFF",
+        images: [
+          "img/women/new images/img-2-a.jpg",
+          "img/women/new images/img-2-b.jpg",
+          "img/women/new images/img-2-c.jpg",
+          "img/women/new images/img-2-main.jpg",
+          "img/women/new images/img-2-d.jpg"
+        ]
+      },
+      {
+        id: 44,
+        name: "Frill-trimmed dress - Dark green_Paisley pattern",
+        price: 999,
+        mrp: 1599,
+        discount: "33% OFF",
+        images: [
+          "img/women/new images/img-3-a.jpg",
+          "img/women/new images/img-3-b.jpg",
+          "img/women/new images/img-3-c.jpg",
+           "img/women/new images/img-3-main.jpg",
+          "img/women/new images/img-3-d.jpg"
+        ]
+      },
+      {
+        id: 45,
+        name: "Jacquard-weave dress - Beige",
+        price: 1299,
+        mrp: 1999,
+        discount: "33% OFF",
+        images: [
+          "img/women/new images/img-4-a.jpg",
+          "img/women/new images/img-4-b.jpg",
+          "img/women/new images/img-4-c.jpg",
+            "img/women/new images/img-4-main.jpg",
+          "img/women/new images/img-4-d.jpg"
+        ]
+      },
+      {
+        id: 46,
+        name: "Long fitted dress - Dark red",
+        price: 1699,
+        mrp: 2199,
+        discount: "33% OFF",
+        images: [
+          "img/women/new images/img-5-a.jpg",
+          "img/women/new images/img-5-b.jpg",
+          "img/women/new images/img-5-c.jpg",
+           "img/women/new images/img-5-main.jpg",
+          "img/women/new images/img-5-main.jpg"
+        ]
+      },
+      {
+        id: 47,
+        name: "Textured-knit cardigan",
+        price: 1999,
+        mrp: 2499,
+        discount: "33% OFF",
+        images: [
+          "img/women/new images/img-6-a.jpg",
+          "img/women/new images/img-6-b.jpg",
+          "img/women/new images/img-6-c.jpg",
+           "img/women/new images/img-6-main.jpg",
+          "img/women/new images/img-6-d.jpg"
+        ]
+      },
+      {
+        id: 48,
+        name: "Short dress - Burgundy",
+        price: 1599,
+        mrp: 1999,
+        discount: "33% OFF",
+        images: [
+          "img/women/new images/img-7-a.jpg",
+          "img/women/new images/img-7-b.jpg",
+          "img/women/new images/img-7-c.jpg",
+           "img/women/new images/img-7-main.jpg",
+          "img/women/new images/img-7-d.jpg"
+        ]
+      },
+      {
+        id: 49,
+        name: "Smocked-detail dress - Black_Patterned",
+        price: 1299,
+        mrp: 1599,
+        discount: "33% OFF",
+        images: [
+          "img/women/new images/img-8-a.jpg",
+          "img/women/new images/img-8-b.jpg",
+          "img/women/new images/img-8-c.jpg",
+            "img/women/new images/img-8-main.jpg",
+          "img/women/new images/img-8-d.jpg"
+        ]
+      },
+      {
+        id: 50,
+        name: "Zip-front shift dress - Brown",
+        price: 1299,
+        mrp: 1599,
+        discount: "33% OFF",
+        images: [
+          "img/women/new images/img-9-a.jpg",
+          "img/women/new images/img-9-b.jpg",
+          "img/women/new images/img-9-c.jpg",
+           "img/women/new images/img-9-main.jpg",
+          "img/women/new images/img-9-d.jpg"
+        ]
+      },
+      {
+        id: 51,
+        name: "Voluminous bow-back dress - Cream_Floral",
+        price: 1199,
+        mrp: 1499,
+        discount: "33% OFF",
+        images: [
+          "img/women/new images/img-10-a.jpg",
+          "img/women/new images/img-10-b.jpg",
+          "img/women/new images/img-10-c.jpg",
+           "img/women/new images/img-10-main.jpg",
+          "img/women/new images/img-10-d.jpg"
+        ]
+      },
+      {
+        id: 52,
+        name: "Flared trousers - Beige_Checked",
+        price: 1999,
+        mrp: 2499,
+        discount: "33% OFF",
+        images: [
+          "img/women/new images/img-11-a.jpg",
+          "img/women/new images/img-11-b.jpg",
+          "img/women/new images/img-11-c.jpg",
+               "img/women/new images/img-11-main.jpg",
+          "img/women/new images/img-11-d.jpg"
+        ]
+      },
+      {
+        id: 53,
+        name: "OFF-THE-SHOULDER DRESS",
+        price: 1599,
+        mrp: 1999,
+        discount: "33% OFF",
+        images: [
+          "img/women/new images/img-12-a.jpg",
+          "img/women/new images/img-12-b.jpg",
+          "img/women/new images/img-12-c.jpg",
+             "img/women/new images/img-12-main.jpg",
+          "img/women/new images/img-12-d.jpg"
+        ]
+      },
+      {
+        id: 54,
+        name: "Wide High Jeans - Brown_Leopard",
+        price: 1299,
+        mrp: 1599,
+        discount: "33% OFF",
+        images: [
+          "img/women/new images/img-13-a.jpg",
+          "img/women/new images/img-13-b.jpg",
+          "img/women/new images/img-13-c.jpg",
+           "img/women/new images/img-13-main.jpg",
+          "img/women/new images/img-13-d.jpg"
+        ]
+      },
+      {
+        id: 55,
+        name: "Belted turtleneck top",
+        price: 1599,
+        mrp: 1999,
+        discount: "33% OFF",
+        images: [
+          "img/women/new images/img-14-a.jpg",
+          "img/women/new images/img-14-b.jpg",
+          "img/women/new images/img-14-c.jpg",
+            "img/women/new images/img-14-main.jpg",
+          "img/women/new images/img-14-d.jpg"
+        ]
+      },
+      {
+        id: 56,
+        name: "Oversized cotton shirt",
+        price: 1339,
+        mrp: 1999,
+        discount: "33% OFF",
+        images: [
+          "img/women/new images/img-16-a.jpg",
+          "img/women/new images/img-16-b.jpg",
+          "img/women/new images/img-16-c.jpg",
+          "img/women/new images/img-16-d.jpg",
+          "img/women/new images/img-16-main.jpg"
+        ]
+      },
+      {
+        id: 57,
+        name: "Pleated mini skirt",
+        price: 1339,
+        mrp: 1999,
+        discount: "33% OFF",
+        images: [
+          "img/women/new images/img-17-a.jpg",
+          "img/women/new images/img-17-b.jpg",
+          "img/women/new images/img-17-c.jpg",
+          "img/women/new images/img-17-main.jpg",
+          "img/women/new images/img-17-d.jpg"
+        ]
+      },
+      {
+        id: 58,
+        name: "Belted turtleneck top",
+        price: 1339,
+        mrp: 1999,
+        discount: "33% OFF",
+        images: [
+          "img/women/new images/img-18-a.jpg",
+          "img/women/new images/img-18-b.jpg",
+          "img/women/new images/img-18-c.jpg",
+             "img/women/new images/img-18-main.jpg",
+          "img/women/new images/img-18-d.jpg"
+        ]
+      },
+      {
+        id: 59,
+        name: "LOOSE STRAIGHT JEANS",
+        price: 1339,
+        mrp: 1999,
+        discount: "33% OFF",
+        images: [
+          "img/women/new images/img-19-a.jpg",
+          "img/women/new images/img-19-b.jpg",
+          "img/women/new images/img-19-c.jpg",
+             "img/women/new images/img-19-main.jpg",
+          "img/women/new images/img-19-d.jpg"
+        ]
+      },
+      {
+        id: 60,
+        name: "LOOSE STRAIGHT JEANS",
+        price: 1339,
+        mrp: 1999,
+        discount: "33% OFF",
+        images: [
+          "img/women/new images/img-20-a.jpg",
+          "img/women/new images/img-20-b.jpg",
+          "img/women/new images/img-20-c.jpg",
+            "img/women/new images/img-20-main.jpg",
+          "img/women/new images/img-20-d.jpg"
+        ]
+      }
+
+    ];
+
+    // Navigation Event Listeners
+    document.getElementById("viewHome")?.addEventListener("click", function () {
+      window.location.href = "index.html";
+    });
+    document.getElementById("viewMen")?.addEventListener("click", function () {
+      window.location.href = "men-product.html";
+    });
+    document.getElementById("viewWomen")?.addEventListener("click", function () {
+      window.location.href = "women-product.html";
+    });
+    document.getElementById("viewWishlist")?.addEventListener("click", function () {
+      window.location.href = "wishlist.html";
+    });
+    document.getElementById("viewCart")?.addEventListener("click", function () {
+      window.location.href = "cart.html";
+    });
+
+
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = parseInt(urlParams.get("id"));
+    const product = products.find(p => p.id === productId);
+
+
+    // Cart functionality
+    const CART_KEY = 'cart_v1';
+    function getCart() { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); }
+    function saveCart(c) { localStorage.setItem(CART_KEY, JSON.stringify(c)); }
+
+    // Enhanced Add to Cart Function
+    function addToCartWithAnimation(id, name, price, image) {
+      const cart = getCart();
+      const found = cart.find(i => i.productId === id);
+      if (found) found.quantity += 1;
+      else cart.push({ productId: id, name, price, image: image, quantity: 1 });
+      saveCart(cart);
+
+      // Show success popup
+      const popup = document.getElementById('successPopup');
+      popup.classList.add('show');
+
+      setTimeout(() => {
+        popup.classList.remove('show');
+      }, 2000);
+
+      // Add button success animation
+      const button = document.querySelector('.add-to-bag');
+      button.style.animation = 'addToBagSuccess 0.6s ease-out';
+      setTimeout(() => {
+        button.style.animation = '';
+      }, 600);
+    }
+
+    // Enhanced Size Selection
+    const sizeButtons = document.querySelectorAll(".size-options button");
+    sizeButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        sizeButtons.forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+
+        btn.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          btn.style.transform = '';
+        }, 150);
+      });
+    });
+
+    // Create animated background particles
+    function createParticles() {
+      const particlesContainer = document.getElementById('bgParticles');
+      const particleCount = 20;
+
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 8 + 's';
+        particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
+        particlesContainer.appendChild(particle);
+      }
+    }
+
+    // // Enhanced image gallery with zoom effect
+    // function enhanceImageGallery() {
+    //   const images = document.querySelectorAll('.product-images img');
+
+    //   images.forEach((img, index) => {
+    //     img.addEventListener('click', () => {
+    //       const modal = document.createElement('div');
+    //       modal.style.cssText = `
+    //         position: fixed;
+    //         top: 0;
+    //         left: 0;
+    //         width: 100%;
+    //         height: 100%;
+    //         background: rgba(0, 0, 0, 0.8);
+    //         display: flex;
+    //         align-items: center;
+    //         justify-content: center;
+    //         z-index: 2000;
+    //         cursor: pointer;
+    //         animation: fadeIn 0.3s ease-out;
+    //       `;
+
+    //       const zoomedImg = document.createElement('img');
+    //       zoomedImg.src = img.src;
+    //       zoomedImg.style.cssText = `
+    //         max-width: 90%;
+    //         max-height: 90%;
+    //         border-radius: 16px;
+    //         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    //         animation: zoomIn 0.3s ease-out;
+    //       `;
+
+    //       modal.appendChild(zoomedImg);
+    //       document.body.appendChild(modal);
+
+    //       modal.addEventListener('click', () => {
+    //         modal.style.animation = 'fadeOut 0.3s ease-out';
+    //         setTimeout(() => {
+    //           document.body.removeChild(modal);
+    //         }, 300);
+    //       });
+    //     });
+
+    //     img.addEventListener('mouseenter', () => {
+    //       img.style.transform = 'scale(1.05)';
+    //     });
+
+    //     img.addEventListener('mouseleave', () => {
+    //       img.style.transform = 'scale(1)';
+    //     });
+    //   });
+    // }
+
+    // Wishlist functionality
+    const WISHLIST_KEY = 'wishlist_v1';
+
+    function getWishlist() {
+      return JSON.parse(localStorage.getItem(WISHLIST_KEY) || '[]');
+    }
+
+    function saveWishlist(wishlist) {
+      localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlist));
+    }
+
+    function addToWishlist() {
+      if (!product) {
+        alert('Product not found!');
+        return;
+      }
+
+      const wishlist = getWishlist();
+      const existingItem = wishlist.find(item => item.id === product.id);
+
+      if (existingItem) {
+        alert('Item already in wishlist!');
+        return;
+      }
+
+      const wishlistItem = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images && product.images[0] ? product.images[0] : 'img/default-product.jpg'
+      };
+
+      wishlist.push(wishlistItem);
+      saveWishlist(wishlist);
+
+      // Update button appearance
+      const wishlistBtn = document.querySelector('.wishlist-btn');
+      if (wishlistBtn) {
+        wishlistBtn.innerHTML = '<i class="bi bi-heart-fill"></i> ADDED TO WISHLIST';
+        wishlistBtn.style.background = '#ff9a9e';
+        wishlistBtn.style.color = 'white';
+        wishlistBtn.disabled = true;
+      }
+
+      // Update wishlist badge
+      if (typeof updateWishlistBadge === 'function') {
+        updateWishlistBadge();
+      }
+
+      alert('Item added to wishlist!');
+    }
+
+    function checkWishlistStatus() {
+      if (!product) return;
+
+      const wishlist = getWishlist();
+      const existingItem = wishlist.find(item => item.id === product.id);
+
+      if (existingItem) {
+        const wishlistBtn = document.querySelector('.wishlist-btn');
+        if (wishlistBtn) {
+          wishlistBtn.innerHTML = '<i class="bi bi-heart-fill"></i> IN WISHLIST';
+          wishlistBtn.style.background = '#ff9a9e';
+          wishlistBtn.style.color = 'white';
+          wishlistBtn.disabled = true;
+        }
+      }
+    }
+
+    // Initialize page animations
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(() => {
+        document.getElementById('loadingOverlay').classList.add('hidden');
+      }, 1000);
+
+      createParticles();
+
+
+      const elements = document.querySelectorAll('.product-details > *');
+      elements.forEach((el, index) => {
+        el.style.animationDelay = (index * 0.1 + 0.5) + 's';
+      });
+
+      // Update add to cart button
+      const addToCartBtn = document.querySelector('.add-to-bag');
+      if (addToCartBtn && product) {
+        addToCartBtn.onclick = () => addToCartWithAnimation(product.id, product.name, product.price, product.images[0]);
+      }
+
+      // Check wishlist status
+      checkWishlistStatus();
+
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.animation = 'fadeInUp 0.6s ease-out forwards';
+          }
+        });
+      }, observerOptions);
+
+      document.querySelectorAll('.delivery, .action-buttons').forEach(el => {
+        observer.observe(el);
+      });
+    });
+
+    // Add CSS animations dynamically
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
+      
+      @keyframes zoomIn {
+        from { 
+          opacity: 0; 
+          transform: scale(0.8); 
+        }
+        to { 
+          opacity: 1; 
+          transform: scale(1); 
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    const daysAhead = 6;
+
+    function formatWithLeadingZero(n) {
+      return n < 10 ? '0' + n : n;
+    }
+
+    function getFutureDateString(days) {
+      const now = new Date();
+
+      const future = new Date(now);
+      future.setDate(now.getDate() + days);
+
+
+      const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+      const dayName = weekdays[future.getDay()];
+      const day = formatWithLeadingZero(future.getDate());
+      const monthName = months[future.getMonth()];
+      const year = future.getFullYear();
+
+
+      return `${dayName}, ${day} ${monthName} ${year}`;
+    }
+
+    function showDate() {
+      document.getElementById('futureDate').textContent = getFutureDateString(daysAhead);
+    }
+
+
+    showDate();
+
+    // Create animated background particles
+    function createParticles() {
+      const particlesContainer = document.getElementById('bgParticles');
+      const particleCount = 20;
+
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        particle.style.left = Math.random() * 100 + 'vw';
+        particle.style.top = Math.random() * 100 + 'vh';
+        particle.style.animationDuration = (5 + Math.random() * 5) + 's';
+        particle.style.animationDelay = (Math.random() * 2) + 's';
+        particlesContainer.appendChild(particle);
+      }
+    }
+    createParticles();
+    if (product) {
+      document.getElementById("productName").textContent = product.name;
+      document.getElementById("productPrice").textContent = "₹" + product.price;
+      document.getElementById("productMrp").textContent = "₹" + product.mrp;
+      document.getElementById("productDiscount").textContent = "(" + product.discount + ")";
+
+      // Clear lists first
+      document.getElementById("primaryList").innerHTML = "";
+      document.getElementById("thumbnailList").innerHTML = "";
+
+      // Add product images dynamically
+      product.images.slice(0, 4).forEach(src => {
+        document.getElementById("primaryList").innerHTML += `
+      <li class="splide__slide">
+        <img class="img_product" src="${src}" alt="${product.name}">
+        </li>`;
+        document.getElementById("thumbnailList").innerHTML += `
+      <li class="splide__slide">
+        <img src="${src}" alt="${product.name}">
+        </li>`;
+      });
+
+      // Initialize Splide sliders
+      var primarySlider = new Splide('#primary_slider', {
+        type: 'fade',
+        height: '580px',
+        pagination: false,
+        arrows: false,
+        cover: true,
+        breakpoints: {
+          1200: { height: '560px' },
+          992: { height: '480px' },
+          768: { height: '420px' },
+          576: { height: '340px' },
+        },
+      });
+
+      var thumbnailSlider = new Splide('#thumbnail_slider', {
+        rewind: true,
+        fixedWidth: 100,
+        fixedHeight: 120,
+        isNavigation: true,
+        gap: 10,
+        focus: 'center',
+        pagination: false,
+        cover: true,
+        breakpoints: {
+          600: {
+            fixedWidth: 60,
+            fixedHeight: 60,
+          }
+        }
+      });
+
+      primarySlider.sync(thumbnailSlider);
+      primarySlider.mount();
+      thumbnailSlider.mount();
+    }
+
+
+  </script>
+</body>
+
+</html>

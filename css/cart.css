@@ -1,0 +1,36 @@
+.navbar-item {
+    display: flex;
+}
+ .navbar-brand {
+    font-family: 'Times New Roman', serif;
+    font-size: 1.8rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+  }
+
+.bag-item {
+    width: 70%;
+    text-align: center;
+    padding-top: 10px;
+    font-weight: lighter;
+}
+
+.secure {
+    padding-top: 10px;
+
+}
+
+.secure i {
+    padding: 4.5px 4px 0 0;
+}
+
+.cart-add-btn {
+    padding: 10px 20px;
+    color: #FF3F6B;
+    background-color: white;
+    border-color: #FF3F6B;
+}
+.top-line {
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.533);
+}

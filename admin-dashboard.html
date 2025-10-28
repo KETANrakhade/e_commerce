@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | PYRAMID</title>
+    <link rel="icon" type="image/x-icon" href="/img/bars.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
+        }
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #65AAC3 0%, #5F9FB6 100%);
+            color: white;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            transition: all 0.3s ease;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .stat-card.success {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        }
+        .stat-card.warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+        .stat-card.danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="p-3">
+                    <h4 class="text-center mb-4">
+                        <i class="fas fa-crown me-2"></i>
+                        PYRAMID Admin
+                    </h4>
+                    <nav class="nav flex-column">
+                        <a class="nav-link active" href="#dashboard" onclick="showSection('dashboard')">
+                            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                        </a>
+                        <a class="nav-link" href="#products" onclick="showSection('products')">
+                            <i class="fas fa-box me-2"></i> Products
+                        </a>
+                        <a class="nav-link" href="#orders" onclick="showSection('orders')">
+                            <i class="fas fa-shopping-cart me-2"></i> Orders
+                        </a>
+                        <a class="nav-link" href="#users" onclick="showSection('users')">
+                            <i class="fas fa-users me-2"></i> Users
+                        </a>
+                        <a class="nav-link" href="index.html">
+                            <i class="fas fa-home me-2"></i> Back to Store
+                        </a>
+                        <a class="nav-link" href="#" onclick="logout()">
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10">
+                <div class="p-4">
+                    <!-- Dashboard Section -->
+                    <div id="dashboard-section" class="content-section">
+                        <h2 class="mb-4">Dashboard Overview</h2>
+                        
+                        <!-- Stats Cards -->
+                        <div class="row mb-4">
+                            <div class="col-md-3 mb-3">
+                                <div class="card stat-card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-box fa-2x mb-2"></i>
+                                        <h3 id="totalProducts">0</h3>
+                                        <p class="mb-0">Total Products</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card stat-card success">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                                        <h3 id="totalOrders">0</h3>
+                                        <p class="mb-0">Total Orders</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card stat-card warning">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-users fa-2x mb-2"></i>
+                                        <h3 id="totalUsers">0</h3>
+                                        <p class="mb-0">Total Users</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card stat-card danger">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-rupee-sign fa-2x mb-2"></i>
+                                        <h3 id="totalRevenue">₹0</h3>
+                                        <p class="mb-0">Total Revenue</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Orders -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Recent Orders</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="recentOrders">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Products Section -->
+                    <div id="products-section" class="content-section" style="display: none;">
+                        <h2 class="mb-4">Product Management</h2>
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="productsTable">Loading products...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Orders Section -->
+                    <div id="orders-section" class="content-section" style="display: none;">
+                        <h2 class="mb-4">Order Management</h2>
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="ordersTable">Loading orders...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Users Section -->
+                    <div id="users-section" class="content-section" style="display: none;">
+                        <h2 class="mb-4">User Management</h2>
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="usersTable">Loading users...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Check admin authentication
+        function checkAdminAuth() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (!token || !user) {
+                window.location.href = 'login.html';
+                return false;
+            }
+            
+            const userData = JSON.parse(user);
+            if (userData.role !== 'admin') {
+                alert('Access denied. Admin privileges required.');
+                window.location.href = 'index.html';
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Show section
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+            // Show selected section
+            document.getElementById(section + '-section').style.display = 'block';
+            
+            // Update active nav
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            document.querySelector(`[href="#${section}"]`).classList.add('active');
+            
+            // Load section data
+            switch(section) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'products':
+                    loadProducts();
+                    break;
+                case 'orders':
+                    loadOrders();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                const token = localStorage.getItem('token');
+                
+                // Load stats
+                const statsResponse = await fetch('http://localhost:5001/api/admin/stats', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (statsResponse.ok) {
+                    const stats = await statsResponse.json();
+                    document.getElementById('totalProducts').textContent = stats.data?.totalProducts || 0;
+                    document.getElementById('totalOrders').textContent = stats.data?.totalOrders || 0;
+                    document.getElementById('totalUsers').textContent = stats.data?.totalUsers || 0;
+                    document.getElementById('totalRevenue').textContent = `₹${(stats.data?.totalRevenue || 0).toLocaleString()}`;
+                }
+
+                // Load recent orders
+                const ordersResponse = await fetch('http://localhost:5001/api/admin/recent-orders', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (ordersResponse.ok) {
+                    const orders = await ordersResponse.json();
+                    displayRecentOrders(orders.data || []);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                document.getElementById('recentOrders').innerHTML = 'Error loading data';
+            }
+        }
+
+        // Display recent orders
+        function displayRecentOrders(orders) {
+            const container = document.getElementById('recentOrders');
+            
+            if (orders.length === 0) {
+                container.innerHTML = '<p class="text-muted">No recent orders</p>';
+                return;
+            }
+
+            const ordersHtml = orders.map(order => `
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <div>
+                        <strong>${order.orderNumber}</strong><br>
+                        <small class="text-muted">${order.user?.name || 'Unknown'}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-${getStatusColor(order.status)}">${order.status}</span><br>
+                        <small>₹${order.totalPrice?.toLocaleString()}</small>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = ordersHtml;
+        }
+
+        // Get status color
+        function getStatusColor(status) {
+            switch(status) {
+                case 'delivered': return 'success';
+                case 'shipped': return 'info';
+                case 'processing': return 'warning';
+                case 'cancelled': return 'danger';
+                default: return 'secondary';
+            }
+        }
+
+        // Load products
+        async function loadProducts() {
+            document.getElementById('productsTable').innerHTML = 'Loading products...';
+            // Implementation for products table
+        }
+
+        // Load orders
+        async function loadOrders() {
+            document.getElementById('ordersTable').innerHTML = 'Loading orders...';
+            // Implementation for orders table
+        }
+
+        // Load users
+        async function loadUsers() {
+            document.getElementById('usersTable').innerHTML = 'Loading users...';
+            // Implementation for users table
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            if (checkAdminAuth()) {
+                loadDashboard();
+            }
+        });
+    </script>
+</body>
+</html>
