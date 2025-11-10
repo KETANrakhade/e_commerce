@@ -70,6 +70,11 @@ async function handleLogin(e) {
             localStorage.setItem('adminUser', JSON.stringify(result.data));
             
             showAdminPanel();
+            
+            // Update crown icon visibility on other pages
+            if (window.showAdminButton) {
+                window.showAdminButton();
+            }
         } else {
             showLoginError(result.message || 'Login failed');
         }
@@ -86,6 +91,11 @@ function handleLogout() {
     localStorage.removeItem('adminUser');
     adminToken = null;
     showLoginScreen();
+    
+    // Hide crown icon on other pages
+    if (window.hideAdminButton) {
+        window.hideAdminButton();
+    }
 }
 
 // UI Functions

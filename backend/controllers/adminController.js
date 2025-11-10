@@ -5,6 +5,96 @@ const Order = require('../models/orderModel');
 const generateToken = require('../utils/generateToken');
 const bcrypt = require('bcryptjs');
 
+// @desc    Register super admin (first time setup)
+// @route   POST /api/admin/register-super-admin
+// @access  Public (but protected by logic)
+const registerSuperAdmin = asyncHandler(async (req, res) => {
+  const { name, email, password, secretKey } = req.body;
+
+  // Check if any admin exists
+  const existingAdmin = await User.findOne({ role: 'admin' });
+  if (existingAdmin) {
+    res.status(400);
+    throw new Error('Super admin already exists. Use regular admin registration.');
+  }
+
+  // Verify secret key (you can change this)
+  if (secretKey !== 'PYRAMID_SUPER_ADMIN_2024') {
+    res.status(401);
+    throw new Error('Invalid secret key for super admin registration');
+  }
+
+  // Check if user already exists
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    res.status(400);
+    throw new Error('User with this email already exists');
+  }
+
+  // Hash password
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  // Create super admin
+  const superAdmin = await User.create({
+    name,
+    email,
+    password: hashedPassword,
+    role: 'admin',
+    isActive: true
+  });
+
+  res.status(201).json({
+    success: true,
+    message: 'Super admin created successfully',
+    data: {
+      _id: superAdmin._id,
+      name: superAdmin.name,
+      email: superAdmin.email,
+      role: superAdmin.role,
+      token: generateToken(superAdmin._id)
+    }
+  });
+});
+
+// @desc    Register new admin (by existing admin)
+// @route   POST /api/admin/register-admin
+// @access  Private/Admin
+const registerAdmin = asyncHandler(async (req, res) => {
+  const { name, email, password } = req.body;
+
+  // Check if user already exists
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    res.status(400);
+    throw new Error('User with this email already exists');
+  }
+
+  // Hash password
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  // Create new admin
+  const newAdmin = await User.create({
+    name,
+    email,
+    password: hashedPassword,
+    role: 'admin',
+    isActive: true
+  });
+
+  res.status(201).json({
+    success: true,
+    message: 'New admin created successfully',
+    data: {
+      _id: newAdmin._id,
+      name: newAdmin.name,
+      email: newAdmin.email,
+      role: newAdmin.role
+    }
+  });
+});
+
 // @desc    Admin login
 // @route   POST /api/admin/login
 // @access  Public
@@ -184,6 +274,8 @@ const getSalesAnalytics = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  registerSuperAdmin,
+  registerAdmin,
   adminLogin,
   getAdminProfile,
   getDashboardStats,

@@ -178,10 +178,55 @@ const getCurrentUser = () => {
   return user ? JSON.parse(user) : null;
 };
 
+const isAdmin = () => {
+  const user = getCurrentUser();
+  return user && user.role === 'admin';
+};
+
 const logout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
+  localStorage.removeItem('adminToken');
+  localStorage.removeItem('adminUser');
+  
+  // Hide admin button when logging out
+  hideAdminButton();
+  
   window.location.href = 'index.html';
+};
+
+// Update admin crown icon visibility
+const updateAdminButton = () => {
+  const adminPanelBtn = document.getElementById("adminPanel");
+  
+  if (adminPanelBtn) {
+    // Check if user is logged in as admin or has admin token
+    const adminToken = localStorage.getItem('adminToken');
+    const adminUser = localStorage.getItem('adminUser');
+    const regularUser = getCurrentUser();
+    
+    const isAdminUser = (adminToken && adminUser) || (regularUser && regularUser.role === 'admin');
+    
+    if (isAdminUser) {
+      adminPanelBtn.style.display = 'inline-block';
+      adminPanelBtn.title = 'Admin Panel';
+    } else {
+      adminPanelBtn.style.display = 'none';
+    }
+  }
+};
+
+// Global function to show admin button (can be called from other scripts)
+window.showAdminButton = () => {
+  updateAdminButton();
+};
+
+// Global function to hide admin button (can be called from other scripts)
+window.hideAdminButton = () => {
+  const adminPanelBtn = document.getElementById("adminPanel");
+  if (adminPanelBtn) {
+    adminPanelBtn.style.display = 'none';
+  }
 };
 
 // Update navbar based on authentication status
@@ -205,6 +250,9 @@ const updateNavbar = () => {
       userProfileBtn.title = 'Login';
     }
   }
+  
+  // Update admin button visibility
+  updateAdminButton();
 };
 
 // Sample product data for homepage
@@ -375,6 +423,13 @@ document.addEventListener('DOMContentLoaded', function() {
       button.addEventListener('click', () => {
         addToCart(sampleProducts[index]);
       });
+    }
+  });
+  
+  // Listen for storage changes to update admin button visibility
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'adminToken' || e.key === 'adminUser' || e.key === 'user') {
+      updateAdminButton();
     }
   });
 });

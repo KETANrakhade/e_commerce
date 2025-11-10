@@ -242,6 +242,7 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
     <script>
         document.getElementById("viewHome").addEventListener("click", function () {
             window.location.href = "index.html";
@@ -368,6 +369,13 @@
                         if (data.token) {
                             localStorage.setItem('token', data.token);
                             localStorage.setItem('user', JSON.stringify(data));
+                            
+                            // If user is admin, also set admin tokens for crown icon visibility
+                            if (data.role === 'admin') {
+                                localStorage.setItem('adminToken', data.token);
+                                localStorage.setItem('adminUser', JSON.stringify(data));
+                            }
+                            
                             alert('Login successful!');
                             window.location.href = 'index.html';
                         } else {
