@@ -43,10 +43,9 @@ const subcategorySchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Create compound unique index for name + category
+// Create compound unique indexes and additional indexes
 subcategorySchema.index({ name: 1, category: 1 }, { unique: true });
 subcategorySchema.index({ slug: 1, category: 1 }, { unique: true });
-subcategorySchema.index({ category: 1 });
 subcategorySchema.index({ isActive: 1 });
 subcategorySchema.index({ sortOrder: 1 });
 

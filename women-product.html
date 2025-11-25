@@ -76,6 +76,16 @@
             width: 100%;
         }
 
+        .nav-link.active {
+            color: #2c3e50 !important;
+            font-weight: 700;
+        }
+
+        .nav-link.active::after {
+            width: 100%;
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+        }
+
         .icon-btn {
             margin: 0 10px;
             font-size: 1.2rem;
@@ -155,7 +165,7 @@
         /* Filter Section */
         .filter-section {
             backdrop-filter: blur(5px);
-            background: rgba(255, 255, 255, 0.198);
+            background: rgba(255, 255, 255, 0.9);
             padding: 30px 0;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             position: sticky;
@@ -479,18 +489,65 @@
                 font-size: 2.5rem;
             }
 
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
             .product-grid {
                 grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
                 gap: 20px;
+                padding: 0 15px;
             }
 
             .filter-tabs {
                 gap: 10px;
+                padding: 0 15px;
             }
 
             .filter-tab {
                 padding: 10px 20px;
                 font-size: 0.9rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+                margin-bottom: 30px;
+            }
+
+            .product-image-container {
+                height: 280px;
+            }
+
+            .product-info {
+                padding: 20px 15px;
+            }
+
+            .product-name {
+                font-size: 1.1rem;
+            }
+
+            .filter-section {
+                padding: 20px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .product-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .filter-tab {
+                padding: 8px 15px;
+                font-size: 0.85rem;
+            }
+
+            .section-title {
+                font-size: 1.75rem;
             }
         }
 
@@ -571,8 +628,19 @@
         <div class="container">
             <h2 class="section-title">Premium Women's Collection</h2>
             <div class="product-grid" id="productGrid">
+                <!-- Products will be loaded dynamically from API -->
+                <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
+                    <div class="loader-spinner" style="width: 50px; height: 50px; border: 3px solid #f3f3f3; border-top: 3px solid #FF69B4; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+                    <p style="color: #999;">Loading products...</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-                <div class="product-card" data-category="shirts" onclick="goToDetail(42)">
+    <!-- REMOVED ALL HARDCODED PRODUCTS - NOW LOADING DYNAMICALLY -->
+    <!-- Old hardcoded product cards removed -->
+    
+    <!--<div class="product-card" data-category="shirts" onclick="goToDetail(42)">
                     <div class="product-image-container">
                         <img src="img/women/new images/img-1-main.jpg" class="product-image"
                             alt="Cool Fit Jacket">
@@ -1085,11 +1153,39 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Set active nav link based on current page
+        function setActiveNavLink() {
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Set active based on current page
+            if (currentPage === 'men-product.html' || currentPage.includes('men')) {
+                const menLink = document.getElementById('viewMen');
+                if (menLink) menLink.classList.add('active');
+            } else if (currentPage === 'women-product.html' || currentPage.includes('women')) {
+                const womenLink = document.getElementById('viewWomen');
+                if (womenLink) womenLink.classList.add('active');
+            } else if (currentPage === 'index.html' || currentPage === '' || currentPage === 'index') {
+                const homeLink = document.getElementById('viewHome');
+                if (homeLink) homeLink.classList.add('active');
+            } else if (currentPage.includes('discount')) {
+                const saleLink = document.getElementById('discountSale');
+                if (saleLink) saleLink.classList.add('active');
+            }
+        }
+
         // Page Loading Animation
         document.addEventListener('DOMContentLoaded', function () {
             setTimeout(() => {
                 document.getElementById('loadingOverlay').classList.add('hidden');
             }, 1000);
+
+            // Set active nav link
+            setActiveNavLink();
 
             // Initialize scroll animations
             initScrollAnimations();
@@ -1099,6 +1195,9 @@
 
             // Update cart badge
             updateCartBadge();
+            
+            // Update wishlist badge
+            updateWishlistBadge();
         });
 
         // Scroll Animations
@@ -1124,7 +1223,6 @@
         // Filter Functionality
         function initFilters() {
             const filterTabs = document.querySelectorAll('.filter-tab');
-            const productCards = document.querySelectorAll('.product-card');
 
             filterTabs.forEach(tab => {
                 tab.addEventListener('click', function () {
@@ -1134,10 +1232,26 @@
                     this.classList.add('active');
 
                     const filterValue = this.getAttribute('data-filter');
+                    
+                    // Get all product cards dynamically (in case they're loaded after page load)
+                    const productCards = document.querySelectorAll('.product-card');
 
                     // Filter products
                     productCards.forEach(card => {
-                        if (filterValue === 'all' || card.getAttribute('data-category') === filterValue) {
+                        const cardCategory = card.getAttribute('data-category');
+                        // Normalize category comparison (handle case-insensitive and slug variations)
+                        const normalizedCardCategory = cardCategory ? cardCategory.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : '';
+                        const normalizedFilterValue = filterValue.toLowerCase().replace(/\s+/g, '-');
+                        
+                        if (filterValue === 'all') {
+                            card.style.display = 'block';
+                            card.style.animation = 'fadeInUp 0.6s ease-out';
+                        } else if (normalizedCardCategory === normalizedFilterValue) {
+                            // Exact match
+                            card.style.display = 'block';
+                            card.style.animation = 'fadeInUp 0.6s ease-out';
+                        } else if (normalizedCardCategory.includes(normalizedFilterValue) || normalizedFilterValue.includes(normalizedCardCategory)) {
+                            // Partial match (e.g., "dress" matches "dresses")
                             card.style.display = 'block';
                             card.style.animation = 'fadeInUp 0.6s ease-out';
                         } else {
@@ -1157,6 +1271,33 @@
                 badge.textContent = totalItems;
                 badge.style.display = totalItems > 0 ? 'flex' : 'none';
             }
+        }
+        
+        // Wishlist Badge Update
+        function updateWishlistBadge() {
+            const wishlistBadges = document.querySelectorAll('#viewWishlist .badge');
+            const wishlist = JSON.parse(localStorage.getItem('wishlist_v1') || '[]');
+            const totalItems = wishlist.length;
+            
+            wishlistBadges.forEach(badge => {
+                if (badge) {
+                    badge.textContent = totalItems > 0 ? totalItems : '';
+                    badge.style.display = totalItems > 0 ? 'inline-block' : 'none';
+                    badge.style.position = 'absolute';
+                    badge.style.top = '-5px';
+                    badge.style.right = '-5px';
+                    badge.style.background = '#e74c3c';
+                    badge.style.color = 'white';
+                    badge.style.borderRadius = '50%';
+                    badge.style.width = '20px';
+                    badge.style.height = '20px';
+                    badge.style.fontSize = '0.75rem';
+                    badge.style.display = totalItems > 0 ? 'flex' : 'none';
+                    badge.style.alignItems = 'center';
+                    badge.style.justifyContent = 'center';
+                    badge.style.fontWeight = 'bold';
+                }
+            });
         }
 
         // Navigation Event Listeners
@@ -1205,6 +1346,9 @@
         });
         
     </script>
+    <script src="auth-check.js"></script>
+    <script src="women-products-loader.js"></script>
+
 </body>
 
 </html>

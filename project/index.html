@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrandName - Home</title>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/assets/styles/global.css">
+    <link rel="stylesheet" href="/assets/styles/layout.css">
+    <link rel="stylesheet" href="/assets/styles/components.css">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header will be injected here -->
+    <div id="header-placeholder"></div>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="section-container">
+                <h1 class="hero-title">Welcome to BrandName</h1>
+                <p class="hero-subtitle">Discover amazing products at unbeatable prices</p>
+                <div class="hero-cta">
+                    <a href="/pages/Products/products.html" class="btn btn-primary btn-lg">
+                        Shop Now <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Products Section -->
+        <section>
+            <div class="section-container">
+                <h2 class="text-center mb-4">Featured Products</h2>
+                <div class="grid grid-4" id="featuredProducts">
+                    <!-- Products will be loaded dynamically -->
+                    <div class="loader"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section style="background-color: #f8f9fa;">
+            <div class="section-container">
+                <div class="grid grid-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-shipping-fast" style="font-size: 3rem; color: #3498db; margin-bottom: 1rem;"></i>
+                            <h3>Free Shipping</h3>
+                            <p>Free shipping on orders over $50</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-undo" style="font-size: 3rem; color: #3498db; margin-bottom: 1rem;"></i>
+                            <h3>Easy Returns</h3>
+                            <p>30-day return policy on all items</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-shield-alt" style="font-size: 3rem; color: #3498db; margin-bottom: 1rem;"></i>
+                            <h3>Secure Payment</h3>
+                            <p>Your payment information is safe</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer will be injected here -->
+    <div id="footer-placeholder"></div>
+
+    <!-- Alert Container -->
+    <div id="alert-container" style="position: fixed; top: 80px; right: 20px; z-index: 9999;"></div>
+
+    <!-- Scripts -->
+    <script src="/scripts/utils.js"></script>
+    <script src="/scripts/api.js"></script>
+    <script src="/scripts/main.js"></script>
+    
+    <!-- Page-specific script -->
+    <script>
+        /**
+         * Page-specific initialization
+         * Load featured products from API
+         */
+        async function initPageSpecific() {
+            // Load featured products
+            const productsContainer = document.getElementById('featuredProducts');
+            
+            try {
+                // Example: Load products from API
+                const response = await apiGet('/products', { limit: 4, featured: true });
+                
+                if (response.success && response.data) {
+                    const products = response.data.products || response.data || [];
+                    
+                    if (products.length > 0) {
+                        productsContainer.innerHTML = products.map(product => `
+                            <div class="product-card">
+                                <img src="${product.images?.[0]?.url || product.imageUrls?.[0] || '/assets/images/placeholder.jpg'}" 
+                                     alt="${product.name}" 
+                                     class="product-image"
+                                     onerror="this.src='/assets/images/placeholder.jpg'">
+                                <div class="product-info">
+                                    <h3 class="product-title">${product.name}</h3>
+                                    <p class="product-price">${formatCurrency(product.price || 0)}</p>
+                                    <p class="product-description">${product.description?.substring(0, 100) || ''}...</p>
+                                    <a href="/pages/Products/products.html?id=${product._id || product.id}" class="btn btn-primary btn-block">
+                                        View Details
+                                    </a>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        productsContainer.innerHTML = '<p class="text-center" style="grid-column: 1 / -1;">No featured products available.</p>';
+                    }
+                } else {
+                    productsContainer.innerHTML = '<p class="text-center" style="grid-column: 1 / -1;">Failed to load products. Please try again later.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+                productsContainer.innerHTML = '<p class="text-center" style="grid-column: 1 / -1;">Error loading products.</p>';
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

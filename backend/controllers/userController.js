@@ -1,30 +1,14 @@
 const asyncHandler = require('express-async-handler');
-const User = require('../models/userModel');
-const Order = require('../models/orderModel');
-const generateToken = require('../utils/generateToken');
-const bcrypt = require('bcryptjs');
+const userService = require('../services/userService');
 
 // @desc    Register user
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
-  const userExists = await User.findOne({ email });
-  if (userExists) {
-    res.status(400);
-    throw new Error('User already exists');
-  }
-  const salt = await bcrypt.genSalt(10);
-  const hashed = await bcrypt.hash(password, salt);
-  const user = await User.create({ name, email, password: hashed });
+  const result = await userService.registerUser(req.body);
   res.status(201).json({
     success: true,
-    data: {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      token: generateToken(user._id)
-    }
+    data: result
   });
 });
 
@@ -32,131 +16,56 @@ const registerUser = asyncHandler(async (req, res) => {
 // @route   POST /api/auth/login
 // @access  Public
 const authUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email, isActive: true });
-  if (user && (await bcrypt.compare(password, user.password))) {
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
-
-    res.json({
-      success: true,
-      data: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        token: generateToken(user._id)
-      }
-    });
-  } else {
-    res.status(401);
-    throw new Error('Invalid email or password');
-  }
+  const result = await userService.loginUser(req.body.email, req.body.password);
+  res.json({
+    success: true,
+    data: result
+  });
 });
 
 // @desc    Get user profile
 // @route   GET /api/users/profile
 // @access  Private
 const getProfile = asyncHandler(async (req, res) => {
-  res.json({ success: true, data: req.user });
+  const user = await userService.getUserProfile(req.user._id);
+  res.json({ success: true, data: user });
 });
 
 // @desc    Update user profile
 // @route   PUT /api/users/profile
 // @access  Private
 const updateProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
-
-  if (user) {
-    user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
-    user.phone = req.body.phone || user.phone;
-    user.address = req.body.address || user.address;
-
-    if (req.body.password) {
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(req.body.password, salt);
-    }
-
-    const updatedUser = await user.save();
-
-    res.json({
-      success: true,
-      data: {
-        _id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        phone: updatedUser.phone,
-        address: updatedUser.address,
-        role: updatedUser.role
-      }
-    });
-  } else {
-    res.status(404);
-    throw new Error('User not found');
-  }
+  const updatedUser = await userService.updateUserProfile(req.user._id, req.body);
+  res.json({
+    success: true,
+    data: updatedUser
+  });
 });
 
 // @desc    Get all users for admin
 // @route   GET /api/admin/users
 // @access  Private/Admin
 const getAdminUsers = asyncHandler(async (req, res) => {
-  const pageSize = Number(req.query.limit) || 10;
-  const page = Number(req.query.page) || 1;
-  const search = req.query.search || '';
-  const role = req.query.role || '';
-  const status = req.query.status || '';
-  const startDate = req.query.startDate;
-  const endDate = req.query.endDate;
+  const filters = {
+    page: Number(req.query.page) || 1,
+    limit: Number(req.query.limit) || 10,
+    search: req.query.search || '',
+    role: req.query.role || '',
+    status: req.query.status || '',
+    startDate: req.query.startDate,
+    endDate: req.query.endDate
+  };
 
-  // Build query
-  let query = {};
-
-  if (search) {
-    query.$or = [
-      { name: { $regex: search, $options: 'i' } },
-      { email: { $regex: search, $options: 'i' } }
-    ];
-  }
-
-  if (role) {
-    query.role = role;
-  }
-
-  if (status === 'active') {
-    query.isActive = true;
-  } else if (status === 'inactive') {
-    query.isActive = false;
-  }
-
-  if (startDate && endDate) {
-    query.createdAt = {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate)
-    };
-  }
-
-  const count = await User.countDocuments(query);
-  const users = await User.find(query)
-    .select('-password')
-    .limit(pageSize)
-    .skip(pageSize * (page - 1))
-    .sort({ createdAt: -1 });
-
-  // Get user roles for filter
+  const result = await userService.getAllUsers(filters);
+  
+  const User = require('../models/userModel');
   const roles = await User.distinct('role');
 
   res.json({
     success: true,
     data: {
-      users,
-      pagination: {
-        page,
-        pages: Math.ceil(count / pageSize),
-        total: count,
-        limit: pageSize
-      },
+      users: result.users,
+      pagination: result.pagination,
       roles
     }
   });
@@ -166,41 +75,11 @@ const getAdminUsers = asyncHandler(async (req, res) => {
 // @route   GET /api/admin/users/:id
 // @access  Private/Admin
 const getUserById = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id).select('-password');
-
-  if (user) {
-    // Get user's order count and total spent
-    const orderStats = await Order.aggregate([
-      { $match: { user: user._id } },
-      {
-        $group: {
-          _id: null,
-          totalOrders: { $sum: 1 },
-          totalSpent: { $sum: '$totalPrice' },
-          paidOrders: {
-            $sum: { $cond: [{ $eq: ['$isPaid', true] }, 1, 0] }
-          }
-        }
-      }
-    ]);
-
-    const stats = orderStats.length > 0 ? orderStats[0] : {
-      totalOrders: 0,
-      totalSpent: 0,
-      paidOrders: 0
-    };
-
-    res.json({
-      success: true,
-      data: {
-        ...user.toObject(),
-        orderStats: stats
-      }
-    });
-  } else {
-    res.status(404);
-    throw new Error('User not found');
-  }
+  const user = await userService.getUserById(req.params.id);
+  res.json({
+    success: true,
+    data: user
+  });
 });
 
 // @desc    Update user status
@@ -208,61 +87,29 @@ const getUserById = asyncHandler(async (req, res) => {
 // @access  Private/Admin
 const updateUserStatus = asyncHandler(async (req, res) => {
   const { isActive } = req.body;
+  const updatedUser = await userService.updateUserStatus(req.params.id, isActive);
 
-  const user = await User.findById(req.params.id);
-
-  if (user) {
-    user.isActive = Boolean(isActive);
-    const updatedUser = await user.save();
-
-    res.json({
-      success: true,
-      data: updatedUser,
-      message: `User ${isActive ? 'activated' : 'deactivated'} successfully`
-    });
-  } else {
-    res.status(404);
-    throw new Error('User not found');
-  }
+  res.json({
+    success: true,
+    data: updatedUser,
+    message: `User ${isActive ? 'activated' : 'deactivated'} successfully`
+  });
 });
 
 // @desc    Get user's orders
 // @route   GET /api/admin/users/:id/orders
 // @access  Private/Admin
 const getUserOrders = asyncHandler(async (req, res) => {
-  const pageSize = Number(req.query.limit) || 10;
-  const page = Number(req.query.page) || 1;
+  const filters = {
+    page: Number(req.query.page) || 1,
+    limit: Number(req.query.limit) || 10
+  };
 
-  const user = await User.findById(req.params.id);
-
-  if (!user) {
-    res.status(404);
-    throw new Error('User not found');
-  }
-
-  const count = await Order.countDocuments({ user: req.params.id });
-  const orders = await Order.find({ user: req.params.id })
-    .populate('orderItems.productId', 'name images')
-    .limit(pageSize)
-    .skip(pageSize * (page - 1))
-    .sort({ createdAt: -1 });
+  const result = await userService.getUserOrders(req.params.id, filters);
 
   res.json({
     success: true,
-    data: {
-      orders,
-      pagination: {
-        page,
-        pages: Math.ceil(count / pageSize),
-        total: count,
-        limit: pageSize
-      },
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email
-      }
-    }
+    data: result
   });
 });
 
@@ -270,34 +117,11 @@ const getUserOrders = asyncHandler(async (req, res) => {
 // @route   GET /api/admin/users/stats
 // @access  Private/Admin
 const getUserStats = asyncHandler(async (req, res) => {
-  const totalUsers = await User.countDocuments({ role: 'user' });
-  const activeUsers = await User.countDocuments({ role: 'user', isActive: true });
-  const inactiveUsers = await User.countDocuments({ role: 'user', isActive: false });
-  const adminUsers = await User.countDocuments({ role: 'admin' });
-
-  // New users this month
-  const thisMonth = new Date();
-  thisMonth.setDate(1);
-  thisMonth.setHours(0, 0, 0, 0);
-
-  const newUsersThisMonth = await User.countDocuments({
-    role: 'user',
-    createdAt: { $gte: thisMonth }
-  });
-
-  // Users with orders
-  const usersWithOrders = await Order.distinct('user');
-
+  const stats = await userService.getUserStats();
+  
   res.json({
     success: true,
-    data: {
-      totalUsers,
-      activeUsers,
-      inactiveUsers,
-      adminUsers,
-      newUsersThisMonth,
-      usersWithOrders: usersWithOrders.length
-    }
+    data: stats
   });
 });
 

@@ -14,6 +14,7 @@ const {
   getProductById,
   createProduct,
   updateProduct,
+  deleteProduct,
   bulkProductAction
 } = require('../controllers/productController');
 const {
@@ -76,7 +77,7 @@ router.get('/products', adminProtect, getAdminProducts);
 router.get('/products/:id', adminProtect, getProductById);
 router.post('/products', adminProtect, createProduct);
 router.put('/products/:id', adminProtect, updateProduct);
-
+router.delete('/products/:id', adminProtect, deleteProduct);
 router.post('/products/bulk-action', adminProtect, bulkProductAction);
 
 // Product management with image upload

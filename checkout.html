@@ -494,9 +494,9 @@
                   <i class="fas fa-credit-card" style="color: #007bff; margin-right: 10px;"></i>
                   <strong>Online Payment</strong>
                   <div style="font-size: 0.9rem; color: #666; margin-top: 5px;">Credit/Debit Card, UPI, Net Banking</div>
-                  <span style="font-size: 0.8rem; color: #ffc107; margin-top: 5px; display: block;">
+                  <!-- <span style="font-size: 0.8rem; color: #ffc107; margin-top: 5px; display: block;">
                     <i class="fas fa-clock"></i> Coming Soon
-                  </span>
+                  </span> -->
                 </div>
               </label>
             </div>
@@ -519,7 +519,7 @@
             </div>
           </div>
 
-          <button class="place-order-btn" onclick="placeOrder()">
+          <button class="place-order-btn">
             <i class="fas fa-lock"></i>
             Place Secure Order
           </button>
@@ -530,37 +530,13 @@
 
   <script>
     const CART_KEY = 'cart_v1';
+    const API_BASE_URL = 'http://localhost:5001/api';
+    const ORDER_ENDPOINT = `${API_BASE_URL}/orders`;
+    const CHECKOUT_ENDPOINT = `${API_BASE_URL}/payments/create-checkout-session`;
+    const VERIFY_ENDPOINT = `${API_BASE_URL}/payments/verify-payment`;
 
     function getCart() {
       return JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-    }
-
-    function placeOrder() {
-      const cart = getCart();
-
-      const name = document.getElementById("fullName").value;
-      const address = document.getElementById("address").value;
-      const city = document.getElementById("city").value;
-      const pincode = document.getElementById("pincode").value;
-      const phone = document.getElementById("phone").value;
-      const payment = document.querySelector("input[name='payment']:checked").value;
-
-      if (!name || !address || !city || !pincode || !phone) {
-        alert("Please fill all address fields!");
-        return;
-      }
-
-      const order = {
-        id: Date.now(),
-        items: cart,
-        customer: { name, address, city, pincode, phone },
-        payment,
-        total: cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
-      };
-
-      localStorage.setItem("lastOrder", JSON.stringify(order));
-      localStorage.removeItem(CART_KEY);
-      window.location.href = "orderSuccess.html";
     }
 
     function renderSummary() {
@@ -676,60 +652,29 @@
 
     renderSummary();
 
-    // Add order placement functionality
-    async function placeOrder() {
-      const form = document.getElementById('checkoutForm');
-      const formData = new FormData(form);
-      
-      // Validate form
-      if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
+    function setCheckoutLoading(isLoading) {
+      const placeOrderBtn = document.querySelector('.place-order-btn');
+      if (!placeOrderBtn) return;
+
+      placeOrderBtn.disabled = isLoading;
+      if (isLoading) {
+        placeOrderBtn.innerHTML = `
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          Processing...
+        `;
+      } else {
+        placeOrderBtn.innerHTML = `
+          <i class="fas fa-lock"></i>
+          Place Secure Order
+        `;
       }
+    }
 
-      // Get cart data
-      const cart = JSON.parse(localStorage.getItem('cart_v1') || '[]');
-      if (cart.length === 0) {
-        alert('Your cart is empty!');
-        return;
-      }
-
-      // Calculate totals
-      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      const shipping = subtotal > 999 ? 0 : 99;
-      const total = subtotal + shipping;
-
-      // Prepare order data
-      const orderData = {
-        orderItems: cart.map(item => ({
-          productId: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-          image: item.image
-        })),
-        shippingAddress: {
-          address: formData.get('address'),
-          city: formData.get('city'),
-          postalCode: formData.get('postalCode'),
-          country: 'India'
-        },
-        paymentMethod: formData.get('paymentMethod'),
-        itemsPrice: subtotal,
-        shippingPrice: shipping,
-        taxPrice: 0,
-        totalPrice: total
-      };
-
+    async function initiateOnlinePayment(orderData, token) {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          alert('Please login to place an order');
-          window.location.href = 'login.html';
-          return;
-        }
+        setCheckoutLoading(true);
 
-        const response = await fetch('http://localhost:5001/api/orders', {
+        const response = await fetch(CHECKOUT_ENDPOINT, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -740,19 +685,240 @@
 
         const result = await response.json();
 
-        if (response.ok) {
+        if (!response.ok || !result.success) {
+          const errorMsg = result.error || result.message || 'Failed to initiate payment';
+          throw new Error(errorMsg);
+        }
+
+        const session = result.data;
+
+        if (!window.Razorpay) {
+          throw new Error('Razorpay SDK failed to load');
+        }
+
+        const options = {
+          key: session.keyId,
+          amount: session.amount,
+          currency: session.currency,
+          name: 'Pyramid Store',
+          description: 'Order Payment',
+          order_id: session.orderId,
+          prefill: {
+            name: document.getElementById('fullName').value,
+            email: localStorage.getItem('userEmail') || '',
+            contact: document.getElementById('phone').value
+          },
+          notes: {
+            address: orderData.shippingAddress.address
+          },
+          theme: {
+            color: '#65AAC3'
+          },
+          handler: async function (paymentResponse) {
+            try {
+              setCheckoutLoading(true);
+              const verifyRes = await fetch(VERIFY_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                  razorpay_order_id: paymentResponse.razorpay_order_id,
+                  razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                  razorpay_signature: paymentResponse.razorpay_signature,
+                  orderData
+                })
+              });
+
+              const verifyResult = await verifyRes.json();
+
+              if (!verifyRes.ok || !verifyResult.success) {
+                const errorMsg = verifyResult.error || verifyResult.message || 'Payment verification failed';
+                throw new Error(errorMsg);
+              }
+
+              localStorage.setItem('lastOrder', JSON.stringify(verifyResult.data));
+              localStorage.removeItem(CART_KEY);
+              localStorage.removeItem('pendingOrder');
+
+              if (typeof showToast === 'function') {
+                showToast('Payment successful!', 'success', 2000);
+                setTimeout(() => {
+                  window.location.href = 'orderSuccess.html';
+                }, 2000);
+              } else {
+                window.location.href = 'orderSuccess.html';
+              }
+            } catch (err) {
+              console.error('Payment verification failed:', err);
+              if (typeof showToast === 'function') {
+                showToast('Payment verification failed: ' + err.message, 'error');
+              } else {
+                console.error('Payment verification failed:', err.message);
+              }
+            } finally {
+              setCheckoutLoading(false);
+            }
+          }
+        };
+
+        const razorpayObject = new Razorpay(options);
+
+        razorpayObject.on('payment.failed', function (response) {
+          console.error('Payment failed:', response.error);
+          if (typeof showToast === 'function') {
+            showToast('Payment failed: ' + (response.error?.description || 'Please try again.'), 'error');
+          } else {
+            console.error('Payment failed:', response.error?.description || 'Please try again.');
+          }
+          setCheckoutLoading(false);
+        });
+
+        setCheckoutLoading(false);
+        razorpayObject.open();
+      } catch (error) {
+        console.error('Failed to start online payment:', error);
+        if (typeof showToast === 'function') {
+          showToast('Unable to start online payment: ' + error.message, 'error');
+        } else {
+          console.error('Unable to start online payment:', error.message);
+        }
+        setCheckoutLoading(false);
+      }
+    }
+
+    async function placeOrder() {
+      const form = document.getElementById('addressForm');
+      
+      // Validate form
+      if (!form || !form.checkValidity()) {
+        if (form) form.reportValidity();
+        else {
+          if (typeof showToast === 'function') {
+            showToast('Please fill in the delivery address', 'warning');
+          } else {
+            console.warn('Please fill in the delivery address');
+          }
+        }
+        return;
+      }
+      
+      const formData = new FormData(form);
+
+      // Get cart data
+      const cart = JSON.parse(localStorage.getItem('cart_v1') || '[]');
+      if (cart.length === 0) {
+        if (typeof showToast === 'function') {
+          showToast('Your cart is empty!', 'warning');
+        } else {
+          console.warn('Your cart is empty!');
+        }
+        return;
+      }
+
+      // Calculate totals
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const shipping = subtotal > 999 ? 0 : 99;
+      const total = subtotal + shipping;
+
+      // Get form values directly by ID
+      const address = document.getElementById('address').value;
+      const city = document.getElementById('city').value;
+      const postalCode = document.getElementById('pincode').value;
+      const paymentMethod = document.querySelector('input[name="payment"]:checked')?.value || 'COD';
+      
+      // Prepare order data
+      const orderData = {
+        orderItems: cart.map(item => ({
+          productId: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image
+        })),
+        shippingAddress: {
+          address: address,
+          city: city,
+          postalCode: postalCode,
+          country: 'India'
+        },
+        paymentMethod: paymentMethod,
+        itemsPrice: subtotal,
+        shippingPrice: shipping,
+        taxPrice: 0,
+        totalPrice: total
+      };
+
+      try {
+        setCheckoutLoading(true);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          if (typeof showToast === 'function') {
+            showToast('Please login to place an order', 'warning', 2000);
+            setTimeout(() => {
+              window.location.href = 'login.html';
+            }, 2000);
+          } else {
+            window.location.href = 'login.html';
+          }
+          return;
+        }
+
+        console.log('📤 Sending order data:', orderData);
+        console.log('🔑 Token:', token ? 'Present' : 'Missing');
+
+        if (paymentMethod === 'Online') {
+          await initiateOnlinePayment(orderData, token);
+          return;
+        }
+
+        const response = await fetch(ORDER_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(orderData)
+        });
+
+        const result = await response.json();
+        
+        console.log('📦 Order response:', result);
+        console.log('📡 Response status:', response.status);
+
+        if (response.ok && result.success) {
           // Clear cart
           localStorage.removeItem('cart_v1');
           
           // Redirect to success page with order details
           localStorage.setItem('lastOrder', JSON.stringify(result.data));
-          window.location.href = 'orderSuccess.html';
+          if (typeof showToast === 'function') {
+            showToast('Order placed successfully!', 'success', 2000);
+            setTimeout(() => {
+              window.location.href = 'orderSuccess.html';
+            }, 2000);
+          } else {
+            window.location.href = 'orderSuccess.html';
+          }
         } else {
-          throw new Error(result.message || 'Failed to place order');
+          const errorMsg = result.error || result.message || 'Failed to place order';
+          console.error('❌ Order failed:', errorMsg);
+          if (typeof showToast === 'function') {
+            showToast('Failed to place order: ' + errorMsg, 'error');
+          } else {
+            console.error('Failed to place order:', errorMsg);
+          }
         }
       } catch (error) {
-        console.error('Order placement error:', error);
-        alert('Failed to place order. Please try again.');
+        console.error('❌ Order placement error:', error);
+        if (typeof showToast === 'function') {
+          showToast('Failed to place order: ' + error.message + '. Check console for details.', 'error');
+        } else {
+          console.error('Failed to place order:', error.message);
+        }
+      } finally {
+        setCheckoutLoading(false);
       }
     }
 
@@ -767,6 +933,14 @@
       }
     });
   </script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="js/toast-notifications.js"></script>
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script src="script.js"></script>
+  <script src="auth-check.js"></script>
+  <!-- <script src="cart-cleaner.js"></script> --> <!-- DISABLED: Was removing products from cart -->
+
 </body>
 
 </html>

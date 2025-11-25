@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - BrandName</title>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/assets/styles/global.css">
+    <link rel="stylesheet" href="/assets/styles/layout.css">
+    <link rel="stylesheet" href="/assets/styles/components.css">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header will be injected here -->
+    <div id="header-placeholder"></div>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Page Header -->
+        <section style="background-color: #f8f9fa; padding: 3rem 0;">
+            <div class="section-container">
+                <h1>Our Products</h1>
+                <p>Browse our complete collection</p>
+            </div>
+        </section>
+
+        <!-- Filter Section -->
+        <section style="padding: 2rem 0; background-color: #fff; border-bottom: 1px solid #ecf0f1;">
+            <div class="section-container">
+                <div class="flex flex-between flex-wrap gap-2">
+                    <div class="flex gap-2">
+                        <select id="categoryFilter" class="form-select">
+                            <option value="">All Categories</option>
+                            <option value="men">Men</option>
+                            <option value="women">Women</option>
+                            <option value="accessories">Accessories</option>
+                        </select>
+                        <select id="sortFilter" class="form-select">
+                            <option value="newest">Newest First</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                        </select>
+                    </div>
+                    <div>
+                        <input type="text" 
+                               id="searchInput" 
+                               class="form-input" 
+                               placeholder="Search products..."
+                               style="min-width: 250px;">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Products Grid -->
+        <section>
+            <div class="section-container">
+                <div class="grid grid-4" id="productsGrid">
+                    <!-- Products will be loaded dynamically -->
+                    <div class="loader"></div>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="flex flex-center gap-2 mt-4" id="pagination">
+                    <!-- Pagination will be generated here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer will be injected here -->
+    <div id="footer-placeholder"></div>
+
+    <!-- Alert Container -->
+    <div id="alert-container" style="position: fixed; top: 80px; right: 20px; z-index: 9999;"></div>
+
+    <!-- Scripts -->
+    <script src="/scripts/utils.js"></script>
+    <script src="/scripts/api.js"></script>
+    <script src="/scripts/main.js"></script>
+    
+    <!-- Page-specific script -->
+    <script>
+        let currentPage = 1;
+        let currentCategory = '';
+        let currentSort = 'newest';
+        let searchQuery = '';
+
+        /**
+         * Load products from API
+         */
+        async function loadProducts(page = 1) {
+            const productsGrid = document.getElementById('productsGrid');
+            showLoader('productsGrid');
+
+            const params = {
+                page: page,
+                limit: 12
+            };
+
+            if (currentCategory) {
+                params.category = currentCategory;
+            }
+
+            if (searchQuery) {
+                params.search = searchQuery;
+            }
+
+            try {
+                const response = await apiGet('/products', params);
+                
+                if (response.success && response.data) {
+                    const products = response.data.products || response.data || [];
+                    const pagination = response.data.pagination || {};
+
+                    if (products.length > 0) {
+                        productsGrid.innerHTML = products.map(product => `
+                            <div class="product-card" onclick="window.location.href='/pages/Products/products.html?id=${product._id || product.id}'">
+                                <img src="${product.images?.[0]?.url || product.imageUrls?.[0] || '/assets/images/placeholder.jpg'}" 
+                                     alt="${product.name}" 
+                                     class="product-image"
+                                     onerror="this.src='/assets/images/placeholder.jpg'">
+                                <div class="product-info">
+                                    <h3 class="product-title">${product.name}</h3>
+                                    <p class="product-price">${formatCurrency(product.price || 0)}</p>
+                                    <p class="product-description">${product.description?.substring(0, 80) || ''}...</p>
+                                </div>
+                            </div>
+                        `).join('');
+
+                        // Update pagination
+                        updatePagination(pagination);
+                    } else {
+                        productsGrid.innerHTML = '<p class="text-center" style="grid-column: 1 / -1;">No products found.</p>';
+                    }
+                } else {
+                    productsGrid.innerHTML = '<p class="text-center" style="grid-column: 1 / -1;">Failed to load products.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+                productsGrid.innerHTML = '<p class="text-center" style="grid-column: 1 / -1;">Error loading products.</p>';
+            }
+        }
+
+        /**
+         * Update pagination controls
+         */
+        function updatePagination(pagination) {
+            const paginationContainer = document.getElementById('pagination');
+            if (!pagination || pagination.pages <= 1) {
+                paginationContainer.innerHTML = '';
+                return;
+            }
+
+            let paginationHTML = '';
+            
+            // Previous button
+            if (pagination.page > 1) {
+                paginationHTML += `<button class="btn btn-outline" onclick="goToPage(${pagination.page - 1})">Previous</button>`;
+            }
+
+            // Page numbers
+            for (let i = 1; i <= pagination.pages; i++) {
+                if (i === pagination.page) {
+                    paginationHTML += `<button class="btn btn-primary">${i}</button>`;
+                } else {
+                    paginationHTML += `<button class="btn btn-outline" onclick="goToPage(${i})">${i}</button>`;
+                }
+            }
+
+            // Next button
+            if (pagination.page < pagination.pages) {
+                paginationHTML += `<button class="btn btn-outline" onclick="goToPage(${pagination.page + 1})">Next</button>`;
+            }
+
+            paginationContainer.innerHTML = paginationHTML;
+        }
+
+        /**
+         * Go to specific page
+         */
+        function goToPage(page) {
+            currentPage = page;
+            loadProducts(page);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /**
+         * Initialize page
+         */
+        function initPageSpecific() {
+            // Load products
+            loadProducts();
+
+            // Setup filters
+            document.getElementById('categoryFilter')?.addEventListener('change', function(e) {
+                currentCategory = e.target.value;
+                currentPage = 1;
+                loadProducts(1);
+            });
+
+            document.getElementById('sortFilter')?.addEventListener('change', function(e) {
+                currentSort = e.target.value;
+                currentPage = 1;
+                loadProducts(1);
+            });
+
+            // Setup search
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                const debouncedSearch = debounce(function() {
+                    searchQuery = searchInput.value;
+                    currentPage = 1;
+                    loadProducts(1);
+                }, 500);
+
+                searchInput.addEventListener('input', debouncedSearch);
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

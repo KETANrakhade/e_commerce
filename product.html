@@ -890,8 +890,10 @@
     });
 
     // Cart functions
+    const CART_KEY = 'cart_v1'; // Use same key as cart.html
+    
     function addToCart(id, name, price, image) {
-      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      let cart = JSON.parse(localStorage.getItem(CART_KEY)) || [];
 
       const existingItem = cart.find(item => item.id === id);
       if (existingItem) {
@@ -900,7 +902,7 @@
         cart.push({ id, name, price, image, quantity: 1 });
       }
 
-      localStorage.setItem('cart', JSON.stringify(cart));
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
       updateCartBadge();
       showSuccessMessage('Added to cart!');
     }
@@ -918,7 +920,7 @@
     }
 
     function updateCartBadge() {
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const cart = JSON.parse(localStorage.getItem(CART_KEY)) || [];
       const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
       const badge = document.querySelector('#viewCart .badge');
       if (badge) {
@@ -1069,25 +1071,54 @@
 
 
     // Initialize product loading when DOM is ready
-    document.addEventListener('DOMContentLoaded', function () {
-      loadProduct();
+    document.addEventListener('DOMContentLoaded', async function () {
+      await loadProduct();
       initializePage();
     });
 
-    function loadProduct() {
+    async function loadProduct() {
       // Get product ID from URL
       const urlParams = new URLSearchParams(window.location.search);
       const productId = urlParams.get('id');
 
-      // Find product by ID
       let product = null;
-      if (productId) {
-        product = products.find(p => p.id == parseInt(productId));
+
+      // Try to load from API first (for MongoDB IDs)
+      if (productId && productId.length > 10) {
+        try {
+          console.log('🔍 Loading product from API:', productId);
+          const response = await fetch(`http://localhost:5001/api/products/${productId}`);
+          if (response.ok) {
+            const data = await response.json();
+            product = data.data || data;
+            console.log('✅ Product loaded from API:', product.name);
+            
+            // Convert API product to match expected format
+            product = {
+              id: product._id,
+              name: product.name,
+              price: product.price,
+              mrp: product.price * 1.2, // Estimate MRP
+              discount: '20% OFF',
+              images: product.images?.map(img => img.url) || product.imageUrls || [],
+              description: product.description || ''
+            };
+          }
+        } catch (error) {
+          console.error('❌ Error loading product from API:', error);
+        }
       }
 
-      // If no product found, use first product as default
+      // Fallback to hardcoded products (for numeric IDs)
+      if (!product && productId) {
+        product = products.find(p => p.id == parseInt(productId));
+        console.log('📦 Using hardcoded product');
+      }
+
+      // If still no product found, use first product as default
       if (!product) {
         product = products[0];
+        console.log('⚠️ No product found, using default');
       }
 
       // Store product globally for other functions
@@ -1210,11 +1241,11 @@
 
     // Cart utility functions
     function getCart() {
-      return JSON.parse(localStorage.getItem('cart')) || [];
+      return JSON.parse(localStorage.getItem(CART_KEY)) || [];
     }
 
     function saveCart(cart) {
-      localStorage.setItem('cart', JSON.stringify(cart));
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
       updateCartBadge();
     }
 
@@ -1222,9 +1253,9 @@
     function addToCartWithAnimation(id, name, price, image) {
       // Add to cart logic
       const cart = getCart();
-      const found = cart.find(i => i.productId === id);
+      const found = cart.find(i => i.id === id);
       if (found) found.quantity += 1;
-      else cart.push({ productId: id, name, price, image: image, quantity: 1 });
+      else cart.push({ id: id, name, price, image: image, quantity: 1 });
       saveCart(cart);
 
       // Show success popup
@@ -1330,7 +1361,11 @@
     function addToWishlist() {
       const product = window.product;
       if (!product) {
-        alert('Product not found!');
+        if (typeof showToast === 'function') {
+          showToast('Product not found!', 'error');
+        } else {
+          console.error('Product not found!');
+        }
         return;
       }
 
@@ -1338,7 +1373,11 @@
       const existingItem = wishlist.find(item => item.id === product.id);
 
       if (existingItem) {
-        alert('Item already in wishlist!');
+        if (typeof showToast === 'function') {
+          showToast('Item already in wishlist!', 'info');
+        } else {
+          console.log('Item already in wishlist!');
+        }
         return;
       }
 
@@ -1436,6 +1475,12 @@
 
 
   </script>
+  <script src="js/toast-notifications.js"></script>
+  <script src="config.js"></script>
+<script src="api.js"></script>
+<script src="script.js"></script>
+<script src="auth-check.js"></script>
+
 </body>
 
 </html>

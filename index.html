@@ -168,6 +168,16 @@
             width: 100%;
         }
 
+        .nav-link.active {
+            color: var(--accent-color) !important;
+            font-weight: 700;
+        }
+
+        .nav-link.active::after {
+            width: 100%;
+            background: var(--gradient-primary);
+        }
+
         .icon-btn,
         .icon-btns {
             position: relative;
@@ -480,71 +490,84 @@
             position: relative;
             border-radius: 15px;
             overflow: hidden;
-            box-shadow: var(--shadow-light);
-            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
+            background: white;
         }
 
         .product-item:hover {
-            transform: translateY(-10px);
-            box-shadow: var(--shadow-heavy);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
         }
 
         .product-item img {
             width: 100%;
             height: 300px;
             object-fit: cover;
-            transition: all 0.3s ease;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .product-item:hover img {
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
 
         .product-overlay {
             position: absolute;
-            top: 0;
+            bottom: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.7));
-            opacity: 0;
-            transition: all 0.3s ease;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%);
+            padding: 25px 20px;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: flex-end;
-            padding: 20px;
         }
 
         .product-item:hover .product-overlay {
-            opacity: 1;
+            transform: translateY(0);
         }
 
         .product-info {
             color: white;
             text-align: center;
             width: 100%;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
+        }
+
+        .product-item:hover .product-info {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .product-info h4 {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .product-info .btn {
-            background: var(--gradient-primary);
+            background: white;
+            color: #333;
             border: none;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 500;
+            padding: 10px 28px;
+            border-radius: 25px;
+            font-size: 0.95rem;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .product-info .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            background: #65AAC3;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(101, 170, 195, 0.4);
         }
 
         /* Enhanced Video Section */
@@ -712,8 +735,8 @@
     <!-- Enhanced Navbar -->
     <nav class="navbar navbar-expand-lg fixed-top top-line" id="mainNavbar">
         <div class="container">
-            <img class="mx-2" src="img/pyramidal.png" width="40px" height="40px" alt="Pyramid Logo">
-            <a class="navbar-brand" id="viewHome" href="#">PYRAMID</a>
+                <img class="mx-2" src="img/pyramidal.png" width="40px" height="40px" alt="Pyramid Logo">
+                <a class="navbar-brand" id="viewHome" href="#">PYRAMID</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -788,7 +811,7 @@
                 </div>
             </div>
             <div class="carousel-item">
-                <img src="img/women/ricky-2131286131.jpg" class="d-block w-100" height="650px" alt="Summer Collection">
+                <img src="img/women/Gemini_Generated_Image_6t3lq66t3lq66t3l.png" class="d-block w-100" height="650px" alt="Summer Collection">
                 <div class="overlay-box">
                     <h1>SUMMER COLLECTION</h1>
                     <p>Fresh looks for summer with cool fabrics and stylish fits. Perfect balance of comfort and
@@ -839,7 +862,7 @@
             <h2 class="section-title">Featured Collections</h2>
             <div class="product-grid">
                 <div class="product-item">
-                    <img src="img/men/1ae781d7afbcb047a990cbe64771b96c07cb9823.avif" alt="Men's Fashion">
+                    <img src="img/men/d8364990190dbe13fcec200812b92086f9d30549.avif" alt="Men's Fashion">
                     <div class="product-overlay">
                         <div class="product-info">
                             <h4>Men's Collection</h4>
@@ -1062,7 +1085,44 @@
                 behavior: 'smooth'
             });
         });
+
+        // Set active nav link based on current page
+        function setActiveNavLink() {
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Set active based on current page
+            if (currentPage === 'men-product.html' || currentPage.includes('men')) {
+                const menLink = document.getElementById('viewMen');
+                if (menLink) menLink.classList.add('active');
+            } else if (currentPage === 'women-product.html' || currentPage.includes('women')) {
+                const womenLink = document.getElementById('viewWomen');
+                if (womenLink) womenLink.classList.add('active');
+            } else if (currentPage === 'index.html' || currentPage === '' || currentPage === 'index') {
+                const homeLink = document.getElementById('viewHome2') || document.getElementById('viewHome');
+                if (homeLink) homeLink.classList.add('active');
+            } else if (currentPage.includes('discount')) {
+                const saleLink = document.getElementById('discountSale');
+                if (saleLink) saleLink.classList.add('active');
+            }
+        }
+
+        // Set active nav link on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setActiveNavLink();
+        });
     </script>
+    <script src="js/toast-notifications.js"></script>
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script src="auth-check.js"></script>
+    <script src="script.js"></script>
+    <script src="auth-check.js"></script>
+
 </body>
 
 </html>

@@ -9,7 +9,7 @@
     margin-left: 20px;
     font-size: 1.4rem;
     font-weight: 900;
-    color: 5px solid black;
+    color: black;
     cursor: pointer;
     transition: transform 0.2s ease;
   }

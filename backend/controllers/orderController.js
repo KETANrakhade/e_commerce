@@ -1,71 +1,30 @@
 const asyncHandler = require('express-async-handler');
-const Order = require('../models/orderModel');
-const User = require('../models/userModel');
-const Product = require('../models/productModel');
+const orderService = require('../services/orderService');
 
 // @desc    Get all orders for admin
 // @route   GET /api/admin/orders
 // @access  Private/Admin
 const getAdminOrders = asyncHandler(async (req, res) => {
-  const pageSize = Number(req.query.limit) || 10;
-  const page = Number(req.query.page) || 1;
-  const search = req.query.search || '';
-  const status = req.query.status || '';
-  const startDate = req.query.startDate;
-  const endDate = req.query.endDate;
+  const filters = {
+    page: Number(req.query.page) || 1,
+    limit: Number(req.query.limit) || 10,
+    search: req.query.search || '',
+    status: req.query.status || '',
+    startDate: req.query.startDate,
+    endDate: req.query.endDate,
+    excludeCompleted: req.query.excludeCompleted === 'true' // Filter for pending orders only
+  };
 
-  // Build query
-  let query = {};
+  const result = await orderService.getAllOrders(filters);
   
-  if (search) {
-    // Search by order number or customer email/name
-    const users = await User.find({
-      $or: [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } }
-      ]
-    }).select('_id');
-    
-    const userIds = users.map(user => user._id);
-    
-    query.$or = [
-      { orderNumber: { $regex: search, $options: 'i' } },
-      { user: { $in: userIds } }
-    ];
-  }
-  
-  if (status) {
-    query.status = status;
-  }
-  
-  if (startDate && endDate) {
-    query.createdAt = {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate)
-    };
-  }
-
-  const count = await Order.countDocuments(query);
-  const orders = await Order.find(query)
-    .populate('user', 'name email')
-    .populate('orderItems.productId', 'name')
-    .limit(pageSize)
-    .skip(pageSize * (page - 1))
-    .sort({ createdAt: -1 });
-
-  // Get order statuses for filter
+  const Order = require('../models/orderModel');
   const statuses = await Order.distinct('status');
 
   res.json({
     success: true,
     data: {
-      orders,
-      pagination: {
-        page,
-        pages: Math.ceil(count / pageSize),
-        total: count,
-        limit: pageSize
-      },
+      orders: result.orders,
+      pagination: result.pagination,
       statuses
     }
   });
@@ -75,16 +34,8 @@ const getAdminOrders = asyncHandler(async (req, res) => {
 // @route   GET /api/admin/orders/:id
 // @access  Private/Admin
 const getOrderById = asyncHandler(async (req, res) => {
-  const order = await Order.findById(req.params.id)
-    .populate('user', 'name email phone address')
-    .populate('orderItems.productId', 'name images');
-
-  if (order) {
-    res.json({ success: true, data: order });
-  } else {
-    res.status(404);
-    throw new Error('Order not found');
-  }
+  const order = await orderService.getOrderById(req.params.id, null, true);
+  res.json({ success: true, data: order });
 });
 
 // @desc    Update order status
@@ -92,81 +43,29 @@ const getOrderById = asyncHandler(async (req, res) => {
 // @access  Private/Admin
 const updateOrderStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
+  const updatedOrder = await orderService.updateOrderStatus(req.params.id, status);
   
-  const validStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
-  
-  if (!validStatuses.includes(status)) {
-    res.status(400);
-    throw new Error('Invalid status');
-  }
-
-  const order = await Order.findById(req.params.id);
-
-  if (order) {
-    order.status = status;
-    
-    // Update delivery status if delivered
-    if (status === 'delivered') {
-      order.isDelivered = true;
-      order.deliveredAt = new Date();
-    }
-
-    const updatedOrder = await order.save();
-    
-    res.json({ 
-      success: true, 
-      data: updatedOrder,
-      message: `Order status updated to ${status}` 
-    });
-  } else {
-    res.status(404);
-    throw new Error('Order not found');
-  }
+  res.json({ 
+    success: true, 
+    data: updatedOrder,
+    message: `Order status updated to ${status}` 
+  });
 });
 
 // @desc    Get order statistics
 // @route   GET /api/admin/orders/stats
 // @access  Private/Admin
 const getOrderStats = asyncHandler(async (req, res) => {
-  const totalOrders = await Order.countDocuments();
-  const pendingOrders = await Order.countDocuments({ status: 'pending' });
-  const processingOrders = await Order.countDocuments({ status: 'processing' });
-  const shippedOrders = await Order.countDocuments({ status: 'shipped' });
-  const deliveredOrders = await Order.countDocuments({ status: 'delivered' });
-  const cancelledOrders = await Order.countDocuments({ status: 'cancelled' });
-
-  // Revenue statistics
-  const totalRevenue = await Order.aggregate([
-    { $match: { isPaid: true } },
-    { $group: { _id: null, total: { $sum: '$totalPrice' } } }
-  ]);
-
-  const monthlyRevenue = await Order.aggregate([
-    { 
-      $match: { 
-        isPaid: true,
-        createdAt: { $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) }
-      }
-    },
-    { $group: { _id: null, total: { $sum: '$totalPrice' } } }
-  ]);
-
+  const filters = {
+    startDate: req.query.startDate,
+    endDate: req.query.endDate
+  };
+  
+  const stats = await orderService.getOrderStats(filters);
+  
   res.json({
     success: true,
-    data: {
-      totalOrders,
-      ordersByStatus: {
-        pending: pendingOrders,
-        processing: processingOrders,
-        shipped: shippedOrders,
-        delivered: deliveredOrders,
-        cancelled: cancelledOrders
-      },
-      revenue: {
-        total: totalRevenue.length > 0 ? totalRevenue[0].total : 0,
-        monthly: monthlyRevenue.length > 0 ? monthlyRevenue[0].total : 0
-      }
-    }
+    data: stats
   });
 });
 
@@ -176,23 +75,8 @@ const getOrderStats = asyncHandler(async (req, res) => {
 const exportOrders = asyncHandler(async (req, res) => {
   const { format = 'json', startDate, endDate, status } = req.query;
 
-  let query = {};
-  
-  if (status) {
-    query.status = status;
-  }
-  
-  if (startDate && endDate) {
-    query.createdAt = {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate)
-    };
-  }
-
-  const orders = await Order.find(query)
-    .populate('user', 'name email')
-    .populate('orderItems.productId', 'name')
-    .sort({ createdAt: -1 });
+  const filters = { status, startDate, endDate };
+  const orders = await orderService.exportOrders(filters);
 
   if (format === 'csv') {
     // Convert to CSV format
@@ -231,36 +115,7 @@ const exportOrders = asyncHandler(async (req, res) => {
 // @route   POST /api/orders
 // @access  Private
 const createOrder = asyncHandler(async (req, res) => {
-  const {
-    orderItems,
-    shippingAddress,
-    paymentMethod,
-    itemsPrice,
-    shippingPrice,
-    taxPrice,
-    totalPrice
-  } = req.body;
-
-  if (orderItems && orderItems.length === 0) {
-    res.status(400);
-    throw new Error('No order items');
-  }
-
-  const order = new Order({
-    orderItems: orderItems.map(item => ({
-      ...item,
-      productId: item.id || item.productId
-    })),
-    user: req.user._id,
-    shippingAddress,
-    paymentMethod,
-    itemsPrice,
-    shippingPrice,
-    taxPrice,
-    totalPrice
-  });
-
-  const createdOrder = await order.save();
+  const createdOrder = await orderService.createOrder(req.user._id, req.body);
   res.status(201).json({ success: true, data: createdOrder });
 });
 
@@ -268,35 +123,29 @@ const createOrder = asyncHandler(async (req, res) => {
 // @route   GET /api/orders/myorders
 // @access  Private
 const getMyOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find({ user: req.user._id })
-    .populate('orderItems.productId', 'name images')
-    .sort({ createdAt: -1 });
+  const filters = {
+    page: Number(req.query.page) || 1,
+    limit: Number(req.query.limit) || 10,
+    status: req.query.status || ''
+  };
   
-  res.json({ success: true, data: orders });
+  const result = await orderService.getUserOrders(req.user._id, filters);
+  res.json({ success: true, data: result.orders });
 });
 
 // @desc    Update order to paid
 // @route   PUT /api/orders/:id/pay
 // @access  Private
 const updateOrderToPaid = asyncHandler(async (req, res) => {
-  const order = await Order.findById(req.params.id);
-
-  if (order) {
-    order.isPaid = true;
-    order.paidAt = Date.now();
-    order.paymentResult = {
-      id: req.body.id,
-      status: req.body.status,
-      update_time: req.body.update_time,
-      email_address: req.body.payer.email_address
-    };
-
-    const updatedOrder = await order.save();
-    res.json({ success: true, data: updatedOrder });
-  } else {
-    res.status(404);
-    throw new Error('Order not found');
-  }
+  const paymentResult = {
+    id: req.body.id,
+    status: req.body.status,
+    update_time: req.body.update_time,
+    email_address: req.body.payer?.email_address
+  };
+  
+  const updatedOrder = await orderService.updateOrderToPaid(req.params.id, paymentResult);
+  res.json({ success: true, data: updatedOrder });
 });
 
 module.exports = {

@@ -60,11 +60,10 @@ const orderSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-// Create indexes for better performance
+// Create indexes for better performance (orderNumber already indexed via unique: true)
 orderSchema.index({ user: 1 });
 orderSchema.index({ status: 1 });
 orderSchema.index({ createdAt: -1 });
-orderSchema.index({ orderNumber: 1 });
 
 // Update the updatedAt field before saving
 orderSchema.pre('save', function(next) {

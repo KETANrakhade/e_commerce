@@ -582,53 +582,203 @@
   </div>
 
   <script>
-    // Display order details
-    function displayOrderDetails() {
-      const orderData = localStorage.getItem('lastOrder');
-      if (orderData) {
-        const order = JSON.parse(orderData);
-        
-        // Update order number
-        const orderNumberElement = document.querySelector('.order-number');
-        if (orderNumberElement) {
-          orderNumberElement.textContent = order.orderNumber || 'N/A';
+    const API_BASE_URL = 'http://localhost:5001/api';
+    let currentOrder = null;
+
+    function getStoredOrder() {
+      try {
+        const data = localStorage.getItem('lastOrder');
+        return data ? JSON.parse(data) : null;
+      } catch (error) {
+        console.error('Failed to parse stored order:', error);
+        return null;
+      }
+    }
+
+    function saveOrderLocally(order) {
+      if (!order) return;
+      localStorage.setItem('lastOrder', JSON.stringify(order));
+      localStorage.removeItem('cart_v1');
+      localStorage.removeItem('pendingOrder');
+    }
+
+    async function fetchLatestOrder() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.warn('No auth token found while fetching latest order');
+        return null;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/orders/myorders`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          const errorMsg = result.error || result.message || 'Failed to fetch orders';
+          throw new Error(errorMsg);
         }
 
-        // Update estimated delivery (7 days from now)
-        const deliveryDate = new Date();
+        const orders = Array.isArray(result.data) ? result.data : [];
+        return orders.length ? orders[0] : null;
+      } catch (error) {
+        console.error('Unable to fetch latest order:', error);
+        return null;
+      }
+    }
+
+    async function ensureOrderData() {
+      const params = new URLSearchParams(window.location.search);
+      const shouldRefresh = params.has('session_id');
+
+      let storedOrder = getStoredOrder();
+
+      if (!storedOrder || shouldRefresh) {
+        const latestOrder = await fetchLatestOrder();
+        if (latestOrder) {
+          saveOrderLocally(latestOrder);
+          currentOrder = latestOrder;
+          return;
+        }
+      }
+
+      currentOrder = storedOrder;
+    }
+
+    function formatCurrency(value) {
+      const amount = Number(value) || 0;
+      return `₹${amount.toLocaleString('en-IN')}`;
+    }
+
+    function getOrderIdentifier(order) {
+      return order?.orderNumber || order?._id || order?.id || 'N/A';
+    }
+
+    function getOrderDate(order) {
+      const rawDate = order?.createdAt || order?.paidAt || order?.id;
+      return rawDate ? new Date(rawDate) : new Date();
+    }
+
+    function getItemsCount(order) {
+      if (Array.isArray(order?.orderItems)) return order.orderItems.length;
+      if (Array.isArray(order?.items)) return order.items.length;
+      return 0;
+    }
+
+    function displayOrderDetails() {
+      if (!currentOrder) return;
+
+      const orderNumberElement = document.querySelector('.order-number');
+      if (orderNumberElement) {
+        orderNumberElement.textContent = getOrderIdentifier(currentOrder);
+      }
+
+      const deliveryElement = document.querySelector('.delivery-date');
+      if (deliveryElement) {
+        const deliveryDate = getOrderDate(currentOrder);
         deliveryDate.setDate(deliveryDate.getDate() + 7);
-        const deliveryElement = document.querySelector('.delivery-date');
-        if (deliveryElement) {
-          deliveryElement.textContent = deliveryDate.toLocaleDateString('en-IN', {
-            weekday: 'long',
+        deliveryElement.textContent = deliveryDate.toLocaleDateString('en-IN', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+      }
+
+      const totalElement = document.querySelector('.order-total');
+      if (totalElement) {
+        const total = currentOrder.totalPrice ?? currentOrder.total ?? 0;
+        totalElement.textContent = formatCurrency(total);
+      }
+    }
+
+    function populateOrderDetails() {
+      const orderInfo = document.getElementById('orderInfo');
+      const orderTotal = document.getElementById('orderTotal');
+
+      if (!orderInfo || !orderTotal) return;
+
+      if (!currentOrder) {
+        orderInfo.innerHTML = `
+          <div class="info-item" style="grid-column: 1 / -1; text-align: center;">
+            <div class="info-value">Order details not found</div>
+          </div>
+        `;
+        orderTotal.innerHTML = `
+          <div style="text-align: center;">
+            <span>Please check your email for order confirmation</span>
+          </div>
+        `;
+        return;
+      }
+
+      const orderDate = getOrderDate(currentOrder).toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      const deliveryDate = new Date(getOrderDate(currentOrder));
+      deliveryDate.setDate(deliveryDate.getDate() + 7);
+
+      orderInfo.innerHTML = `
+        <div class="info-item">
+          <div class="info-label">Order ID</div>
+          <div class="info-value">#${getOrderIdentifier(currentOrder)}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Order Date</div>
+          <div class="info-value">${orderDate}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Items</div>
+          <div class="info-value">${getItemsCount(currentOrder)} item(s)</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Estimated Delivery</div>
+          <div class="info-value">${deliveryDate.toLocaleDateString('en-IN', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
-          });
-        }
+          })}</div>
+        </div>
+      `;
 
-        // Update total amount
-        const totalElement = document.querySelector('.order-total');
-        if (totalElement) {
-          totalElement.textContent = `₹${order.totalPrice?.toLocaleString() || '0'}`;
-        }
-      }
+      const totalAmount = currentOrder.totalPrice ?? currentOrder.total ?? 0;
+      orderTotal.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span>Total Amount ${currentOrder.isPaid ? 'Paid' : 'Due'}</span>
+          <span class="total-amount">${formatCurrency(totalAmount)}</span>
+        </div>
+      `;
     }
 
-    // Track order function
     function trackOrder() {
-      const orderData = localStorage.getItem('lastOrder');
-      if (orderData) {
-        const order = JSON.parse(orderData);
-        alert(`Order ${order.orderNumber} is currently being processed. You will receive updates via email.`);
+      if (currentOrder) {
+        const message = `Order ${getOrderIdentifier(currentOrder)} is being processed. We will notify you via email.`;
+        if (typeof showToast === 'function') {
+          showToast(message, 'info');
+        } else {
+          console.log(message);
+        }
       } else {
-        alert('No recent order found. Please check your email for order details.');
+        if (typeof showToast === 'function') {
+          showToast('No recent order found. Please check your email for order details.', 'warning');
+        } else {
+          console.warn('No recent order found. Please check your email for order details.');
+        }
       }
     }
 
-    // Create confetti effect
     function createConfetti() {
       const confettiContainer = document.getElementById('confetti-container');
+      if (!confettiContainer) return;
+
       const colors = ['#f39c12', '#e74c3c', '#3498db', '#2ecc71', '#9b59b6', '#f1c40f'];
 
       for (let i = 0; i < 50; i++) {
@@ -641,88 +791,17 @@
         confettiContainer.appendChild(confetti);
       }
 
-      // Remove confetti after animation
       setTimeout(() => {
         confettiContainer.innerHTML = '';
       }, 5000);
     }
 
-    // Populate order details
-    function populateOrderDetails() {
-      const order = JSON.parse(localStorage.getItem("lastOrder"));
-      const orderInfo = document.getElementById("orderInfo");
-      const orderTotal = document.getElementById("orderTotal");
-
-      if (order) {
-        // Format order date
-        const orderDate = new Date(order.id).toLocaleDateString('en-IN', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        });
-
-        // Calculate estimated delivery (7 days from order)
-        const deliveryDate = new Date(order.id + (7 * 24 * 60 * 60 * 1000)).toLocaleDateString('en-IN', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        });
-
-        orderInfo.innerHTML = `
-          <div class="info-item">
-            <div class="info-label">Order ID</div>
-            <div class="info-value">#${order.id}</div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">Order Date</div>
-            <div class="info-value">${orderDate}</div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">Items</div>
-            <div class="info-value">${order.items.length} item(s)</div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">Estimated Delivery</div>
-            <div class="info-value">${deliveryDate}</div>
-          </div>
-        `;
-
-        orderTotal.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span>Total Amount Paid</span>
-            <span class="total-amount">₹${order.total.toLocaleString()}</span>
-          </div>
-        `;
-      } else {
-        orderInfo.innerHTML = `
-          <div class="info-item" style="grid-column: 1 / -1; text-align: center;">
-            <div class="info-value">Order details not found</div>
-          </div>
-        `;
-        orderTotal.innerHTML = `
-          <div style="text-align: center;">
-            <span>Please check your email for order confirmation</span>
-          </div>
-        `;
-      }
-    }
-
-    // Track order function
-    function trackOrder() {
-      alert('Order tracking feature will be available soon!');
-    }
-
-    // Initialize page
-    document.addEventListener('DOMContentLoaded', function () {
-      // Display order details
+    document.addEventListener('DOMContentLoaded', async function () {
+      await ensureOrderData();
       displayOrderDetails();
-      // Create confetti effect
+      populateOrderDetails();
       createConfetti();
 
-      // Populate order details
-      populateOrderDetails();
-
-      // Add some delay for better UX
       setTimeout(() => {
         document.body.style.opacity = '1';
       }, 100);

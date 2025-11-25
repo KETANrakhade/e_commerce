@@ -73,7 +73,7 @@ const productSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-// Create indexes for better performance
+// Create indexes for better performance (slug already indexed via unique: true)
 productSchema.index({ name: 'text', description: 'text' });
 productSchema.index({ category: 1 });
 productSchema.index({ subcategory: 1 });
@@ -84,7 +84,6 @@ productSchema.index({ isActive: 1 });
 productSchema.index({ featured: 1 });
 productSchema.index({ price: 1 });
 productSchema.index({ createdAt: -1 });
-productSchema.index({ slug: 1 });
 
 // Update the updatedAt field before saving
 productSchema.pre('save', function(next) {

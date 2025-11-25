@@ -9,7 +9,6 @@ const brandSchema = new mongoose.Schema({
   },
   slug: {
     type: String,
-    required: true,
     unique: true,
     lowercase: true
   },
@@ -66,9 +65,7 @@ const brandSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Create indexes
-brandSchema.index({ name: 1 });
-brandSchema.index({ slug: 1 });
+// Create indexes (name and slug already indexed via unique: true)
 brandSchema.index({ isActive: 1 });
 brandSchema.index({ featured: 1 });
 brandSchema.index({ sortOrder: 1 });

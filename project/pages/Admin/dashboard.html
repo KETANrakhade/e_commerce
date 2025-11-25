@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - BrandName</title>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/assets/styles/global.css">
+    <link rel="stylesheet" href="/assets/styles/layout.css">
+    <link rel="stylesheet" href="/assets/styles/components.css">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Admin Dashboard Styles */
+        body {
+            background-color: #f5f6fa;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .dashboard-header {
+            margin-bottom: 2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card h3 {
+            color: #7f8c8d;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .stat-card .icon {
+            font-size: 2.5rem;
+            color: #3498db;
+            margin-bottom: 0.5rem;
+        }
+        
+        .admin-section {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .admin-section h2 {
+            margin-bottom: 1.5rem;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .table {
+                font-size: 0.875rem;
+            }
+            
+            .table th,
+            .table td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header will be injected here -->
+    <div id="header-placeholder"></div>
+
+    <!-- Main Content -->
+    <main>
+        <div class="dashboard-container">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <h1>Admin Dashboard</h1>
+                <p>Welcome back! Here's an overview of your store.</p>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="icon"><i class="fas fa-shopping-cart"></i></div>
+                    <h3>Total Orders</h3>
+                    <div class="value" id="totalOrders">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon"><i class="fas fa-box"></i></div>
+                    <h3>Total Products</h3>
+                    <div class="value" id="totalProducts">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon"><i class="fas fa-users"></i></div>
+                    <h3>Total Users</h3>
+                    <div class="value" id="totalUsers">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon"><i class="fas fa-dollar-sign"></i></div>
+                    <h3>Total Revenue</h3>
+                    <div class="value" id="totalRevenue">-</div>
+                </div>
+            </div>
+
+            <!-- Recent Orders Section -->
+            <div class="admin-section">
+                <h2>Recent Orders</h2>
+                <div id="recentOrders">
+                    <div class="loader"></div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="admin-section">
+                <h2>Quick Actions</h2>
+                <div class="flex flex-wrap gap-2">
+                    <a href="/pages/Products/products.html" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Product
+                    </a>
+                    <a href="/pages/Admin/orders.html" class="btn btn-secondary">
+                        <i class="fas fa-list"></i> View All Orders
+                    </a>
+                    <button class="btn btn-success">
+                        <i class="fas fa-download"></i> Export Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer will be injected here -->
+    <div id="footer-placeholder"></div>
+
+    <!-- Alert Container -->
+    <div id="alert-container" style="position: fixed; top: 80px; right: 20px; z-index: 9999;"></div>
+
+    <!-- Scripts -->
+    <script src="/scripts/utils.js"></script>
+    <script src="/scripts/api.js"></script>
+    <script src="/scripts/main.js"></script>
+    
+    <!-- Page-specific script -->
+    <script>
+        /**
+         * Load dashboard statistics
+         */
+        async function loadDashboardStats() {
+            const token = getAuthToken();
+            
+            if (!token) {
+                showAlert('Please login to access the dashboard.', 'error');
+                setTimeout(() => {
+                    window.location.href = '/pages/Auth/login.html';
+                }, 2000);
+                return;
+            }
+
+            try {
+                const response = await apiGet('/admin/stats', {}, token);
+                
+                if (response.success && response.data) {
+                    const stats = response.data;
+                    
+                    document.getElementById('totalOrders').textContent = stats.totalOrders || 0;
+                    document.getElementById('totalProducts').textContent = stats.totalProducts || 0;
+                    document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
+                    document.getElementById('totalRevenue').textContent = formatCurrency(stats.totalRevenue || 0);
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        /**
+         * Load recent orders
+         */
+        async function loadRecentOrders() {
+            const token = getAuthToken();
+            const ordersContainer = document.getElementById('recentOrders');
+            
+            try {
+                const response = await apiGet('/admin/recent-orders', { limit: 5 }, token);
+                
+                if (response.success && response.data) {
+                    const orders = response.data.orders || response.data || [];
+                    
+                    if (orders.length > 0) {
+                        ordersContainer.innerHTML = `
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Date</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${orders.map(order => `
+                                        <tr>
+                                            <td>#${order._id?.substring(0, 8) || order.id}</td>
+                                            <td>${order.user?.name || order.customerName || 'N/A'}</td>
+                                            <td>${formatDate(order.createdAt || order.date)}</td>
+                                            <td>${formatCurrency(order.totalPrice || order.total || 0)}</td>
+                                            <td>
+                                                <span class="badge badge-${order.status || 'pending'}">
+                                                    ${(order.status || 'pending').toUpperCase()}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="/pages/Admin/orders.html?id=${order._id || order.id}" class="btn btn-sm btn-outline">
+                                                    View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        `;
+                    } else {
+                        ordersContainer.innerHTML = '<p>No recent orders found.</p>';
+                    }
+                } else {
+                    ordersContainer.innerHTML = '<p>Failed to load recent orders.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                ordersContainer.innerHTML = '<p>Error loading recent orders.</p>';
+            }
+        }
+
+        /**
+         * Initialize dashboard
+         */
+        function initPageSpecific() {
+            loadDashboardStats();
+            loadRecentOrders();
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

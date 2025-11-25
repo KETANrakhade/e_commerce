@@ -1,36 +1,57 @@
 const Order = require('../models/orderModel');
 const User = require('../models/userModel');
 const Product = require('../models/productModel');
-const productService = require('./productService');
+const emailService = require('./emailService');
 
 class OrderService {
   // Create new order
-  async createOrder(orderData, userId) {
+  async createOrder(userId, orderData) {
     const {
       orderItems,
       shippingAddress,
       paymentMethod,
       itemsPrice,
-      shippingPrice = 0,  
-      taxPrice = 0,
+      shippingPrice,
+      taxPrice,
       totalPrice
     } = orderData;
 
+    // Validation
     if (!orderItems || orderItems.length === 0) {
       throw new Error('No order items provided');
     }
 
-    // Validate and update stock for each item
-    for (const item of orderItems) {
-      await productService.updateStock(item.productId || item.id, item.quantity, 'decrease');
+    if (!shippingAddress) {
+      throw new Error('Shipping address is required');
     }
 
+    // Verify products exist and have sufficient stock
+    for (const item of orderItems) {
+      const product = await Product.findById(item.productId || item.id);
+      
+      if (!product) {
+        throw new Error(`Product ${item.name} not found`);
+      }
+
+      if (!product.isActive) {
+        throw new Error(`Product ${item.name} is not available`);
+      }
+
+      if (product.stock < item.quantity) {
+        throw new Error(`Insufficient stock for ${item.name}. Available: ${product.stock}`);
+      }
+    }
+
+    // Create order
     const order = new Order({
-      orderItems: orderItems.map(item => ({
-        ...item,
-        productId: item.id || item.productId
-      })),
       user: userId,
+      orderItems: orderItems.map(item => ({
+        productId: item.productId || item.id,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        image: item.image
+      })),
       shippingAddress,
       paymentMethod,
       itemsPrice,
@@ -39,46 +60,184 @@ class OrderService {
       totalPrice
     });
 
-    return await order.save();
-  }
+    const createdOrder = await order.save();
 
-  // Get user's orders
-  async getUserOrders(userId, filters = {}) {
-    const { page = 1, limit = 10 } = filters;
-    
-    const skip = (page - 1) * limit;
-    const total = await Order.countDocuments({ user: userId });
-    
-    const orders = await Order.find({ user: userId })
-      .populate('orderItems.productId', 'name images')
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
-    
-    return {
-      orders,
-      pagination: {
-        page,
-        pages: Math.ceil(total / limit),
-        total,
-        limit
-      }
-    };
-  }
-
-  // Get single order by ID
-  async getOrderById(orderId, userId = null) {
-    let query = { _id: orderId };
-    if (userId) {
-      query.user = userId;
+    // Update product stock
+    for (const item of orderItems) {
+      await Product.findByIdAndUpdate(
+        item.productId || item.id,
+        { $inc: { stock: -item.quantity } }
+      );
     }
 
-    const order = await Order.findOne(query)
+    // Send confirmation emails
+    try {
+      const user = await User.findById(userId);
+      await emailService.sendOrderConfirmation(user, createdOrder);
+      await emailService.sendNewOrderNotification(createdOrder, user);
+    } catch (error) {
+      console.error('Failed to send order confirmation emails:', error);
+    }
+
+    return createdOrder;
+  }
+
+  // Get order by ID
+  async getOrderById(orderId, userId = null, isAdmin = false) {
+    const order = await Order.findById(orderId)
       .populate('user', 'name email phone address')
       .populate('orderItems.productId', 'name images');
 
     if (!order) {
       throw new Error('Order not found');
+    }
+
+    // Check authorization
+    if (!isAdmin && userId && order.user._id.toString() !== userId.toString()) {
+      throw new Error('Not authorized to view this order');
+    }
+
+    return order;
+  }
+
+  // Get user orders
+  async getUserOrders(userId, filters = {}) {
+    const { page = 1, limit = 10, status = '' } = filters;
+
+    const query = { user: userId };
+
+    if (status) {
+      query.status = status;
+    }
+
+    const count = await Order.countDocuments(query);
+    const orders = await Order.find(query)
+      .populate('orderItems.productId', 'name images')
+      .limit(limit)
+      .skip(limit * (page - 1))
+      .sort({ createdAt: -1 });
+
+    return {
+      orders,
+      pagination: {
+        page,
+        pages: Math.ceil(count / limit),
+        total: count,
+        limit
+      }
+    };
+  }
+
+  // Get all orders (admin)
+  async getAllOrders(filters = {}) {
+    const {
+      page = 1,
+      limit = 10,
+      search = '',
+      status = '',
+      startDate = null,
+      endDate = null,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      excludeCompleted = false
+    } = filters;
+
+    const query = {};
+
+    // Exclude delivered and cancelled orders if requested (for pending orders view)
+    if (excludeCompleted) {
+      query.status = { $nin: ['delivered', 'cancelled'] };
+    }
+
+    // Search by order number or customer
+    if (search) {
+      const users = await User.find({
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } }
+        ]
+      }).select('_id');
+
+      const userIds = users.map(user => user._id);
+
+      query.$or = [
+        { orderNumber: { $regex: search, $options: 'i' } },
+        { user: { $in: userIds } }
+      ];
+    }
+
+    // Filter by specific status (overrides excludeCompleted)
+    if (status) {
+      query.status = status;
+    }
+
+    // Filter by date range
+    if (startDate && endDate) {
+      query.createdAt = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      };
+    }
+
+    const count = await Order.countDocuments(query);
+    const orders = await Order.find(query)
+      .populate('user', 'name email')
+      .populate('orderItems.productId', 'name')
+      .limit(limit)
+      .skip(limit * (page - 1))
+      .sort({ [sortBy]: sortOrder === 'desc' ? -1 : 1 });
+
+    return {
+      orders,
+      pagination: {
+        page,
+        pages: Math.ceil(count / limit),
+        total: count,
+        limit
+      }
+    };
+  }
+
+  // Update order status
+  async updateOrderStatus(orderId, newStatus) {
+    const validStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+
+    if (!validStatuses.includes(newStatus)) {
+      throw new Error('Invalid status');
+    }
+
+    const order = await Order.findById(orderId).populate('user', 'name email');
+
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    const oldStatus = order.status;
+    order.status = newStatus;
+
+    // Update delivery status if delivered
+    if (newStatus === 'delivered') {
+      order.isDelivered = true;
+      order.deliveredAt = new Date();
+    }
+
+    // If cancelled, restore product stock
+    if (newStatus === 'cancelled' && oldStatus !== 'cancelled') {
+      for (const item of order.orderItems) {
+        await Product.findByIdAndUpdate(
+          item.productId,
+          { $inc: { stock: item.quantity } }
+        );
+      }
+    }
+
+    await order.save();
+
+    // Send status update email
+    try {
+      await emailService.sendOrderStatusUpdate(order.user, order, newStatus);
+    } catch (error) {
+      console.error('Failed to send order status update email:', error);
     }
 
     return order;
@@ -87,6 +246,7 @@ class OrderService {
   // Update order to paid
   async updateOrderToPaid(orderId, paymentResult) {
     const order = await Order.findById(orderId);
+
     if (!order) {
       throw new Error('Order not found');
     }
@@ -94,179 +254,172 @@ class OrderService {
     order.isPaid = true;
     order.paidAt = new Date();
     order.paymentResult = paymentResult;
-    order.status = 'confirmed';
 
-    return await order.save();
+    // Auto-update status to confirmed if still pending
+    if (order.status === 'pending') {
+      order.status = 'confirmed';
+    }
+
+    await order.save();
+    return order;
   }
 
-  // Get all orders for admin
-  async getAdminOrders(filters = {}) {
-    const { 
-      page = 1, 
-      limit = 10, 
-      search, 
-      status, 
-      startDate, 
-      endDate 
-    } = filters;
+  // Cancel order
+  async cancelOrder(orderId, userId = null, isAdmin = false) {
+    const order = await Order.findById(orderId);
 
-    let query = {};
-    
-    // Search by order number or customer info
-    if (search) {
-      const users = await User.find({
-        $or: [
-          { name: { $regex: search, $options: 'i' } },
-          { email: { $regex: search, $options: 'i' } }
-        ]
-      }).select('_id');
-      
-      const userIds = users.map(user => user._id);
-      
-      query.$or = [
-        { orderNumber: { $regex: search, $options: 'i' } },
-        { user: { $in: userIds } }
-      ];
+    if (!order) {
+      throw new Error('Order not found');
     }
-    
-    if (status) query.status = status;
-    
+
+    // Check authorization
+    if (!isAdmin && userId && order.user.toString() !== userId.toString()) {
+      throw new Error('Not authorized to cancel this order');
+    }
+
+    // Check if order can be cancelled
+    if (['delivered', 'cancelled'].includes(order.status)) {
+      throw new Error(`Cannot cancel order with status: ${order.status}`);
+    }
+
+    // Restore product stock
+    for (const item of order.orderItems) {
+      await Product.findByIdAndUpdate(
+        item.productId,
+        { $inc: { stock: item.quantity } }
+      );
+    }
+
+    order.status = 'cancelled';
+    await order.save();
+
+    return order;
+  }
+
+  // Get order statistics
+  async getOrderStats(filters = {}) {
+    const { startDate = null, endDate = null } = filters;
+
+    const dateQuery = {};
     if (startDate && endDate) {
-      query.createdAt = {
+      dateQuery.createdAt = {
         $gte: new Date(startDate),
         $lte: new Date(endDate)
       };
     }
 
-    const skip = (page - 1) * limit;
-    const total = await Order.countDocuments(query);
-    
-    const orders = await Order.find(query)
-      .populate('user', 'name email')
-      .populate('orderItems.productId', 'name')
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
+    // Total orders
+    const totalOrders = await Order.countDocuments(dateQuery);
 
-    // Get order statuses for filter
-    const statuses = await Order.distinct('status');
+    // Orders by status
+    const ordersByStatus = await Order.aggregate([
+      { $match: dateQuery },
+      { $group: { _id: '$status', count: { $sum: 1 } } }
+    ]);
 
-    return {
-      orders,
-      pagination: {
-        page,
-        pages: Math.ceil(total / limit),
-        total,
-        limit
-      },
-      statuses
+    const statusCounts = {
+      pending: 0,
+      confirmed: 0,
+      processing: 0,
+      shipped: 0,
+      delivered: 0,
+      cancelled: 0
     };
-  }
 
-  // Update order status
-  async updateOrderStatus(orderId, status) {
-    const validStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
-    
-    if (!validStatuses.includes(status)) {
-      throw new Error('Invalid status');
-    }
-
-    const order = await Order.findById(orderId);
-    if (!order) {
-      throw new Error('Order not found');
-    }
-
-    order.status = status;
-    
-    // Update delivery status if delivered
-    if (status === 'delivered') {
-      order.isDelivered = true;
-      order.deliveredAt = new Date();
-    }
-
-    // If cancelled, restore stock
-    if (status === 'cancelled' && order.status !== 'cancelled') {
-      for (const item of order.orderItems) {
-        await productService.updateStock(item.productId, item.quantity, 'increase');
-      }
-    }
-
-    return await order.save();
-  }
-
-  // Get order statistics
-  async getOrderStats() {
-    const totalOrders = await Order.countDocuments();
-    const pendingOrders = await Order.countDocuments({ status: 'pending' });
-    const processingOrders = await Order.countDocuments({ status: 'processing' });
-    const shippedOrders = await Order.countDocuments({ status: 'shipped' });
-    const deliveredOrders = await Order.countDocuments({ status: 'delivered' });
-    const cancelledOrders = await Order.countDocuments({ status: 'cancelled' });
+    ordersByStatus.forEach(item => {
+      statusCounts[item._id] = item.count;
+    });
 
     // Revenue statistics
-    const totalRevenue = await Order.aggregate([
-      { $match: { isPaid: true } },
-      { $group: { _id: null, total: { $sum: '$totalPrice' } } }
-    ]);
-
-    const monthlyRevenue = await Order.aggregate([
-      { 
-        $match: { 
-          isPaid: true,
-          createdAt: { $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) }
+    const revenueStats = await Order.aggregate([
+      { $match: { ...dateQuery, isPaid: true } },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: '$totalPrice' },
+          averageOrderValue: { $avg: '$totalPrice' },
+          totalOrders: { $sum: 1 }
         }
-      },
-      { $group: { _id: null, total: { $sum: '$totalPrice' } } }
+      }
     ]);
 
-    // Daily sales for the last 30 days
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const revenue = revenueStats.length > 0 ? revenueStats[0] : {
+      totalRevenue: 0,
+      averageOrderValue: 0,
+      totalOrders: 0
+    };
 
-    const dailySales = await Order.aggregate([
+    // Monthly revenue (last 12 months)
+    const monthlyRevenue = await Order.aggregate([
       {
         $match: {
           isPaid: true,
-          createdAt: { $gte: thirtyDaysAgo }
+          createdAt: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 12)) }
         }
       },
       {
         $group: {
           _id: {
-            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' }
           },
           revenue: { $sum: '$totalPrice' },
           orders: { $sum: 1 }
         }
       },
-      { $sort: { '_id': 1 } }
+      { $sort: { '_id.year': 1, '_id.month': 1 } }
+    ]);
+
+    // Top selling products
+    const topProducts = await Order.aggregate([
+      { $match: dateQuery },
+      { $unwind: '$orderItems' },
+      {
+        $group: {
+          _id: '$orderItems.productId',
+          totalQuantity: { $sum: '$orderItems.quantity' },
+          totalRevenue: { $sum: { $multiply: ['$orderItems.quantity', '$orderItems.price'] } }
+        }
+      },
+      { $sort: { totalQuantity: -1 } },
+      { $limit: 10 },
+      {
+        $lookup: {
+          from: 'products',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'product'
+        }
+      },
+      { $unwind: '$product' },
+      {
+        $project: {
+          name: '$product.name',
+          totalQuantity: 1,
+          totalRevenue: 1
+        }
+      }
     ]);
 
     return {
       totalOrders,
-      ordersByStatus: {
-        pending: pendingOrders,
-        processing: processingOrders,
-        shipped: shippedOrders,
-        delivered: deliveredOrders,
-        cancelled: cancelledOrders
-      },
-      revenue: {
-        total: totalRevenue.length > 0 ? totalRevenue[0].total : 0,
-        monthly: monthlyRevenue.length > 0 ? monthlyRevenue[0].total : 0
-      },
-      dailySales
+      ordersByStatus: statusCounts,
+      revenue,
+      monthlyRevenue,
+      topProducts
     };
   }
 
   // Export orders
   async exportOrders(filters = {}) {
-    const { status, startDate, endDate } = filters;
+    const { status = '', startDate = null, endDate = null } = filters;
 
-    let query = {};
-    
-    if (status) query.status = status;
-    
+    const query = {};
+
+    if (status) {
+      query.status = status;
+    }
+
     if (startDate && endDate) {
       query.createdAt = {
         $gte: new Date(startDate),
@@ -280,63 +433,6 @@ class OrderService {
       .sort({ createdAt: -1 });
 
     return orders;
-  }
-
-  // Get recent orders
-  async getRecentOrders(limit = 10) {
-    const orders = await Order.find()
-      .populate('user', 'name email')
-      .sort({ createdAt: -1 })
-      .limit(limit);
-
-    return orders;
-  }
-
-  // Get sales analytics
-  async getSalesAnalytics(period = 30) {
-    const days = parseInt(period);
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-
-    const salesData = await Order.aggregate([
-      {
-        $match: {
-          isPaid: true,
-          createdAt: { $gte: startDate }
-        }
-      },
-      {
-        $group: {
-          _id: {
-            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
-          },
-          revenue: { $sum: '$totalPrice' },
-          orders: { $sum: 1 }
-        }
-      },
-      { $sort: { '_id': 1 } }
-    ]);
-
-    // Get top selling products
-    const topProducts = await Order.aggregate([
-      { $match: { isPaid: true } },
-      { $unwind: '$orderItems' },
-      {
-        $group: {
-          _id: '$orderItems.productId',
-          name: { $first: '$orderItems.name' },
-          totalSold: { $sum: '$orderItems.quantity' },
-          revenue: { $sum: { $multiply: ['$orderItems.price', '$orderItems.quantity'] } }
-        }
-      },
-      { $sort: { totalSold: -1 } },
-      { $limit: 5 }
-    ]);
-
-    return {
-      salesData,
-      topProducts
-    };
   }
 }
 

@@ -1,0 +1,159 @@
+/* Custom Sidebar Styles - White Background with Black Text */
+/* IMPORTANT: This overrides the default dark sidebar theme */
+
+/* Main sidebar background - HIGHEST PRIORITY */
+body[data-sidebar="light"] .vertical-menu,
+body .vertical-menu,
+.vertical-menu {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Sidebar menu background */
+body[data-sidebar="light"] #sidebar-menu,
+body #sidebar-menu,
+#sidebar-menu,
+.vertical-menu #sidebar-menu {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+}
+
+/* Menu title styling */
+.menu-title {
+    color: #000000 !important;
+    font-weight: 600;
+    opacity: 0.7;
+}
+
+/* Menu items - default state */
+body[data-sidebar="light"] #sidebar-menu ul li a,
+body #sidebar-menu ul li a,
+#sidebar-menu ul li a,
+.vertical-menu #sidebar-menu ul li a {
+    color: #000000 !important;
+}
+
+body[data-sidebar="light"] #sidebar-menu ul li a i,
+body #sidebar-menu ul li a i,
+#sidebar-menu ul li a i,
+.vertical-menu #sidebar-menu ul li a i {
+    color: #000000 !important;
+}
+
+/* Menu items - hover state */
+#sidebar-menu ul li a:hover {
+    background-color: #f8f9fa !important;
+    color: #000000 !important;
+}
+
+#sidebar-menu ul li a:hover i {
+    color: #000000 !important;
+}
+
+/* Menu items - active state */
+#sidebar-menu ul li.mm-active > a {
+    background-color: #e9ecef !important;
+    color: #000000 !important;
+    font-weight: 600;
+}
+
+#sidebar-menu ul li.mm-active > a i {
+    color: #000000 !important;
+}
+
+/* Submenu items */
+#sidebar-menu ul li ul.sub-menu li a {
+    color: #000000 !important;
+}
+
+#sidebar-menu ul li ul.sub-menu li a:hover {
+    background-color: #f8f9fa !important;
+    color: #000000 !important;
+}
+
+/* Simplebar scrollbar styling for white background */
+.simplebar-scrollbar::before {
+    background-color: #cccccc !important;
+}
+
+/* Logo area if exists */
+.navbar-brand-box {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* Make sure logo is visible on white background */
+.logo-dark {
+    display: block !important;
+}
+
+.logo-light {
+    display: none !important;
+}
+
+/* Additional refinements */
+.metismenu li {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.metismenu li:last-child {
+    border-bottom: none;
+}
+
+/* Waves effect color adjustment */
+.waves-effect {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Menu item spacing */
+#sidebar-menu ul li a {
+    padding: 12px 20px;
+    transition: all 0.3s ease;
+}
+
+/* Icon spacing */
+#sidebar-menu ul li a i {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+/* Ensure text is always black */
+#sidebar-menu .metismenu a span {
+    color: #000000 !important;
+}
+
+/* Active menu item with accent */
+#sidebar-menu ul li.mm-active > a {
+    border-left: 3px solid #556ee6;
+}
+
+/* Hover effect enhancement */
+#sidebar-menu ul li a:hover {
+    border-left: 3px solid #556ee6;
+}
+
+/* Default state - no border */
+#sidebar-menu ul li a {
+    border-left: 3px solid transparent;
+}
+
+/* Remove any default dark theme colors */
+[data-sidebar="light"] .vertical-menu {
+    background: #ffffff !important;
+}
+
+[data-sidebar="light"] #sidebar-menu ul li a {
+    color: #000000 !important;
+}
+
+/* Submenu background */
+#sidebar-menu ul li ul.sub-menu {
+    background-color: #f8f9fa !important;
+}
+
+/* Menu item text weight */
+#sidebar-menu ul li a span {
+    font-weight: 500;
+}

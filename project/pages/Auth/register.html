@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - BrandName</title>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/assets/styles/global.css">
+    <link rel="stylesheet" href="/assets/styles/layout.css">
+    <link rel="stylesheet" href="/assets/styles/components.css">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .auth-container {
+            max-width: 400px;
+            margin: 4rem auto;
+            padding: 2rem;
+        }
+        
+        .auth-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .auth-header h1 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .auth-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header will be injected here -->
+    <div id="header-placeholder"></div>
+
+    <!-- Main Content -->
+    <main>
+        <section>
+            <div class="auth-container">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <h1>Create Account</h1>
+                        <p>Join us today and start shopping!</p>
+                    </div>
+
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" 
+                                   id="name" 
+                                   class="form-input" 
+                                   placeholder="Enter your full name"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" 
+                                   id="email" 
+                                   class="form-input" 
+                                   placeholder="Enter your email"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" 
+                                   id="password" 
+                                   class="form-input" 
+                                   placeholder="Create a password"
+                                   required
+                                   minlength="6">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword" class="form-label">Confirm Password</label>
+                            <input type="password" 
+                                   id="confirmPassword" 
+                                   class="form-input" 
+                                   placeholder="Confirm your password"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" required> I agree to the Terms and Conditions
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">
+                            Create Account
+                        </button>
+                    </form>
+
+                    <div class="auth-footer">
+                        <p>Already have an account? <a href="/pages/Auth/login.html">Login here</a></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer will be injected here -->
+    <div id="footer-placeholder"></div>
+
+    <!-- Alert Container -->
+    <div id="alert-container" style="position: fixed; top: 80px; right: 20px; z-index: 9999;"></div>
+
+    <!-- Scripts -->
+    <script src="/scripts/utils.js"></script>
+    <script src="/scripts/api.js"></script>
+    <script src="/scripts/main.js"></script>
+    
+    <!-- Page-specific script -->
+    <script>
+        /**
+         * Handle registration form submission
+         */
+        function initPageSpecific() {
+            const registerForm = document.getElementById('registerForm');
+            
+            registerForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                // Validate passwords match
+                if (password !== confirmPassword) {
+                    showAlert('Passwords do not match!', 'error');
+                    return;
+                }
+                
+                // Show loading state
+                const submitButton = registerForm.querySelector('button[type="submit"]');
+                const originalText = submitButton.textContent;
+                submitButton.textContent = 'Creating account...';
+                submitButton.disabled = true;
+                
+                try {
+                    const response = await apiPost('/auth/register', { 
+                        name, 
+                        email, 
+                        password 
+                    });
+                    
+                    if (response.success && response.data) {
+                        // Store token if provided
+                        if (response.data.token) {
+                            setAuthToken(response.data.token);
+                        }
+                        
+                        showAlert('Account created successfully! Redirecting...', 'success');
+                        
+                        // Redirect to home or login
+                        setTimeout(() => {
+                            window.location.href = '/pages/Auth/login.html';
+                        }, 1500);
+                    } else {
+                        showAlert(response.error || 'Registration failed. Please try again.', 'error');
+                        submitButton.textContent = originalText;
+                        submitButton.disabled = false;
+                    }
+                } catch (error) {
+                    showAlert('An error occurred. Please try again.', 'error');
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

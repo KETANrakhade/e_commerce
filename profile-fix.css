@@ -1,0 +1,165 @@
+/* Profile Handler CSS Fixes */
+/* Complete fix for profile page display issues */
+
+/* Fix auth card to show full content */
+.auth-card {
+    overflow: visible !important;
+    max-width: 500px !important;
+    width: 100% !important;
+    margin: 20px auto !important;
+}
+
+/* Fix card body */
+.card-body {
+    padding: 40px 30px !important;
+    overflow: visible !important;
+}
+
+/* Fix profile view container */
+.profile-view {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+    width: 100% !important;
+}
+
+/* Fix profile header */
+.profile-header {
+    overflow: visible !important;
+    margin-bottom: 30px !important;
+}
+
+/* Fix welcome title - prevent text cut-off */
+.welcome-title {
+    overflow: visible !important;
+    white-space: normal !important;
+    text-overflow: clip !important;
+    width: 100% !important;
+    font-size: 32px !important;
+    font-weight: 700 !important;
+    color: #333 !important;
+    margin-bottom: 10px !important;
+    line-height: 1.3 !important;
+}
+
+/* Fix profile info section */
+.profile-info {
+    overflow: visible !important;
+    margin-bottom: 30px !important;
+}
+
+.info-card {
+    overflow: visible !important;
+    margin-bottom: 15px !important;
+}
+
+/* Fix profile actions container */
+.profile-actions {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+    height: auto !important;
+    width: 100% !important;
+    margin-top: 30px !important;
+}
+
+/* Fix all buttons in profile */
+.profile-actions button {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    min-height: 55px !important;
+    width: 100% !important;
+    margin-bottom: 15px !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+}
+
+.profile-actions button:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* Specific button styles */
+#homeBtn {
+    background-color: #0d6efd !important;
+    color: white !important;
+    border: 2px solid #0d6efd !important;
+}
+
+#homeBtn:hover {
+    background-color: #0b5ed7 !important;
+    border-color: #0a58ca !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3) !important;
+}
+
+#adminPanelBtn {
+    background-color: #ffc107 !important;
+    color: #000 !important;
+    border: 2px solid #ffc107 !important;
+}
+
+#adminPanelBtn:hover {
+    background-color: #ffca2c !important;
+    border-color: #ffc720 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3) !important;
+}
+
+/* Ensure logout button is always visible and prominent */
+#logoutBtn {
+    background-color: #dc3545 !important;
+    color: white !important;
+    border: 2px solid #dc3545 !important;
+    display: block !important;
+    visibility: visible !important;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3) !important;
+}
+
+#logoutBtn:hover {
+    background-color: #c82333 !important;
+    border-color: #bd2130 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4) !important;
+}
+
+/* Responsive fixes */
+@media (max-width: 768px) {
+    .auth-card {
+        margin: 15px !important;
+    }
+    
+    .card-body {
+        padding: 30px 20px !important;
+    }
+    
+    .welcome-title {
+        font-size: 28px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-card {
+        margin: 10px !important;
+    }
+    
+    .card-body {
+        padding: 25px 15px !important;
+    }
+    
+    .welcome-title {
+        font-size: 24px !important;
+    }
+    
+    .profile-actions button {
+        min-height: 50px !important;
+        font-size: 15px !important;
+    }
+}

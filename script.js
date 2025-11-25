@@ -1,88 +1,125 @@
-
-document.getElementById("viewHome").addEventListener("click", function () {
-  window.location.href = "index.html";
-});
-document.getElementById("userProfile").addEventListener("click", function () {
-  window.location.href = "login.html";
-});
-document.getElementById("viewMen").addEventListener("click", function () {
-  window.location.href = "men-product.html";
-});
-document.getElementById("viewWomen").addEventListener("click", function () {
-  window.location.href = "women-product.html";
-});
-document.getElementById("viewCart").addEventListener("click", function () {
-  window.location.href = "cart.html";
-});
-
-// Also handle the cart button in enhanced index.html
+// Wait for DOM to be ready before attaching event listeners
 document.addEventListener('DOMContentLoaded', function() {
-  const cartBtn = document.getElementById("viewCart");
-  if (cartBtn) {
-    cartBtn.addEventListener("click", function () {
+  // Navigation event listeners
+  const viewHome = document.getElementById("viewHome");
+  if (viewHome) {
+    viewHome.addEventListener("click", function () {
+      window.location.href = "index.html";
+    });
+  }
+
+  const viewHome2 = document.getElementById("viewHome2");
+  if (viewHome2) {
+    viewHome2.addEventListener("click", function () {
+      window.location.href = "index.html";
+    });
+  }
+
+  const userProfile = document.getElementById("userProfile");
+  if (userProfile) {
+    userProfile.addEventListener("click", function () {
+      window.location.href = "login.html";
+    });
+  }
+
+  const viewMen = document.getElementById("viewMen");
+  if (viewMen) {
+    viewMen.addEventListener("click", function () {
+      window.location.href = "men-product.html";
+    });
+  }
+
+  const viewWomen = document.getElementById("viewWomen");
+  if (viewWomen) {
+    viewWomen.addEventListener("click", function () {
+      window.location.href = "women-product.html";
+    });
+  }
+
+  const viewCart = document.getElementById("viewCart");
+  if (viewCart) {
+    viewCart.addEventListener("click", function () {
       window.location.href = "cart.html";
     });
   }
-});
-document.getElementById("viewWishlist").addEventListener("click", function () {
-  window.location.href = "wishlist.html";
-});
-document.getElementById("saleBtn").addEventListener("click", function () {
-  window.location.href = "discount.html";
-});
-document.getElementById("discountSale").addEventListener("click", function () {
-  window.location.href = "discount.html";
+
+  const viewWishlist = document.getElementById("viewWishlist");
+  if (viewWishlist) {
+    viewWishlist.addEventListener("click", function () {
+      window.location.href = "wishlist.html";
+    });
+  }
+
+  const saleBtn = document.getElementById("saleBtn");
+  if (saleBtn) {
+    saleBtn.addEventListener("click", function () {
+      window.location.href = "discount.html";
+    });
+  }
+
+  const discountSale = document.getElementById("discountSale");
+  if (discountSale) {
+    discountSale.addEventListener("click", function () {
+      window.location.href = "discount.html";
+    });
+  }
 });
 
-// Admin panel navigation
+// Admin panel navigation - Opens new pyramid-admin panel
 document.addEventListener('DOMContentLoaded', function() {
   const adminPanelBtn = document.getElementById("adminPanel");
   if (adminPanelBtn) {
     adminPanelBtn.addEventListener("click", function () {
-      window.location.href = "admin.html";
+      // Open new admin panel (pyramid-admin) instead of old admin.html
+      window.location.href = "http://localhost:8000";
     });
   }
 });
 
+// Slider functionality - wrapped in DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+  const slider = document.querySelector("#slider");
+  if (!slider) return; // Exit if slider doesn't exist on this page
+  
+  const slides = slider.querySelectorAll(".slide");
+  const leftBtn = slider.querySelector(".arrow.left");
+  const rightBtn = slider.querySelector(".arrow.right");
 
+  let active = 2;
 
-const slider = document.querySelector("#slider");
-const slides = slider.querySelectorAll(".slide");
-const leftBtn = slider.querySelector(".arrow.left");
-const rightBtn = slider.querySelector(".arrow.right");
+  function updateSlides() {
+    slides.forEach((slide, index) => {
+      slide.className = "slide";
+      if (index === active) {
+        slide.classList.add("active");
+      } else if (index === active - 1) {
+        slide.classList.add("left");
+      } else if (index === active + 1) {
+        slide.classList.add("right");
+      }else if (index === active - 2) {
+        slide.classList.add("left1");
+      } else if (index === active + 2) {
+        slide.classList.add("right1");
+      }
+    });
+  }
 
+  if (leftBtn) {
+    leftBtn.addEventListener("click", () => {
+      active = (active - 1 + slides.length) % slides.length;
+      updateSlides();
+    });
+  }
 
-let active = 2;
+  if (rightBtn) {
+    rightBtn.addEventListener("click", () => {
+      active = (active + 1) % slides.length;
+      updateSlides();
+    });
+  }
 
-function updateSlides() {
-  slides.forEach((slide, index) => {
-    slide.className = "slide";
-    if (index === active) {
-      slide.classList.add("active");
-    } else if (index === active - 1) {
-      slide.classList.add("left");
-    } else if (index === active + 1) {
-      slide.classList.add("right");
-    }else if (index === active - 2) {
-      slide.classList.add("left1");
-    } else if (index === active + 2) {
-      slide.classList.add("right1");
-    }
-  });
-}
-
-leftBtn.addEventListener("click", () => {
-  active = (active - 1 + slides.length) % slides.length;
   updateSlides();
 });
-
-rightBtn.addEventListener("click", () => {
-  active = (active + 1) % slides.length;
-  updateSlides();
-});
-
-
-updateSlides();
 
 window.addEventListener("scroll", () => {
   let heroImg = document.querySelector(".hero-img");
@@ -138,6 +175,48 @@ const fetchProducts = async () => {
   }
 };
 
+// Display products on homepage
+const displayProducts = async () => {
+  const products = await fetchProducts();
+  const productGrid = document.querySelector('.product-grid');
+  
+  if (!productGrid || !products || products.length === 0) {
+    console.log('No products to display or product grid not found');
+    return;
+  }
+  
+  // Clear existing hardcoded products
+  productGrid.innerHTML = '';
+  
+  // Display up to 12 products on homepage
+  const displayProducts = products.slice(0, 12);
+  
+  displayProducts.forEach(product => {
+    const imageUrl = product.images?.[0]?.url || product.imageUrls?.[0] || 'https://via.placeholder.com/300x400/65AAC3/FFFFFF?text=No+Image';
+    const price = product.price ? `₹${product.price}` : 'Price not available';
+    
+    const productHTML = `
+      <div class="product-item">
+        <img src="${imageUrl}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x400/65AAC3/FFFFFF?text=No+Image'">
+        <div class="product-overlay">
+          <h3>${product.name}</h3>
+          <p>${price}</p>
+          <button class="btn btn-light" onclick="viewProduct('${product._id}')">View Details</button>
+        </div>
+      </div>
+    `;
+    
+    productGrid.innerHTML += productHTML;
+  });
+  
+  console.log(`✅ Displayed ${displayProducts.length} products`);
+};
+
+// View product details
+const viewProduct = (productId) => {
+  window.location.href = `product.html?id=${productId}`;
+};
+
 // Product search function
 const searchProducts = async (keyword) => {
   try {
@@ -165,7 +244,7 @@ const searchProducts = async (keyword) => {
 // Example usage
 // Call this when page loads or button clicks
 document.addEventListener("DOMContentLoaded", () => {
-  fetchProducts();
+  displayProducts(); // Display products on homepage
 });
 
 // Authentication utilities
@@ -184,10 +263,19 @@ const isAdmin = () => {
 };
 
 const logout = () => {
+  // Clear all user and admin data
   localStorage.removeItem('token');
   localStorage.removeItem('user');
   localStorage.removeItem('adminToken');
   localStorage.removeItem('adminUser');
+  
+  // Clear cart and wishlist data
+  localStorage.removeItem('cart_v1');
+  localStorage.removeItem('wishlist_v1');
+  localStorage.removeItem('cart');
+  localStorage.removeItem('wishlist');
+  
+  console.log('✅ User logged out - all data cleared');
   
   // Hide admin button when logging out
   hideAdminButton();
@@ -238,13 +326,7 @@ const updateNavbar = () => {
       userProfileBtn.innerHTML = `<i class="fa-solid fa-user"></i>`;
       userProfileBtn.title = `Welcome, ${user.name}`;
       
-      // Add logout functionality
-      userProfileBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        if (confirm('Do you want to logout?')) {
-          logout();
-        }
-      });
+     
     } else {
       userProfileBtn.innerHTML = `<i class="fa-regular fa-user"></i>`;
       userProfileBtn.title = 'Login';
@@ -337,6 +419,26 @@ async function addToWishlist(product) {
     const result = await response.json();
 
     if (response.ok) {
+      // Also add to localStorage for immediate UI update
+      const wishlist = getWishlist();
+      const existingItem = wishlist.find(item => 
+        item.id === product.id || item._id === product.id || item.productId === product.id
+      );
+      
+      if (!existingItem) {
+        wishlist.push({
+          _id: product.id,
+          id: product.id,
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.image || product.images?.[0]?.url || product.imageUrls?.[0],
+          images: product.images,
+          imageUrls: product.imageUrls
+        });
+        saveWishlist(wishlist);
+      }
+      
       showNotification(`${product.name} added to wishlist!`, 'success');
       updateWishlistBadge();
     } else {
@@ -379,7 +481,7 @@ const updateCartBadge = () => {
   const cartBadge = document.querySelector('#viewCart .badge');
   if (cartBadge) {
     const cart = getCart();
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const totalItems = cart.length; // Count unique products, not total quantity
     cartBadge.textContent = totalItems > 0 ? totalItems : '';
     cartBadge.style.display = totalItems > 0 ? 'inline-block' : 'none';
   }
@@ -387,13 +489,18 @@ const updateCartBadge = () => {
 
 // Wishlist badge update function
 const updateWishlistBadge = () => {
-  const wishlistBadge = document.querySelector('#viewWishlist .badge');
-  if (wishlistBadge) {
-    const wishlist = getWishlist();
-    const totalItems = wishlist.length;
-    wishlistBadge.textContent = totalItems > 0 ? totalItems : '';
-    wishlistBadge.style.display = totalItems > 0 ? 'inline-block' : 'none';
-  }
+  const wishlistBadges = document.querySelectorAll('#viewWishlist .badge, .wishlist-badge');
+  const wishlist = getWishlist();
+  const totalItems = wishlist.length;
+  
+  wishlistBadges.forEach(badge => {
+    if (badge) {
+      badge.textContent = totalItems > 0 ? totalItems : '';
+      badge.style.display = totalItems > 0 ? 'inline-block' : 'none';
+    }
+  });
+  
+  console.log(`💝 Wishlist badge updated: ${totalItems} items`);
 };
 
 // Enhanced error handling for API calls
@@ -401,12 +508,24 @@ const handleApiError = (error, context = 'API call') => {
   console.error(`${context} error:`, error);
   
   if (error.message.includes('Failed to fetch')) {
-    alert('Unable to connect to server. Please check if the backend is running on http://localhost:5001');
+    if (typeof showToast === 'function') {
+      showToast('Unable to connect to server. Please check if the backend is running on http://localhost:5001', 'error');
+    } else {
+      console.error('Unable to connect to server. Please check if the backend is running on http://localhost:5001');
+    }
   } else if (error.status === 401) {
-    alert('Session expired. Please login again.');
+    if (typeof showToast === 'function') {
+      showToast('Session expired. Please login again.', 'warning');
+    } else {
+      console.warn('Session expired. Please login again.');
+    }
     logout();
   } else {
-    alert(`${context} failed. Please try again.`);
+    if (typeof showToast === 'function') {
+      showToast(`${context} failed. Please try again.`, 'error');
+    } else {
+      console.error(`${context} failed. Please try again.`);
+    }
   }
 };
 

@@ -1,21 +1,36 @@
 const Product = require('../models/productModel');
+const Category = require('../models/categoryModel');
+const Brand = require('../models/brandModel');
+const emailService = require('./emailService');
 
 class ProductService {
   // Get all products with filters
   async getProducts(filters = {}) {
-    const { 
-      page = 1, 
-      limit = 12, 
-      keyword, 
-      category, 
-      minPrice, 
-      maxPrice, 
-      featured,
+    const {
+      page = 1,
+      limit = 12,
+      keyword = '',
+      category = '',
+      brand = '',
+      minPrice = 0,
+      maxPrice = Infinity,
       sortBy = 'createdAt',
-      sortOrder = 'desc'
+      sortOrder = 'desc',
+      isActive,
+      featured
     } = filters;
 
-    let query = { isActive: true };
+    const query = {};
+    
+    // Handle isActive filter
+    if (isActive !== undefined) {
+      query.isActive = isActive;
+    }
+    
+    // Handle featured filter
+    if (featured !== undefined) {
+      query.featured = featured;
+    }
 
     // Search by keyword
     if (keyword) {
@@ -26,41 +41,60 @@ class ProductService {
       ];
     }
 
-    // Filter by category
+    // Filter by category - support both ObjectId and string
     if (category) {
-      query.category = { $regex: category, $options: 'i' };
+      const mongoose = require('mongoose');
+      if (mongoose.Types.ObjectId.isValid(category)) {
+        query.category = category;
+      } else {
+        // Try to find category by name or slug
+        const categoryDoc = await Category.findOne({
+          $or: [
+            { name: { $regex: category, $options: 'i' } },
+            { slug: category }
+          ],
+          isActive: true
+        });
+        
+        if (categoryDoc) {
+          query.category = categoryDoc._id;
+        } else {
+          // Fallback to string search for backward compatibility
+          query.categoryName = { $regex: category, $options: 'i' };
+        }
+      }
     }
 
-    // Price range filter
-    if (minPrice || maxPrice) {
-      query.price = {};
-      if (minPrice) query.price.$gte = Number(minPrice);
-      if (maxPrice) query.price.$lte = Number(maxPrice);
+    // Filter by brand - support both ObjectId and string
+    if (brand) {
+      const mongoose = require('mongoose');
+      if (mongoose.Types.ObjectId.isValid(brand)) {
+        query.brand = brand;
+      } else {
+        query.brandName = { $regex: brand, $options: 'i' };
+      }
     }
 
-    // Featured products
-    if (featured !== undefined) {
-      query.featured = featured;
+    // Filter by price range
+    if (minPrice > 0 || maxPrice < Infinity) {
+      query.price = { $gte: minPrice, $lte: maxPrice };
     }
 
-    const skip = (page - 1) * limit;
-    const total = await Product.countDocuments(query);
-
-    // Sort options
-    const sortOptions = {};
-    sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
-
+    const count = await Product.countDocuments(query);
     const products = await Product.find(query)
-      .skip(skip)
+      .populate('category', 'name slug')
+      .populate('subcategory', 'name slug')
+      .populate('brand', 'name slug')
       .limit(limit)
-      .sort(sortOptions);
+      .skip(limit * (page - 1))
+      .sort({ [sortBy]: sortOrder === 'desc' ? -1 : 1 });
 
     return {
       products,
       pagination: {
         page,
-        pages: Math.ceil(total / limit),
-        total,
+        pages: Math.ceil(count / limit),
+        total: count,
         limit
       }
     };
@@ -68,52 +102,16 @@ class ProductService {
 
   // Get single product by ID
   async getProductById(productId) {
-    const product = await Product.findById(productId);
+    const product = await Product.findById(productId)
+      .populate('category', 'name slug')
+      .populate('subcategory', 'name slug')
+      .populate('brand', 'name slug');
+
     if (!product) {
       throw new Error('Product not found');
     }
+
     return product;
-  }
-
-  // Get products by category
-  async getProductsByCategory(category, filters = {}) {
-    const { page = 1, limit = 12 } = filters;
-    
-    const query = { 
-      category: { $regex: category, $options: 'i' }, 
-      isActive: true 
-    };
-    
-    const skip = (page - 1) * limit;
-    const total = await Product.countDocuments(query);
-    
-    const products = await Product.find(query)
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
-    
-    return {
-      products,
-      pagination: {
-        page,
-        pages: Math.ceil(total / limit),
-        total,
-        limit
-      },
-      category
-    };
-  }
-
-  // Get featured products
-  async getFeaturedProducts(limit = 8) {
-    const products = await Product.find({ 
-      featured: true, 
-      isActive: true 
-    })
-      .limit(limit)
-      .sort({ createdAt: -1 });
-    
-    return products;
   }
 
   // Create new product
@@ -123,15 +121,18 @@ class ProductService {
       description,
       price,
       category,
+      subcategory,
+      brand,
       stock = 0,
       images = [],
-      brand,
+      imageUrls = [],
       weight,
       dimensions,
       tags = [],
       seoTitle,
       seoDescription,
-      featured = false
+      featured = false,
+      sku
     } = productData;
 
     // Validation
@@ -139,58 +140,151 @@ class ProductService {
       throw new Error('Name, price, and category are required');
     }
 
+    // Verify category exists
+    const categoryExists = await Category.findById(category);
+    if (!categoryExists) {
+      throw new Error('Invalid category');
+    }
+
+    // Verify brand if provided
+    if (brand) {
+      const brandExists = await Brand.findById(brand);
+      if (!brandExists) {
+        throw new Error('Invalid brand');
+      }
+    }
+
+    // Process images
+    let processedImages = [];
+    let processedImageUrls = [];
+
+    if (images && images.length > 0) {
+      processedImages = images.map((img, index) => ({
+        url: img.url,
+        publicId: img.publicId || `product-${Date.now()}-${index}`,
+        alt: img.alt || `${name} - Image ${index + 1}`,
+        isPrimary: index === 0 || img.isPrimary,
+        width: img.width,
+        height: img.height,
+        format: img.format,
+        size: img.size
+      }));
+      processedImageUrls = images.map(img => img.url);
+    } else if (imageUrls && imageUrls.length > 0) {
+      processedImageUrls = imageUrls;
+      processedImages = imageUrls.map((url, index) => ({
+        url,
+        publicId: `product-${Date.now()}-${index}`,
+        alt: `${name} - Image ${index + 1}`,
+        isPrimary: index === 0
+      }));
+    }
+
+    // Generate SKU if not provided
+    const generatedSku = sku || `${categoryExists.name.substring(0, 3).toUpperCase()}-${Date.now()}`;
+
     const product = new Product({
       name,
       description,
       price: Number(price),
       category,
-      stock: Number(stock),
-      images,
+      subcategory,
       brand,
+      stock: Number(stock),
+      images: processedImages,
+      imageUrls: processedImageUrls,
       weight: weight ? Number(weight) : undefined,
       dimensions,
       tags,
-      seoTitle,
-      seoDescription,
-      featured: Boolean(featured)
+      seoTitle: seoTitle || name,
+      seoDescription: seoDescription || description,
+      featured: Boolean(featured),
+      sku: generatedSku
     });
 
-    return await product.save();
+    const createdProduct = await product.save();
+    return createdProduct;
   }
 
   // Update product
   async updateProduct(productId, updateData) {
     const product = await Product.findById(productId);
+
     if (!product) {
       throw new Error('Product not found');
+    }
+
+    // Verify category if being updated
+    if (updateData.category && updateData.category !== product.category.toString()) {
+      const categoryExists = await Category.findById(updateData.category);
+      if (!categoryExists) {
+        throw new Error('Invalid category');
+      }
+    }
+
+    // Verify brand if being updated
+    if (updateData.brand && updateData.brand !== product.brand?.toString()) {
+      const brandExists = await Brand.findById(updateData.brand);
+      if (!brandExists) {
+        throw new Error('Invalid brand');
+      }
     }
 
     // Update fields
     Object.keys(updateData).forEach(key => {
       if (updateData[key] !== undefined) {
-        if (key === 'price' || key === 'stock' || key === 'weight') {
-          product[key] = Number(updateData[key]);
-        } else if (key === 'featured' || key === 'isActive') {
-          product[key] = Boolean(updateData[key]);
-        } else {
-          product[key] = updateData[key];
-        }
+        product[key] = updateData[key];
       }
     });
 
-    return await product.save();
+    // Check for low stock and send alert
+    if (updateData.stock !== undefined && updateData.stock < 10 && updateData.stock !== product.stock) {
+      try {
+        await emailService.sendLowStockAlert(product);
+      } catch (error) {
+        console.error('Failed to send low stock alert:', error);
+      }
+    }
+
+    const updatedProduct = await product.save();
+    return updatedProduct;
   }
 
+  // Delete product (soft delete)
+  async deleteProduct(productId) {
+    const product = await Product.findById(productId);
 
+    if (!product) {
+      throw new Error('Product not found');
+    }
 
-  // Bulk actions on products
-  async bulkProductAction(action, productIds) {
-    if (!action || !productIds || !Array.isArray(productIds)) {
-      throw new Error('Action and product IDs are required');
+    // Soft delete by setting isActive to false
+    product.isActive = false;
+    await product.save();
+
+    return { message: 'Product deleted successfully' };
+  }
+
+  // Hard delete product
+  async hardDeleteProduct(productId) {
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      throw new Error('Product not found');
+    }
+
+    await Product.findByIdAndDelete(productId);
+    return { message: 'Product permanently deleted' };
+  }
+
+  // Bulk actions
+  async bulkAction(action, productIds) {
+    if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+      throw new Error('Product IDs are required');
     }
 
     let result;
-    
+
     switch (action) {
       case 'activate':
         result = await Product.updateMany(
@@ -198,23 +292,37 @@ class ProductService {
           { isActive: true }
         );
         break;
+
       case 'deactivate':
         result = await Product.updateMany(
           { _id: { $in: productIds } },
           { isActive: false }
         );
         break;
+
       case 'feature':
         result = await Product.updateMany(
           { _id: { $in: productIds } },
           { featured: true }
         );
         break;
+
       case 'unfeature':
         result = await Product.updateMany(
           { _id: { $in: productIds } },
           { featured: false }
         );
+        break;
+
+      case 'delete':
+        result = await Product.updateMany(
+          { _id: { $in: productIds } },
+          { isActive: false }
+        );
+        break;
+
+      case 'hardDelete':
+        result = await Product.deleteMany({ _id: { $in: productIds } });
         break;
 
       default:
@@ -223,96 +331,78 @@ class ProductService {
 
     return {
       message: `Bulk ${action} completed`,
-      modifiedCount: result.modifiedCount || result.deletedCount
+      modifiedCount: result.modifiedCount || result.deletedCount || 0
     };
   }
 
-  // Get admin products with filters
-  async getAdminProducts(filters = {}) {
-    const { 
-      page = 1, 
-      limit = 10, 
-      search, 
-      category, 
-      status 
-    } = filters;
-
-    let query = {};
-    
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
-      ];
-    }
-    
-    if (category) query.category = category;
-    
-    if (status === 'active') query.isActive = true;
-    else if (status === 'inactive') query.isActive = false;
-
-    const skip = (page - 1) * limit;
-    const total = await Product.countDocuments(query);
-    
-    const products = await Product.find(query)
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
-
-    // Get categories for filter
-    const categories = await Product.distinct('category');
-
-    return {
-      products,
-      pagination: {
-        page,
-        pages: Math.ceil(total / limit),
-        total,
-        limit
-      },
-      categories
-    };
-  }
-
-  // Update product stock
-  async updateStock(productId, quantity, operation = 'decrease') {
+  // Update stock
+  async updateStock(productId, quantity, operation = 'set') {
     const product = await Product.findById(productId);
+
     if (!product) {
       throw new Error('Product not found');
     }
 
-    if (operation === 'decrease') {
-      if (product.stock < quantity) {
-        throw new Error('Insufficient stock');
-      }
-      product.stock -= quantity;
-    } else if (operation === 'increase') {
-      product.stock += quantity;
+    switch (operation) {
+      case 'set':
+        product.stock = quantity;
+        break;
+      case 'add':
+        product.stock += quantity;
+        break;
+      case 'subtract':
+        product.stock = Math.max(0, product.stock - quantity);
+        break;
+      default:
+        throw new Error('Invalid operation');
     }
 
-    return await product.save();
+    // Check for low stock
+    if (product.stock < 10) {
+      try {
+        await emailService.sendLowStockAlert(product);
+      } catch (error) {
+        console.error('Failed to send low stock alert:', error);
+      }
+    }
+
+    await product.save();
+    return product;
   }
 
   // Get product statistics
   async getProductStats() {
     const totalProducts = await Product.countDocuments();
     const activeProducts = await Product.countDocuments({ isActive: true });
+    const inactiveProducts = await Product.countDocuments({ isActive: false });
     const featuredProducts = await Product.countDocuments({ featured: true });
     const outOfStock = await Product.countDocuments({ stock: 0 });
-    const lowStock = await Product.countDocuments({ stock: { $lte: 10, $gt: 0 } });
+    const lowStock = await Product.countDocuments({ stock: { $gt: 0, $lt: 10 } });
 
-    // Get categories
-    const categories = await Product.distinct('category');
+    // Get products by category
+    const productsByCategory = await Product.aggregate([
+      { $match: { isActive: true } },
+      { $group: { _id: '$category', count: { $sum: 1 } } },
+      { $lookup: { from: 'categories', localField: '_id', foreignField: '_id', as: 'category' } },
+      { $unwind: '$category' },
+      { $project: { name: '$category.name', count: 1 } }
+    ]);
+
+    // Average price
+    const avgPrice = await Product.aggregate([
+      { $match: { isActive: true } },
+      { $group: { _id: null, avgPrice: { $avg: '$price' } } }
+    ]);
 
     return {
       totalProducts,
       activeProducts,
-      inactiveProducts: totalProducts - activeProducts,
+      inactiveProducts,
       featuredProducts,
       outOfStock,
       lowStock,
-      totalCategories: categories.length,
-      categories
+      productsByCategory,
+      averagePrice: avgPrice.length > 0 ? avgPrice[0].avgPrice : 0
     };
   }
 }

@@ -1178,7 +1178,11 @@
 
     function addToWishlist() {
       if (!product) {
-        alert('Product not found!');
+        if (typeof showToast === 'function') {
+          showToast('Product not found!', 'error');
+        } else {
+          console.error('Product not found!');
+        }
         return;
       }
 
@@ -1186,7 +1190,11 @@
       const existingItem = wishlist.find(item => item.id === product.id);
 
       if (existingItem) {
-        alert('Item already in wishlist!');
+        if (typeof showToast === 'function') {
+          showToast('Item already in wishlist!', 'info');
+        } else {
+          console.log('Item already in wishlist!');
+        }
         return;
       }
 
@@ -1214,7 +1222,11 @@
         updateWishlistBadge();
       }
 
-      alert('Item added to wishlist!');
+      if (typeof showToast === 'function') {
+        showToast('Item added to wishlist!', 'success');
+      } else {
+        console.log('Item added to wishlist!');
+      }
     }
 
     function checkWishlistStatus() {

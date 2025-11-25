@@ -1,110 +1,111 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const Razorpay = require('razorpay');
+const crypto = require('crypto');
 const Order = require('../models/orderModel');
 
 class PaymentService {
-  // Create Stripe checkout session
-  async createCheckoutSession(orderData, user) {
+  constructor() {
+    this.razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET
+    });
+  }
+
+  // Create Razorpay order
+  async createRazorpayOrder(orderData, user) {
     const { orderItems, shippingAddress, totalPrice } = orderData;
     
     if (!orderItems || orderItems.length === 0) {
       throw new Error('No order items provided');
     }
 
-    // Create line items for Stripe
-    const line_items = orderItems.map(item => ({
-      price_data: {
-        currency: 'inr',
-        product_data: { 
-          name: item.name,
-          images: item.image ? [item.image] : [],
-          description: item.description || ''
-        },
-        unit_amount: Math.round(item.price * 100) // convert rupees to paise
-      },
-      quantity: item.quantity
-    }));
-
-    // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items,
-      mode: 'payment',
-      success_url: `${process.env.FRONTEND_URL}/orderSuccess.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL}/checkout.html`,
-      metadata: { 
-        userId: user._id.toString(),
-        orderData: JSON.stringify({
-          orderItems,
-          shippingAddress,
-          totalPrice
-        })
-      },
-      customer_email: user.email,
-      billing_address_collection: 'required',
-      shipping_address_collection: {
-        allowed_countries: ['IN'] // India only for now
-      }
-    });
-
-    return {
-      sessionId: session.id,
-      url: session.url,
-      session
-    };
-  }
-
-  // Handle Stripe webhook
-  async handleStripeWebhook(rawBody, signature) {
-    let event;
-
     try {
-      event = stripe.webhooks.constructEvent(
-        rawBody, 
-        signature, 
-        process.env.STRIPE_WEBHOOK_SECRET
-      );
-    } catch (err) {
-      console.error('Webhook signature verification failed:', err.message);
-      throw new Error(`Webhook Error: ${err.message}`);
-    }
+      // Create Razorpay order
+      const razorpayOrder = await this.razorpay.orders.create({
+        amount: Math.round(totalPrice * 100), // convert rupees to paise
+        currency: 'INR',
+        receipt: `order_${Date.now()}`,
+        notes: {
+          userId: user._id.toString(),
+          userEmail: user.email,
+          orderData: JSON.stringify({
+            orderItems,
+            shippingAddress,
+            totalPrice
+          })
+        }
+      });
 
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object;
-      await this.handleSuccessfulPayment(session);
+      return {
+        orderId: razorpayOrder.id,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        keyId: process.env.RAZORPAY_KEY_ID
+      };
+    } catch (error) {
+      console.error('Error creating Razorpay order:', error);
+      throw new Error('Failed to create payment order');
     }
-
-    return { received: true };
   }
 
-  // Handle successful payment
-  async handleSuccessfulPayment(session) {
-    const { userId, orderData } = session.metadata;
+  // Verify Razorpay payment signature
+  verifyPaymentSignature(orderId, paymentId, signature) {
+    try {
+      const text = orderId + '|' + paymentId;
+      const generated_signature = crypto
+        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+        .update(text)
+        .digest('hex');
+
+      return generated_signature === signature;
+    } catch (error) {
+      console.error('Error verifying signature:', error);
+      return false;
+    }
+  }
+
+  // Handle successful payment and create order
+  async handleSuccessfulPayment(paymentData, user) {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderData } = paymentData;
     
     try {
-      const parsedOrderData = JSON.parse(orderData);
-      
+      // Verify payment signature
+      const isValid = this.verifyPaymentSignature(
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature
+      );
+
+      if (!isValid) {
+        throw new Error('Invalid payment signature');
+      }
+
+      // Fetch payment details from Razorpay
+      const payment = await this.razorpay.payments.fetch(razorpay_payment_id);
+
       // Create order in database
       const order = new Order({
-        user: userId,
-        orderItems: parsedOrderData.orderItems.map(item => ({
+        user: user._id,
+        orderItems: orderData.orderItems.map(item => ({
           productId: item.productId || item.id,
           name: item.name,
           price: item.price,
           quantity: item.quantity,
           image: item.image
         })),
-        shippingAddress: parsedOrderData.shippingAddress,
+        shippingAddress: orderData.shippingAddress,
         paymentMethod: 'Online',
         paymentResult: {
-          id: session.payment_intent,
-          status: session.payment_status,
+          id: razorpay_payment_id,
+          orderId: razorpay_order_id,
+          status: payment.status,
+          method: payment.method,
           update_time: new Date().toISOString(),
-          email_address: session.customer_email
+          email_address: payment.email || user.email
         },
-        itemsPrice: parsedOrderData.totalPrice,
+        itemsPrice: orderData.totalPrice,
         shippingPrice: 0,
         taxPrice: 0,
-        totalPrice: parsedOrderData.totalPrice,
+        totalPrice: orderData.totalPrice,
         isPaid: true,
         paidAt: new Date(),
         status: 'confirmed'
@@ -116,10 +117,7 @@ class PaymentService {
       // Send confirmation email (if email service is configured)
       try {
         const emailService = require('./emailService');
-        const User = require('../models/userModel');
-        const user = await User.findById(userId);
-        
-        if (user) {
+        if (emailService) {
           await emailService.sendOrderConfirmation(user, savedOrder);
           await emailService.sendNewOrderNotification(savedOrder, user);
         }
@@ -135,30 +133,62 @@ class PaymentService {
     }
   }
 
-  // Get payment intent details
-  async getPaymentIntent(paymentIntentId) {
+  // Handle Razorpay webhook
+  async handleRazorpayWebhook(rawBody, signature) {
     try {
-      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-      return paymentIntent;
+      // Verify webhook signature
+      const expectedSignature = crypto
+        .createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET)
+        .update(rawBody)
+        .digest('hex');
+
+      if (expectedSignature !== signature) {
+        throw new Error('Invalid webhook signature');
+      }
+
+      const event = JSON.parse(rawBody);
+
+      // Handle different event types
+      if (event.event === 'payment.captured') {
+        const payment = event.payload.payment.entity;
+        console.log('Payment captured:', payment.id);
+        // Additional processing if needed
+      } else if (event.event === 'payment.failed') {
+        const payment = event.payload.payment.entity;
+        console.log('Payment failed:', payment.id);
+        // Handle failed payment
+      }
+
+      return { received: true };
+    } catch (err) {
+      console.error('Webhook processing failed:', err.message);
+      throw new Error(`Webhook Error: ${err.message}`);
+    }
+  }
+
+  // Get payment details
+  async getPaymentDetails(paymentId) {
+    try {
+      const payment = await this.razorpay.payments.fetch(paymentId);
+      return payment;
     } catch (error) {
-      console.error('Error retrieving payment intent:', error);
+      console.error('Error retrieving payment details:', error);
       throw new Error('Failed to retrieve payment details');
     }
   }
 
   // Refund payment
-  async refundPayment(paymentIntentId, amount = null, reason = 'requested_by_customer') {
+  async refundPayment(paymentId, amount = null, notes = {}) {
     try {
       const refundData = {
-        payment_intent: paymentIntentId,
-        reason
+        notes: notes
       };
 
       if (amount) {
         refundData.amount = Math.round(amount * 100); // convert to paise
       }
 
-      const refund = await stripe.refunds.create(refundData);
+      const refund = await this.razorpay.payments.refund(paymentId, refundData);
       return refund;
     } catch (error) {
       console.error('Error processing refund:', error);
@@ -166,93 +196,27 @@ class PaymentService {
     }
   }
 
-  // Create payment intent (for custom checkout)
-  async createPaymentIntent(amount, currency = 'inr', metadata = {}) {
-    try {
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(amount * 100), // convert to paise
-        currency,
-        metadata,
-        automatic_payment_methods: {
-          enabled: true,
-        },
-      });
-
-      return paymentIntent;
-    } catch (error) {
-      console.error('Error creating payment intent:', error);
-      throw new Error('Failed to create payment intent');
-    }
-  }
-
-  // Get customer payment methods
-  async getCustomerPaymentMethods(customerId) {
-    try {
-      const paymentMethods = await stripe.paymentMethods.list({
-        customer: customerId,
-        type: 'card',
-      });
-
-      return paymentMethods;
-    } catch (error) {
-      console.error('Error retrieving payment methods:', error);
-      throw new Error('Failed to retrieve payment methods');
-    }
-  }
-
-  // Create or retrieve Stripe customer
-  async createOrRetrieveCustomer(user) {
-    try {
-      // Check if customer already exists
-      const existingCustomers = await stripe.customers.list({
-        email: user.email,
-        limit: 1
-      });
-
-      if (existingCustomers.data.length > 0) {
-        return existingCustomers.data[0];
-      }
-
-      // Create new customer
-      const customer = await stripe.customers.create({
-        email: user.email,
-        name: user.name,
-        metadata: {
-          userId: user._id.toString()
-        }
-      });
-
-      return customer;
-    } catch (error) {
-      console.error('Error creating/retrieving customer:', error);
-      throw new Error('Failed to manage customer');
-    }
-  }
-
-  // Get payment statistics
+  // Get payment statistics from database
   async getPaymentStats(startDate = null, endDate = null) {
     try {
-      const params = {
-        limit: 100
-      };
+      const query = { isPaid: true };
 
-      if (startDate) {
-        params.created = { gte: Math.floor(startDate.getTime() / 1000) };
+      if (startDate || endDate) {
+        query.paidAt = {};
+        if (startDate) query.paidAt.$gte = startDate;
+        if (endDate) query.paidAt.$lte = endDate;
       }
 
-      if (endDate) {
-        if (!params.created) params.created = {};
-        params.created.lte = Math.floor(endDate.getTime() / 1000);
-      }
-
-      const charges = await stripe.charges.list(params);
+      const orders = await Order.find(query);
       
       const stats = {
-        totalTransactions: charges.data.length,
-        successfulTransactions: charges.data.filter(charge => charge.status === 'succeeded').length,
-        failedTransactions: charges.data.filter(charge => charge.status === 'failed').length,
-        totalAmount: charges.data.reduce((sum, charge) => sum + (charge.amount / 100), 0),
-        refundedAmount: charges.data.reduce((sum, charge) => sum + (charge.amount_refunded / 100), 0)
+        totalTransactions: orders.length,
+        successfulTransactions: orders.filter(order => order.status === 'confirmed').length,
+        failedTransactions: orders.filter(order => order.status === 'cancelled').length,
+        totalAmount: orders.reduce((sum, order) => sum + order.totalPrice, 0),
+        refundedAmount: orders
+          .filter(order => order.status === 'refunded')
+          .reduce((sum, order) => sum + order.totalPrice, 0)
       };
 
       return stats;
@@ -263,9 +227,14 @@ class PaymentService {
   }
 
   // Validate webhook signature
-  validateWebhookSignature(payload, signature, secret) {
+  validateWebhookSignature(payload, signature) {
     try {
-      return stripe.webhooks.constructEvent(payload, signature, secret);
+      const expectedSignature = crypto
+        .createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET)
+        .update(payload)
+        .digest('hex');
+
+      return expectedSignature === signature;
     } catch (error) {
       throw new Error('Invalid webhook signature');
     }

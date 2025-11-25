@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders - Admin Panel</title>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/assets/styles/global.css">
+    <link rel="stylesheet" href="/assets/styles/layout.css">
+    <link rel="stylesheet" href="/assets/styles/components.css">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .admin-section {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge-processing {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .badge-shipped {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        
+        .badge-delivered {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header will be injected here -->
+    <div id="header-placeholder"></div>
+
+    <!-- Main Content -->
+    <main>
+        <div class="admin-container">
+            <div class="admin-section">
+                <h1>Orders Management</h1>
+                <p>View and manage all orders</p>
+            </div>
+
+            <!-- Filters -->
+            <div class="admin-section">
+                <div class="flex flex-between flex-wrap gap-2">
+                    <div class="flex gap-2">
+                        <select id="statusFilter" class="form-select">
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        <input type="date" id="dateFilter" class="form-input">
+                    </div>
+                    <div>
+                        <input type="text" 
+                               id="searchInput" 
+                               class="form-input" 
+                               placeholder="Search orders..."
+                               style="min-width: 250px;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="admin-section">
+                <div id="ordersTable">
+                    <div class="loader"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer will be injected here -->
+    <div id="footer-placeholder"></div>
+
+    <!-- Alert Container -->
+    <div id="alert-container" style="position: fixed; top: 80px; right: 20px; z-index: 9999;"></div>
+
+    <!-- Scripts -->
+    <script src="/scripts/utils.js"></script>
+    <script src="/scripts/api.js"></script>
+    <script src="/scripts/main.js"></script>
+    
+    <!-- Page-specific script -->
+    <script>
+        let currentStatus = '';
+        let currentDate = '';
+        let searchQuery = '';
+
+        /**
+         * Load orders from API
+         */
+        async function loadOrders() {
+            const token = getAuthToken();
+            const ordersContainer = document.getElementById('ordersTable');
+            
+            if (!token) {
+                showAlert('Please login to access orders.', 'error');
+                setTimeout(() => {
+                    window.location.href = '/pages/Auth/login.html';
+                }, 2000);
+                return;
+            }
+
+            showLoader('ordersTable');
+
+            const params = {
+                page: 1,
+                limit: 20
+            };
+
+            if (currentStatus) {
+                params.status = currentStatus;
+            }
+
+            if (currentDate) {
+                params.startDate = currentDate;
+            }
+
+            if (searchQuery) {
+                params.search = searchQuery;
+            }
+
+            try {
+                const response = await apiGet('/admin/orders', params, token);
+                
+                if (response.success && response.data) {
+                    const orders = response.data.orders || response.data || [];
+                    
+                    if (orders.length > 0) {
+                        ordersContainer.innerHTML = `
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Date</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${orders.map(order => `
+                                        <tr>
+                                            <td>#${order._id?.substring(0, 8) || order.id}</td>
+                                            <td>${order.user?.name || order.customerName || 'N/A'}</td>
+                                            <td>${formatDate(order.createdAt || order.date)}</td>
+                                            <td>${order.items?.length || 0}</td>
+                                            <td>${formatCurrency(order.totalPrice || order.total || 0)}</td>
+                                            <td>
+                                                <span class="badge badge-${order.status || 'pending'}">
+                                                    ${(order.status || 'pending').toUpperCase()}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-primary" onclick="viewOrder('${order._id || order.id}')">
+                                                    View
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        `;
+                    } else {
+                        ordersContainer.innerHTML = '<p>No orders found.</p>';
+                    }
+                } else {
+                    ordersContainer.innerHTML = '<p>Failed to load orders.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                ordersContainer.innerHTML = '<p>Error loading orders.</p>';
+            }
+        }
+
+        /**
+         * View order details
+         */
+        function viewOrder(orderId) {
+            // Navigate to order detail page or show modal
+            console.log('View order:', orderId);
+        }
+
+        /**
+         * Initialize page
+         */
+        function initPageSpecific() {
+            loadOrders();
+
+            // Setup filters
+            document.getElementById('statusFilter')?.addEventListener('change', function(e) {
+                currentStatus = e.target.value;
+                loadOrders();
+            });
+
+            document.getElementById('dateFilter')?.addEventListener('change', function(e) {
+                currentDate = e.target.value;
+                loadOrders();
+            });
+
+            // Setup search
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                const debouncedSearch = debounce(function() {
+                    searchQuery = searchInput.value;
+                    loadOrders();
+                }, 500);
+
+                searchInput.addEventListener('input', debouncedSearch);
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
