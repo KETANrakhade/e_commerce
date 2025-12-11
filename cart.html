@@ -303,6 +303,14 @@
             margin-bottom: 10px;
         }
 
+        .item-total {
+            color: #2c3e50;
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin-left: auto;
+            padding-left: 20px;
+        }
+
         .quantity-controls {
             display: flex;
             align-items: center;
@@ -580,7 +588,7 @@
                             <img src="${item.image || 'img/default-product.jpg'}" alt="${item.name}" class="item-image">
                             <div class="item-details">
                                 <div class="item-name">${item.name}</div>
-                                <div class="item-price">₹${item.price}</div>
+                                <div class="item-price">₹${item.price} ${item.quantity > 1 ? `x ${item.quantity}` : ''}</div>
                                 <div class="quantity-controls">
                                     <button class="quantity-btn" onclick="updateQuantity(${index}, -1)">-</button>
                                     <span class="quantity-display">${item.quantity}</span>
@@ -590,8 +598,9 @@
                                     </button>
                                 </div>
                             </div>
+                            <div class="item-total">₹${itemTotal}</div>
                         </div>
-                    `;
+                    `; 
                 });
 
                 container.innerHTML = `

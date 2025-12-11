@@ -721,7 +721,7 @@
             <div class="loader-spinner"></div>
         </div>
     </div>
-
+             
     <!-- Enhanced Navbar -->
     <nav class="navbar navbar-expand-lg fixed-top top-line" id="mainNavbar">
         <div class="container">
@@ -815,10 +815,10 @@
                 <div class="overlay-box">
                     <h1>EXPLORE FASHION COLLECTION</h1>
                     <p>Discover premium styles crafted with detail, designed to fit your lifestyle and enhance your
-                        wardrobe.</p>
+                        wardrobe.</p>                   
                     <button class="btn btn-primary">Discover</button>
                 </div>
-            </div>
+            </div>                                      
         </div>
         <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
             data-bs-slide="prev">
@@ -1054,7 +1054,7 @@
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
-        };
+        };                                       
 
         const observer = new IntersectionObserver(function (entries) {
             entries.forEach(entry => {
@@ -1062,7 +1062,7 @@
                     entry.target.classList.add('animated');
                 }
             });
-        }, observerOptions);
+        }, observerOptions);          
 
         document.querySelectorAll('.animate-on-scroll').forEach(el => {
             observer.observe(el);

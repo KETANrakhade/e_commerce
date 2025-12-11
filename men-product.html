@@ -37,6 +37,7 @@
             background: rgba(255, 255, 255, 0.494);
             box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
+            padding: 20px;
         }
 
         .navbar-brand {
@@ -105,6 +106,7 @@
             padding: 80px 0;
             position: relative;
             overflow: hidden;
+            margin-top: 80px;
         }
 
         .hero-section::before {
@@ -562,6 +564,11 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        .top-line {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.533);
+        }
     </style>
 </head>
 
@@ -572,18 +579,18 @@
     </div>
 
     <!-- Enhanced Navbar -->
-    <nav class="navbar navbar-expand-lg sticky-top">
+    <nav class="navbar navbar-expand-lg fixed-top top-line" id="mainNavbar">
         <div class="container">
             <img class="mx-2" src="img/pyramidal.png" width="40px" height="40px" alt="Pyramid Logo">
-            <a class="navbar-brand" href="index.html">PYRAMID</a>
+            <a class="navbar-brand" id="viewHome" href="#">PYRAMID</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.html" id="viewHome">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#" id="viewMen">Men</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" id="viewHome2">Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="#" id="viewMen">Men</a></li>
                     <li class="nav-item"><a class="nav-link" href="#" id="viewWomen">Women</a></li>
                     <li class="nav-item"><a class="nav-link" href="#" id="discountSale">Sale</a></li>
                 </ul>
@@ -591,11 +598,16 @@
                     <span class="icon-btn" id="userProfile"><i class="fa-regular fa-user"></i></span>
                     <span class="icon-btn position-relative" id="viewWishlist">
                         <i class="fa-regular fa-heart"></i>
-                        <span class="badge"></span>
+                        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill"
+                            style="font-size: 0.7rem; display: none;"></span>
                     </span>
-                    <span class="icon-btn position-relative" id="viewCart">
+                    <span class="icon-btns position-relative" id="viewCart">
                         <i class="bi bi-cart"></i>
-                        <span class="badge"></span>
+                        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill"
+                            style="font-size: 0.7rem; display: none;"></span>
+                    </span>
+                    <span class="icon-btn" id="adminPanel" title="Admin Panel" style="color: #ffd700; display: none;">
+                        <i class="fa-solid fa-crown"></i>
                     </span>
                 </div>
             </div>
@@ -646,1238 +658,7 @@
         <div class="cart-badge" id="cartBadge">0</div>
     </div>
 
-    <!-- REMOVED ALL HARDCODED PRODUCTS - NOW LOADING DYNAMICALLY -->
-    <!-- Old hardcoded product cards removed -->
-
-    <!-- Keeping the rest of the page structure below -->
-    <!--<div class="product-card" data-category="jackets" onclick="goToDetail(1)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-1-front.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="product-card" data-category="jackets" onclick="goToDetail(2)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-2-front.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(3)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-3-front.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(4)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-4-front.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(5)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-5-front.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(6)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-6-e.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(7)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-7-D.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="product-card" data-category="jackets" onclick="goToDetail(8)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-8-d.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(9)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-9-d.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(10)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-10-front.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(11)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-11-e.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(12)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-12-e.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(13)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-13-main.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(14)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-14-e.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(15)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-15-e.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(16)">
-                    <div class="product-image-container">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(17)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-16-d.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(18)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-17-main.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(19)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-18-front.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(20)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-19-front.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(21)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-20-d.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(22)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-21-front.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(23)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-22-front.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(24)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-23-front.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(25)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-24-front.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(26)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-25-front.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(27)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-26-front.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(28)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-27-d.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(29)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-28-front.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="jackets" onclick="goToDetail(30)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-29-d.avif" class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-
-
-                <div class="product-card" data-category="jackets" onclick="goToDetail(31)">
-                    <div class="product-image-container">
-                        <img src="img/men/untitled folder/42fae8c3ba78a0e7ac44f72693fe3fbe934ed511.avif"
-                            class="product-image" alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">COOL FIT JACKET</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="product-card" data-category="t-shirts" onclick="goToDetail(32)">
-                    <div class="product-image-container">
-                        <img src="img/men/untitled folder/d85f0bd72d3f982215ea1299e33591827768a1cd.avif"
-                            class="product-image" alt="Regular Fit T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">REGULAR FIT T-SHIRT</h3>
-                        <div class="product-price">₹1,299</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="far fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Cotton</span>
-                            <span class="product-tag">Casual</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="product-card" data-category="t-shirts" onclick="goToDetail(33)">
-                    <div class="product-image-container">
-                        <img src="img/men/untitled folder/5116adffcdf979ef61cb8b8a2ec9390692d97c48.avif"
-                            class="product-image" alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">SLIM FIT POLO T-SHIRT</h3>
-                        <div class="product-price">₹999</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="t-shirts" onclick="goToDetail(34)">
-                    <div class="product-image-container">
-                        <img src="img/men/untitled folder/e00411a284d051bfcb82d5565c89fcec146cd073.avif"
-                            class="product-image" alt="Full sleeves Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Full sleeves Polo T-Shirt</h3>
-                        <div class="product-price">₹1299</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="t-shirts" onclick="goToDetail(35)">
-                    <div class="product-image-container">
-                        <img src="img/men/untitled folder/fbd1018b126bd6ae61f03958c5f3bc0a6a6f7fcb.avif"
-                            class="product-image" alt="Full sleeves T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Loose Fit Long-sleeved jersey top</h3>
-                        <div class="product-price">₹1199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="t-shirts" onclick="goToDetail(36)">
-                    <div class="product-image-container">
-                        <img src="img/men/untitled folder/9645e8eaebb79df50341cd28ab490e607da08070.avif"
-                            class="product-image" alt="Loose Fit Trousers">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Loose Fit Trousers</h3>
-                        <div class="product-price">₹1499</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="t-shirts" onclick="goToDetail(37)">
-                    <div class="product-image-container">
-                        <img src="img/men/untitled folder/043a99f91c3f2a1539115ffe69c85eef2e1753ca.avif"
-                            class="product-image" alt="Loose Straight Jeans">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Loose Straight Jeans</h3>
-                        <div class="product-price">₹1999</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Jeans</span>
-                            <span class="product-tag">Straight</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="t-shirts" onclick="goToDetail(38)">
-                    <div class="product-image-container">
-                        <img src="img/men/untitled folder/bfbd5f9df2045dcaf83c7f429cf69dadadee1cc9.avif"
-                            class="product-image" alt="Loose Straight Jeans">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Loose Straight Jeans</h3>
-                        <div class="product-price">₹1999</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="t-shirts" onclick="goToDetail(49)">
-                    <div class="product-image-container">
-                        <img src="img/men/untitled folder/bde4ef42f917ccb678c4ff1d218520ce2f10ff6d.avif"
-                            class="product-image" alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Slim Fit T-Shirt</h3>
-                        <div class="product-price">₹999</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="t-shirts" onclick="goToDetail(40)">
-                    <div class="product-image-container">
-                        <img src="img/men/untitled folder/655adb624c05673ec8beb940ce9294f4a76ec6b4.avif"
-                            class="product-image" alt="Relaxed Fit Tailored trousers">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Relaxed Fit Tailored trousers</h3>
-                        <div class="product-price">₹1299</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">relaxed</span>
-                            <span class="product-tag">Slim </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="t-shirts" onclick="goToDetail(41)">
-                    <div class="product-image-container">
-                        <img src="img/men/untitled folder/5af0f34c2681a5e51a42d4a9e771497dd3c70933.avif"
-                            class="product-image" alt="Loose Fit Rugby shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Loose Fit Rugby shirt</h3>
-                        <div class="product-price">₹1399</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="t-shirts" onclick="goToDetail(42)">
-                    <div class="product-image-container">
-                        <img src="img/men/untitled folder/7aee6d7a9fbbd0e384624fa1a16d38051b1aed81.avif"
-                            class="product-image" alt="Relaxed Fit Tailored trousers">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Relaxed Fit Tailored trousers</h3>
-                        <div class="product-price">₹1199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">trousers</span>
-                            <span class="product-tag">Relaxed </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="t-shirts" onclick="goToDetail(43)">
-                    <div class="product-image-container">
-                        <img src="img/men/untitled folder/e.avif" class="product-image"
-                            alt="Relaxed Fit Tailored trousers">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Relaxed Fit Tailored trousers</h3>
-                        <div class="product-price">₹1299</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">trousers</span>
-                            <span class="product-tag">Relaxed </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="t-shirts" onclick="goToDetail(44)">
-                    <div class="product-image-container">
-                        <img src="img/men/untitled folder/cd57e19407b3eafc4b2b22de5dfca7506822a8dd.avif"
-                            class="product-image" alt="Relaxed Fit Tailored trousers">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Loose Fit Sweatshirt</h3>
-                        <div class="product-price">₹1899</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">trousers</span>
-                            <span class="product-tag">Relaxed </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="t-shirts" onclick="goToDetail(45)">
-                    <div class="product-image-container">
-                        <img src="img/men/untitled folder/1f61d74a2f089eb63dd156e1cda60e1fc26b24c5.avif"
-                            class="product-image" alt="Hooded workwear jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Hooded workwear jacket</h3>
-                        <div class="product-price">₹2999</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">trousers</span>
-                            <span class="product-tag">Relaxed </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="t-shirts" onclick="goToDetail(46)">
-                    <div class="product-image-container">
-                        <img src="img/men/new images/img-1-front.avif" class="product-image"
-                            alt="Hooded workwear jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Hooded workwear jacket</h3>
-                        <div class="product-price">₹2999</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">trousers</span>
-                            <span class="product-tag">Relaxed </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="t-shirts" onclick="goToDetail(47)">
-                    <div class="product-image-container">
-                        <img src="img/men/untitled folder/1f61d74a2f089eb63dd156e1cda60e1fc26b24c5.avif"
-                            class="product-image" alt="Hooded workwear jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Hooded workwear jacket</h3>
-                        <div class="product-price">₹2999</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">trousers</span>
-                            <span class="product-tag">Relaxed </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="t-shirts" onclick="goToDetail(48)">
-                    <div class="product-image-container">
-                        <img src="img/men/untitled folder/1f61d74a2f089eb63dd156e1cda60e1fc26b24c5.avif"
-                            class="product-image" alt="Hooded workwear jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Hooded workwear jacket</h3>
-                        <div class="product-price">₹2999</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">trousers</span>
-                            <span class="product-tag">Relaxed </span>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
+   
     <!-- Floating Cart Button -->
     <div class="floating-cart" id="floatingCart">
         <i class="fas fa-shopping-cart"></i>
@@ -2004,11 +785,20 @@
         // Cart Badge Update
         function updateCartBadge() {
             const cart = JSON.parse(localStorage.getItem('cart_v1') || '[]');
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            const badge = document.getElementById('cartBadge');
-            if (badge) {
-                badge.textContent = totalItems;
-                badge.style.display = totalItems > 0 ? 'flex' : 'none';
+            const totalItems = cart.length; // Count unique products, not total quantity
+            
+            // Update floating cart badge
+            const floatingBadge = document.getElementById('cartBadge');
+            if (floatingBadge) {
+                floatingBadge.textContent = totalItems;
+                floatingBadge.style.display = totalItems > 0 ? 'flex' : 'none';
+            }
+            
+            // Update navbar cart badge
+            const navbarBadge = document.querySelector('#viewCart .badge');
+            if (navbarBadge) {
+                navbarBadge.textContent = totalItems > 0 ? totalItems : '';
+                navbarBadge.style.display = totalItems > 0 ? 'inline-block' : 'none';
             }
         }
         
@@ -2039,18 +829,48 @@
             });
         }
 
-        // Navigation Event Listeners
-        document.getElementById("viewHome").addEventListener("click", function () {
-            window.location.href = "index.html";
-        });
-        document.getElementById("viewMen").addEventListener("click", function () {
-            window.location.href = "men-product.html";
-        });
-        document.getElementById("viewWomen").addEventListener("click", function () {
-            window.location.href = "women-product.html";
-        });
-        document.getElementById("viewCart").addEventListener("click", function () {
-            window.location.href = "cart.html";
+        // Navigation Event Listeners - Wrapped in DOMContentLoaded for safety
+        document.addEventListener('DOMContentLoaded', function() {
+            const viewHome = document.getElementById("viewHome");
+            if (viewHome) {
+                viewHome.addEventListener("click", function () {
+                    window.location.href = "index.html";
+                });
+            }
+            
+            const viewHome2 = document.getElementById("viewHome2");
+            if (viewHome2) {
+                viewHome2.addEventListener("click", function () {
+                    window.location.href = "index.html";
+                });
+            }
+            
+            const viewMen = document.getElementById("viewMen");
+            if (viewMen) {
+                viewMen.addEventListener("click", function () {
+                    // Set active state immediately
+                    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+                    viewMen.classList.add('active');
+                    window.location.href = "men-product.html";
+                });
+            }
+            
+            const viewWomen = document.getElementById("viewWomen");
+            if (viewWomen) {
+                viewWomen.addEventListener("click", function () {
+                    // Set active state immediately
+                    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+                    viewWomen.classList.add('active');
+                    window.location.href = "women-product.html";
+                });
+            }
+            
+            const viewCart = document.getElementById("viewCart");
+            if (viewCart) {
+                viewCart.addEventListener("click", function () {
+                    window.location.href = "cart.html";
+                });
+            }
         });
         document.getElementById("floatingCart").addEventListener("click", function () {
             window.location.href = "cart.html";
@@ -2082,6 +902,36 @@
                     });
                 }
             });
+        });
+
+        // Set active nav link based on current page
+        function setActiveNavLink() {
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Set active based on current page
+            if (currentPage === 'men-product.html' || currentPage.includes('men')) {
+                const menLink = document.getElementById('viewMen');
+                if (menLink) menLink.classList.add('active');
+            } else if (currentPage === 'women-product.html' || currentPage.includes('women')) {
+                const womenLink = document.getElementById('viewWomen');
+                if (womenLink) womenLink.classList.add('active');
+            } else if (currentPage === 'index.html' || currentPage === '' || currentPage === 'index') {
+                const homeLink = document.getElementById('viewHome2') || document.getElementById('viewHome');
+                if (homeLink) homeLink.classList.add('active');
+            } else if (currentPage.includes('discount')) {
+                const saleLink = document.getElementById('discountSale');
+                if (saleLink) saleLink.classList.add('active');
+            }
+        }
+
+        // Set active nav link on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setActiveNavLink();
         });
     </script>
     <script src="auth-check.js"></script>

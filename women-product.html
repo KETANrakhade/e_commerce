@@ -37,6 +37,7 @@
             background: rgba(255, 255, 255, 0.46);
             box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
+            padding: 20px;
         }
 
         .navbar-brand {
@@ -105,6 +106,7 @@
             padding: 80px 0;
             position: relative;
             overflow: hidden;
+            margin-top: 80px;
         }
 
         .hero-section::before {
@@ -562,6 +564,11 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        .top-line {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.533);
+        }
     </style>
 </head>
 
@@ -572,30 +579,35 @@
     </div>
 
     <!-- Enhanced Navbar -->
-    <nav class="navbar navbar-expand-lg sticky-top">
+    <nav class="navbar navbar-expand-lg fixed-top top-line" id="mainNavbar">
         <div class="container">
             <img class="mx-2" src="img/pyramidal.png" width="40px" height="40px" alt="Pyramid Logo">
-            <a class="navbar-brand" href="index.html">PYRAMID</a>
+            <a class="navbar-brand" id="viewHome" href="#">PYRAMID</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.html" id="viewHome">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" id="viewHome2">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="#" id="viewMen">Men</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#" id="viewWomen">Women</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="#" id="viewWomen">Women</a></li>
                     <li class="nav-item"><a class="nav-link" href="#" id="discountSale">Sale</a></li>
                 </ul>
                 <div class="d-flex align-items-center">
                     <span class="icon-btn" id="userProfile"><i class="fa-regular fa-user"></i></span>
                     <span class="icon-btn position-relative" id="viewWishlist">
                         <i class="fa-regular fa-heart"></i>
-                        <span class="badge"></span>
+                        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill"
+                            style="font-size: 0.7rem; display: none;"></span>
                     </span>
-                    <span class="icon-btn position-relative" id="viewCart">
+                    <span class="icon-btns position-relative" id="viewCart">
                         <i class="bi bi-cart"></i>
-                        <span class="badge"></span>
+                        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill"
+                            style="font-size: 0.7rem; display: none;"></span>
+                    </span>
+                    <span class="icon-btn" id="adminPanel" title="Admin Panel" style="color: #ffd700; display: none;">
+                        <i class="fa-solid fa-crown"></i>
                     </span>
                 </div>
             </div>
@@ -637,513 +649,6 @@
         </div>
     </section>
 
-    <!-- REMOVED ALL HARDCODED PRODUCTS - NOW LOADING DYNAMICALLY -->
-    <!-- Old hardcoded product cards removed -->
-    
-    <!--<div class="product-card" data-category="shirts" onclick="goToDetail(42)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-1-main.jpg" class="product-image"
-                            alt="Cool Fit Jacket">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Pointelle-knit beach dress</h3>
-                        <div class="product-price">₹1,199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Casual</span>
-                            <span class="product-tag">Trendy</span>
-                        </div>
-                    </div>
-                </div>
-
-
-                <div class="product-card" data-category="dresses" onclick="goToDetail(43)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-2-main.jpg" class="product-image"
-                            alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Flared-skirt dress - Olive green</h3>
-                        <div class="product-price">₹999</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-              
-                <div class="product-card" data-category="dresses" onclick="goToDetail(44)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-3-main.jpg" class="product-image"
-                            alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Frill-trimmed dress - Dark green_Paisley pattern
-                        </h3>
-                        <div class="product-price">₹1199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="dresses" onclick="goToDetail(45)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-4-main.jpg" class="product-image"
-                            alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Jacquard-weave dress - Beige
-                        </h3>
-                        <div class="product-price">₹2999</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="dresses" onclick="goToDetail(46)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-5-main.jpg" class="product-image"
-                            alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Long fitted dress - Dark red</h3>
-                        <div class="product-price">₹1299</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="dresses" onclick="goToDetail(47)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-6-main.jpg" class="product-image"
-                            alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Textured-knit cardigan
-                        </h3>
-                        <div class="product-price">₹2299</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="dresses" onclick="goToDetail(48)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-7-main.jpg" class="product-image"
-                            alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Short dress - Burgundy</h3>
-                        <div class="product-price">₹2199</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="dresses" onclick="goToDetail(49)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-8-main.jpg" class="product-image"
-                            alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Smocked-detail dress - Black_Patterned</h3>
-                        <div class="product-price">₹2999</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="dresses" onclick="goToDetail(50)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-9-main.jpg" class="product-image"
-                            alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Zip-front shift dress - Brown</h3>
-                        <div class="product-price">₹2499</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="dresses" onclick="goToDetail(51)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-10-main.jpg" class="product-image"
-                            alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Voluminous bow-back dress - Cream_Floral</h3>
-                        <div class="product-price">₹999</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="dresses" onclick="goToDetail(52)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-11-main.jpg" class="product-image" alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Flared trousers - Beige_Checked
-                        </h3>
-                        <div class="product-price">₹1529</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="dresses" onclick="goToDetail(53)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-12-main.jpg" class="product-image"
-                            alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">OFF-THE-SHOULDER DRESS
-                            </h3>
-                        <div class="product-price">₹2,209</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card" data-category="dresses" onclick="goToDetail(54)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-13-main.jpg" class="product-image"
-                            alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Wide High Jeans - Brown_Leopard </h3>
-                        <div class="product-price">₹2399</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                  <div class="product-card" data-category="dresses" onclick="goToDetail(55)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-14-main.jpg" class="product-image"
-                            alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Belted turtleneck top</h3>
-                        <div class="product-price">₹2399</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                  <div class="product-card" data-category="dresses" onclick="goToDetail(56)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-15-main.jpg" class="product-image"
-                            alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Oversized cotton shirt</h3>
-                        <div class="product-price">₹2399</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                  <div class="product-card" data-category="dresses" onclick="goToDetail(57)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-16-main.jpg" class="product-image"
-                            alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Pleated mini skirt </h3>
-                        <div class="product-price">₹2399</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                  <div class="product-card" data-category="dresses" onclick="goToDetail(58)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-17-main.jpg" class="product-image"
-                            alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Belted turtleneck top</h3>
-                        <div class="product-price">₹2399</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                 <div class="product-card" data-category="dresses" onclick="goToDetail(59)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-18-main.jpg" class="product-image"
-                            alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Wide trousers</h3>
-                        <div class="product-price">₹2399</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-                 <div class="product-card" data-category="dresses" onclick="goToDetail(60)">
-                    <div class="product-image-container">
-                        <img src="img/women/new images/img-22-main.jpg" class="product-image"
-                            alt="Slim Fit Polo T-Shirt">
-                        <div class="product-overlay">
-                            <div class="overlay-content">
-                                <button class="quick-view-btn">Quick View</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Belted turtleneck top</h3>
-                        <div class="product-price">₹2399</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                        </div>
-                        <div class="product-tags">
-                            <span class="product-tag">Polo</span>
-                            <span class="product-tag">Slim Fit</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- Floating Cart Button -->
     <div class="floating-cart" id="floatingCart">
@@ -1170,7 +675,7 @@
                 const womenLink = document.getElementById('viewWomen');
                 if (womenLink) womenLink.classList.add('active');
             } else if (currentPage === 'index.html' || currentPage === '' || currentPage === 'index') {
-                const homeLink = document.getElementById('viewHome');
+                const homeLink = document.getElementById('viewHome2') || document.getElementById('viewHome');
                 if (homeLink) homeLink.classList.add('active');
             } else if (currentPage.includes('discount')) {
                 const saleLink = document.getElementById('discountSale');
@@ -1265,11 +770,20 @@
         // Cart Badge Update
         function updateCartBadge() {
             const cart = JSON.parse(localStorage.getItem('cart_v1') || '[]');
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            const badge = document.getElementById('cartBadge');
-            if (badge) {
-                badge.textContent = totalItems;
-                badge.style.display = totalItems > 0 ? 'flex' : 'none';
+            const totalItems = cart.length; // Count unique products, not total quantity
+            
+            // Update floating cart badge
+            const floatingBadge = document.getElementById('cartBadge');
+            if (floatingBadge) {
+                floatingBadge.textContent = totalItems;
+                floatingBadge.style.display = totalItems > 0 ? 'flex' : 'none';
+            }
+            
+            // Update navbar cart badge
+            const navbarBadge = document.querySelector('#viewCart .badge');
+            if (navbarBadge) {
+                navbarBadge.textContent = totalItems > 0 ? totalItems : '';
+                navbarBadge.style.display = totalItems > 0 ? 'inline-block' : 'none';
             }
         }
         
@@ -1300,18 +814,48 @@
             });
         }
 
-        // Navigation Event Listeners
-        document.getElementById("viewHome").addEventListener("click", function () {
-            window.location.href = "index.html";
-        });
-        document.getElementById("viewMen").addEventListener("click", function () {
-            window.location.href = "men-product.html";
-        });
-        document.getElementById("viewWomen").addEventListener("click", function () {
-            window.location.href = "women-product.html";
-        });
-        document.getElementById("viewCart").addEventListener("click", function () {
-            window.location.href = "cart.html";
+        // Navigation Event Listeners - Wrapped in DOMContentLoaded for safety
+        document.addEventListener('DOMContentLoaded', function() {
+            const viewHome = document.getElementById("viewHome");
+            if (viewHome) {
+                viewHome.addEventListener("click", function () {
+                    window.location.href = "index.html";
+                });
+            }
+            
+            const viewHome2 = document.getElementById("viewHome2");
+            if (viewHome2) {
+                viewHome2.addEventListener("click", function () {
+                    window.location.href = "index.html";
+                });
+            }
+            
+            const viewMen = document.getElementById("viewMen");
+            if (viewMen) {
+                viewMen.addEventListener("click", function () {
+                    // Set active state immediately
+                    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+                    viewMen.classList.add('active');
+                    window.location.href = "men-product.html";
+                });
+            }
+            
+            const viewWomen = document.getElementById("viewWomen");
+            if (viewWomen) {
+                viewWomen.addEventListener("click", function () {
+                    // Set active state immediately
+                    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+                    viewWomen.classList.add('active');
+                    window.location.href = "women-product.html";
+                });
+            }
+            
+            const viewCart = document.getElementById("viewCart");
+            if (viewCart) {
+                viewCart.addEventListener("click", function () {
+                    window.location.href = "cart.html";
+                });
+            }
         });
         document.getElementById("floatingCart").addEventListener("click", function () {
             window.location.href = "cart.html";
