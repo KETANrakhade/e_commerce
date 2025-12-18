@@ -65,10 +65,28 @@ if ($usersData['success'] && isset($usersData['data'])) {
     ];
 }
 
-// Create users structure with pagination
+// Extract unique roles from users data
+$availableRoles = [];
+if (!empty($allUsers)) {
+    foreach ($allUsers as $user) {
+        if (isset($user['role']) && !in_array($user['role'], $availableRoles)) {
+            $availableRoles[] = $user['role'];
+        }
+    }
+    // Sort roles alphabetically
+    sort($availableRoles);
+}
+
+// Add default roles if none found (for empty user list)
+if (empty($availableRoles)) {
+    $availableRoles = ['admin', 'user'];
+}
+
+// Create users structure with pagination and roles
 $users = [
     'users' => $allUsers,
-    'pagination' => $pagination
+    'pagination' => $pagination,
+    'roles' => $availableRoles
 ];
 
 // Handle status update

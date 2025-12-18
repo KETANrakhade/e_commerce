@@ -317,6 +317,50 @@ class ApiClient {
     }
     
     /**
+     * Get subcategories from Node.js
+     */
+    public function getSubcategories($params = []) {
+        $queryString = http_build_query($params);
+        $endpoint = 'subcategories' . ($queryString ? '?' . $queryString : '');
+        return $this->makeRequest($endpoint);
+    }
+    
+    /**
+     * Get subcategories by category ID from Node.js
+     */
+    public function getSubcategoriesByCategory($categoryId) {
+        return $this->makeRequest('subcategories/category/' . $categoryId);
+    }
+    
+    /**
+     * Get subcategory by ID from Node.js
+     */
+    public function getSubcategoryById($id) {
+        return $this->makeRequest('subcategories/' . $id);
+    }
+    
+    /**
+     * Create subcategory via Node.js
+     */
+    public function createSubcategory($subcategoryData) {
+        return $this->makeRequest('admin/subcategories', 'POST', $subcategoryData);
+    }
+    
+    /**
+     * Update subcategory via Node.js
+     */
+    public function updateSubcategory($id, $subcategoryData) {
+        return $this->makeRequest('admin/subcategories/' . $id, 'PUT', $subcategoryData);
+    }
+    
+    /**
+     * Delete subcategory via Node.js
+     */
+    public function deleteSubcategory($id) {
+        return $this->makeRequest('admin/subcategories/' . $id, 'DELETE');
+    }
+
+    /**
      * Set authentication token
      */
     public function setToken($token) {

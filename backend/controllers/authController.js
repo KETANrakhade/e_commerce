@@ -97,7 +97,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   const resetUrl = `${req.protocol}://${req.get('host')}/reset-password.html?token=${resetToken}`;
 
   try {
-    await emailService.sendPasswordResetEmail(user.email, resetUrl);
+    await emailService.sendPasswordResetEmail(user, resetToken);
 
     res.json({
       success: true,

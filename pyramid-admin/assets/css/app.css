@@ -499,10 +499,46 @@ body[data-layout=horizontal] .footer {
   width: 70px !important;
 }
 .vertical-collpsed .logo span.logo-lg {
-  display: none;
+  display: none !important;
 }
 .vertical-collpsed .logo span.logo-sm {
-  display: block;
+  display: block !important;
+}
+
+/* Fix for logo alignment when sidebar is collapsed */
+.vertical-collpsed .navbar-brand-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vertical-collpsed .navbar-brand-box .logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 70px;
+  width: 100%;
+}
+
+/* Ensure proper logo display in normal state */
+body:not(.vertical-collpsed) .logo span.logo-lg {
+  display: flex !important;
+  align-items: center;
+}
+
+body:not(.vertical-collpsed) .logo span.logo-sm {
+  display: none !important;
+}
+
+/* Additional fixes for logo positioning */
+.navbar-brand-box .logo {
+  display: flex;
+  align-items: center;
+  height: 70px;
+}
+
+.vertical-collpsed .logo span.logo-sm img {
+  margin: 0 auto;
 }
 .vertical-collpsed .vertical-menu {
   position: absolute;

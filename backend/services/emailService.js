@@ -183,8 +183,9 @@ class EmailService {
 
   // Password reset email
   async sendPasswordResetEmail(user, resetToken) {
+    console.log('📧 Sending password reset email to:', user.email);
     const subject = 'Password Reset Request';
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5500'}/reset-password.html?token=${resetToken}`;
     
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -193,7 +194,7 @@ class EmailService {
         <p>You requested a password reset for your PYRAMID account.</p>
         <p>Click the button below to reset your password:</p>
         <a href="${resetUrl}" style="background: #65AAC3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0;">Reset Password</a>
-        <p>This link will expire in 1 hour for security reasons.</p>
+        <p>This link will expire in 10 minutes for security reasons.</p>
         <p>If you didn't request this reset, please ignore this email.</p>
         <p>Best regards,<br>The PYRAMID Team</p>
       </div>

@@ -45,6 +45,9 @@
         <script src="assets/js/admin-functions.js"></script>
 
         <script src="assets/js/app.js"></script>
+        
+        <!-- Logo fix js -->
+        <script src="assets/js/logo-fix.js"></script>
 
     </body>
 </html>

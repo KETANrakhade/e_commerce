@@ -451,19 +451,28 @@ async function getCategoryId(categoryName, token) {
   }
 }
 
-async function addProduct(product, token, categoryId) {
+async function addProduct(product, token, categoryId, index) {
   try {
     // Format images properly for the backend
-    const formattedImages = product.images.map((url, index) => ({
+    const formattedImages = product.images.map((url, imgIndex) => ({
       url: url,
-      publicId: `product-${Date.now()}-${index}`,
+      publicId: `product-${Date.now()}-${index}-${imgIndex}-${Math.floor(Math.random() * 10000)}`,
       alt: product.name,
-      isPrimary: index === 0
+      isPrimary: imgIndex === 0
     }));
     
-    // Build product data - brand is optional, so we'll skip it if not needed
+    // Build product data with unique identifiers
+    const timestamp = Date.now();
+    const randomSuffix = Math.floor(Math.random() * 100000);
+    const uniqueId = `${timestamp}-${index}-${randomSuffix}`;
+    
+    // Add a small delay to ensure unique timestamps
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
     const productData = {
-      name: product.name,
+      name: `${product.name} (${index + 1})`, // Make name unique
+      slug: `${product.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-')}-${uniqueId}`,
+      sku: `${product.category.substring(0, 3).toUpperCase()}-${uniqueId}`,
       description: product.description || `${product.name} - Premium quality product`,
       price: product.price,
       category: categoryId,
@@ -474,8 +483,6 @@ async function addProduct(product, token, categoryId) {
       featured: product.featured || false,
       isActive: true
     };
-    
-    // Don't include brand if it's not a valid ID - it's optional
     
     const response = await axios.post(
       `${API_BASE}/admin/products`,
@@ -549,14 +556,18 @@ async function addAllProducts() {
     for (let i = 0; i < mensProducts.length; i++) {
       const product = mensProducts[i];
       try {
-        await addProduct(product, token, menCategoryId);
+        await addProduct(product, token, menCategoryId, i);
         console.log(`✅ [${i + 1}/15] ${product.name}`);
         successCount++;
         // Small delay to avoid overwhelming the server
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 300));
       } catch (error) {
-        console.log(`❌ [${i + 1}/15] ${product.name} - ${error.message}`);
-        failCount++;
+        if (error.message.includes('Product already exists')) {
+          console.log(`⚠️  [${i + 1}/15] ${product.name} - Already exists, skipping`);
+        } else {
+          console.log(`❌ [${i + 1}/15] ${product.name} - ${error.message}`);
+          failCount++;
+        }
       }
     }
     
@@ -565,14 +576,18 @@ async function addAllProducts() {
     for (let i = 0; i < womensProducts.length; i++) {
       const product = womensProducts[i];
       try {
-        await addProduct(product, token, womenCategoryId);
+        await addProduct(product, token, womenCategoryId, i + 15);
         console.log(`✅ [${i + 1}/15] ${product.name}`);
         successCount++;
         // Small delay to avoid overwhelming the server
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 300));
       } catch (error) {
-        console.log(`❌ [${i + 1}/15] ${product.name} - ${error.message}`);
-        failCount++;
+        if (error.message.includes('Product already exists')) {
+          console.log(`⚠️  [${i + 1}/15] ${product.name} - Already exists, skipping`);
+        } else {
+          console.log(`❌ [${i + 1}/15] ${product.name} - ${error.message}`);
+          failCount++;
+        }
       }
     }
     

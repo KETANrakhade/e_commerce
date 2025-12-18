@@ -785,7 +785,7 @@
 
     <!-- Hero Section -->
     <section class="hero-section">
-        <video class="hero-video" autoplay loop muted playsinline>
+        <video class="hero-video" autoplay loop muted playsinline preload="metadata">
             <source src="backup.mp4" type="video/mp4">
         </video>
         <div class="hero-overlay"></div>
@@ -992,7 +992,7 @@
 
     <!-- Enhanced Video Section -->
     <section class="video-section animate-on-scroll">
-        <video class="video-bg" autoplay loop muted playsinline>
+        <video class="video-bg" autoplay loop muted playsinline preload="metadata">
             <source src="file.mp4" type="video/mp4">
         </video>
         <div class="video-overlay"></div>
@@ -1059,12 +1059,28 @@
     <script src="script.js"></script>
 
     <script>
-        // Page Loader
-        window.addEventListener('load', function () {
-            setTimeout(() => {
+        // Page Loader - Optimized for faster loading
+        let loaderHidden = false;
+        
+        function hideLoader() {
+            if (!loaderHidden) {
                 document.getElementById('pageLoader').classList.add('hidden');
-            }, 1500);
+                loaderHidden = true;
+            }
+        }
+        
+        // Hide loader when DOM is ready (faster)
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(hideLoader, 500);
         });
+        
+        // Fallback: Hide loader when all resources are loaded
+        window.addEventListener('load', function () {
+            hideLoader();
+        });
+        
+        // Emergency fallback: Hide loader after maximum wait time
+        setTimeout(hideLoader, 3000);
 
         // Navbar Scroll Effect
         window.addEventListener('scroll', function () {

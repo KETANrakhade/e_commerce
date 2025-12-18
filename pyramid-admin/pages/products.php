@@ -1,4 +1,43 @@
 <?php
+// Handle AJAX requests for subcategories
+if (isset($_GET['ajax']) && $_GET['ajax'] === 'subcategories') {
+    header('Content-Type: application/json');
+    
+    $categoryId = $_GET['category'] ?? '';
+    if (empty($categoryId)) {
+        echo json_encode(['success' => false, 'error' => 'Category ID is required']);
+        exit;
+    }
+    
+    // Include API client
+    require_once __DIR__ . '/../config/api_client.php';
+    $apiClient = getApiClient();
+    
+    // Fetch subcategories from API
+    $result = $apiClient->getSubcategoriesByCategory($categoryId);
+    
+    if ($result['success']) {
+        // Extract subcategories from response
+        $subcategories = [];
+        if (isset($result['data']['data'])) {
+            $subcategories = $result['data']['data'];
+        } elseif (isset($result['data']) && is_array($result['data'])) {
+            $subcategories = $result['data'];
+        }
+        
+        echo json_encode([
+            'success' => true,
+            'subcategories' => $subcategories
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'error' => $result['error'] ?? 'Failed to load subcategories'
+        ]);
+    }
+    exit;
+}
+
 // Handle product actions
 $action = $_GET['action'] ?? 'list';
 $productId = $_GET['id'] ?? '';
@@ -139,6 +178,7 @@ if ($_POST && isset($_POST['action'])) {
             'description' => trim($_POST['description'] ?? ''),
             'price' => floatval($_POST['price'] ?? 0),
             'category' => trim($_POST['category'] ?? ''),
+            'subcategory' => !empty($_POST['subcategory']) ? trim($_POST['subcategory']) : null,
             'stock' => intval($_POST['stock'] ?? 0),
             'isActive' => isset($_POST['isActive']) ? true : true, // Default to active
             'featured' => isset($_POST['featured']) ? true : false
@@ -233,6 +273,7 @@ if ($_POST && isset($_POST['action'])) {
             'description' => $_POST['description'],
             'price' => floatval($_POST['price']),
             'category' => $_POST['category'],
+            'subcategory' => !empty($_POST['subcategory']) ? $_POST['subcategory'] : null,
             'stock' => intval($_POST['stock']),
             'images' => explode(',', $_POST['images']),
             'brand' => $_POST['brand'],
@@ -529,11 +570,12 @@ if ($action === 'edit' && $productId) {
                                                     
                                                     // Handle different response structures
                                                     if ($categoriesData['success']) {
-                                                        // API returns: {success: true, data: {categories: [...], pagination: {...}}}
-                                                        if (isset($categoriesData['data']['categories'])) {
-                                                            $availableCategories = $categoriesData['data']['categories'];
-                                                        } elseif (isset($categoriesData['data']['data']['categories'])) {
+                                                        // The API client wraps the response, so we have nested data
+                                                        // Structure: {success: true, data: {success: true, data: {categories: [...]}}}
+                                                        if (isset($categoriesData['data']['data']['categories'])) {
                                                             $availableCategories = $categoriesData['data']['data']['categories'];
+                                                        } elseif (isset($categoriesData['data']['categories'])) {
+                                                            $availableCategories = $categoriesData['data']['categories'];
                                                         } elseif (isset($categoriesData['data']['data']) && is_array($categoriesData['data']['data'])) {
                                                             $availableCategories = $categoriesData['data']['data'];
                                                         } elseif (is_array($categoriesData['data'])) {
@@ -589,6 +631,13 @@ if ($action === 'edit' && $productId) {
                                                 <?php else: ?>
                                                     <small class="text-muted"><?php echo count($availableCategories); ?> category(ies) available</small>
                                                 <?php endif; ?>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="subcategory">Sub-Category</label>
+                                                <select id="subcategory" name="subcategory" class="form-control">
+                                                    <option value="">Select Sub-Category (Optional)</option>
+                                                </select>
+                                                <small class="text-muted">Select a category first to load sub-categories</small>
                                             </div>
                                         </div>
 
@@ -688,6 +737,26 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // Category-Subcategory functionality
+    const categorySelect = document.getElementById('category');
+    const subcategorySelect = document.getElementById('subcategory');
+    
+    if (categorySelect && subcategorySelect) {
+        categorySelect.addEventListener('change', function() {
+            const categoryId = this.value;
+            loadSubcategories(categoryId);
+        });
+        
+        // Load subcategories for edit form if category is already selected
+        <?php if ($action === 'edit' && !empty($product['category'])): ?>
+            const initialCategoryId = '<?php echo is_array($product['category']) ? ($product['category']['_id'] ?? '') : $product['category']; ?>';
+            const initialSubcategoryId = '<?php echo is_array($product['subcategory']) ? ($product['subcategory']['_id'] ?? '') : ($product['subcategory'] ?? ''); ?>';
+            if (initialCategoryId) {
+                loadSubcategories(initialCategoryId, initialSubcategoryId);
+            }
+        <?php endif; ?>
+    }
 });
 
 function applyFilters() {
@@ -702,6 +771,51 @@ function applyFilters() {
     if (status) params.append('status', status);
     
     window.location.href = '?' + params.toString();
+}
+
+function loadSubcategories(categoryId, selectedSubcategoryId = '') {
+    const subcategorySelect = document.getElementById('subcategory');
+    if (!subcategorySelect || !categoryId) {
+        // Clear subcategories if no category selected
+        subcategorySelect.innerHTML = '<option value="">Select Sub-Category (Optional)</option>';
+        return;
+    }
+    
+    // Show loading state
+    subcategorySelect.innerHTML = '<option value="">Loading sub-categories...</option>';
+    subcategorySelect.disabled = true;
+    
+    // Fetch subcategories via AJAX
+    fetch(`<?php echo $_SERVER['PHP_SELF']; ?>?ajax=subcategories&category=${categoryId}`)
+        .then(response => response.json())
+        .then(data => {
+            subcategorySelect.innerHTML = '<option value="">Select Sub-Category (Optional)</option>';
+            
+            if (data.success && data.subcategories && data.subcategories.length > 0) {
+                data.subcategories.forEach(subcategory => {
+                    const option = document.createElement('option');
+                    option.value = subcategory._id || subcategory.id;
+                    option.textContent = subcategory.name;
+                    if (selectedSubcategoryId && (subcategory._id === selectedSubcategoryId || subcategory.id === selectedSubcategoryId)) {
+                        option.selected = true;
+                    }
+                    subcategorySelect.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'No sub-categories available';
+                option.disabled = true;
+                subcategorySelect.appendChild(option);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading subcategories:', error);
+            subcategorySelect.innerHTML = '<option value="">Error loading sub-categories</option>';
+        })
+        .finally(() => {
+            subcategorySelect.disabled = false;
+        });
 }
 
 function deleteProduct(productId) {

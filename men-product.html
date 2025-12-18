@@ -248,9 +248,11 @@
 
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
             padding: 0 20px;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         .product-card {
@@ -496,7 +498,7 @@
             }
 
             .product-grid {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
                 gap: 20px;
                 padding: 0 15px;
             }
@@ -539,7 +541,7 @@
             }
 
             .product-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
                 gap: 15px;
             }
 
@@ -671,39 +673,11 @@
 
 
 
-        // Set active nav link based on current page
-        function setActiveNavLink() {
-            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-            const navLinks = document.querySelectorAll('.nav-link');
-            
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-            });
-            
-            // Set active based on current page
-            if (currentPage === 'men-product.html' || currentPage.includes('men')) {
-                const menLink = document.getElementById('viewMen');
-                if (menLink) menLink.classList.add('active');
-            } else if (currentPage === 'women-product.html' || currentPage.includes('women')) {
-                const womenLink = document.getElementById('viewWomen');
-                if (womenLink) womenLink.classList.add('active');
-            } else if (currentPage === 'index.html' || currentPage === '' || currentPage === 'index') {
-                const homeLink = document.getElementById('viewHome');
-                if (homeLink) homeLink.classList.add('active');
-            } else if (currentPage.includes('discount')) {
-                const saleLink = document.getElementById('discountSale');
-                if (saleLink) saleLink.classList.add('active');
-            }
-        }
-
-        // Page Loading Animation
+        // Page Loading Animation - Optimized
         document.addEventListener('DOMContentLoaded', function () {
             setTimeout(() => {
                 document.getElementById('loadingOverlay').classList.add('hidden');
-            }, 1000);
-
-            // Set active nav link
-            setActiveNavLink();
+            }, 600);
 
             // Initialize scroll animations
             initScrollAnimations();
@@ -848,9 +822,6 @@
             const viewMen = document.getElementById("viewMen");
             if (viewMen) {
                 viewMen.addEventListener("click", function () {
-                    // Set active state immediately
-                    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-                    viewMen.classList.add('active');
                     window.location.href = "men-product.html";
                 });
             }
@@ -858,9 +829,6 @@
             const viewWomen = document.getElementById("viewWomen");
             if (viewWomen) {
                 viewWomen.addEventListener("click", function () {
-                    // Set active state immediately
-                    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-                    viewWomen.classList.add('active');
                     window.location.href = "women-product.html";
                 });
             }
@@ -909,6 +877,7 @@
             const currentPage = window.location.pathname.split('/').pop() || 'index.html';
             const navLinks = document.querySelectorAll('.nav-link');
             
+            // Remove active class from all nav links
             navLinks.forEach(link => {
                 link.classList.remove('active');
             });
@@ -916,16 +885,28 @@
             // Set active based on current page
             if (currentPage === 'men-product.html' || currentPage.includes('men')) {
                 const menLink = document.getElementById('viewMen');
-                if (menLink) menLink.classList.add('active');
+                if (menLink) {
+                    menLink.classList.add('active');
+                    console.log('✅ Men page - Men link set as active');
+                }
             } else if (currentPage === 'women-product.html' || currentPage.includes('women')) {
                 const womenLink = document.getElementById('viewWomen');
-                if (womenLink) womenLink.classList.add('active');
+                if (womenLink) {
+                    womenLink.classList.add('active');
+                    console.log('✅ Women page - Women link set as active');
+                }
             } else if (currentPage === 'index.html' || currentPage === '' || currentPage === 'index') {
                 const homeLink = document.getElementById('viewHome2') || document.getElementById('viewHome');
-                if (homeLink) homeLink.classList.add('active');
+                if (homeLink) {
+                    homeLink.classList.add('active');
+                    console.log('✅ Home page - Home link set as active');
+                }
             } else if (currentPage.includes('discount')) {
                 const saleLink = document.getElementById('discountSale');
-                if (saleLink) saleLink.classList.add('active');
+                if (saleLink) {
+                    saleLink.classList.add('active');
+                    console.log('✅ Sale page - Sale link set as active');
+                }
             }
         }
 
