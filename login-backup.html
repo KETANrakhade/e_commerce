@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Login & Signup | Pyramid E-Commerce</title>
+    <link rel="icon" type="image/x-icon" href="/img/bars.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/login.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="profile-fix.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg shadow-sm sticky-top top-line">
+        <div class="container">
+            <img class="mx-2" src="img/pyramidal.png" width="40px" height="40px">
+            <a class="navbar-brand text-uppercase fs-2" href="#">Pyramid</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item" id="viewHome"><a class="nav-link" href="#">Home</a></li>
+                    <li class="nav-item" id="viewMen"><a class="nav-link" href="#">Men</a></li>
+                    <li class="nav-item" id="viewWomen"><a class="nav-link" href="#">Women</a></li>
+                    <li class="nav-item" id="discountSale"><a class="nav-link" href="#">Sale</a></li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <span class="icon-btn"><i class="fa-regular fa-user"></i></span>
+                    <span class="icon-btn position-relative" id="viewWishlist">
+                        <i class="fa-regular fa-heart"></i>
+                    </span>
+                    <span class="icon-btn position-relative" id="viewCart">
+                        <i class="bi bi-cart"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="login-container">
+        <div class="login-background">
+            <div class="floating-shapes">
+                <div class="shape shape-1"></div>
+                <div class="shape shape-2"></div>
+                <div class="shape shape-3"></div>
+                <div class="shape shape-4"></div>
+            </div>
+        </div>
+
+        <div class="card-form">
+            <div class="auth-card shadow-lg">
+                <div class="card-body">
+                    <div class="tab-content p-3">
+                        <!-- Login Form -->
+                        <div class="tab-pane fade show active" id="login">
+                            <div class="form-header">
+                                <h4 class="welcome-title">Sign In</h4>
+                            </div>
+
+                            <form id="loginForm">
+                                <div class="input-group-custom mb-3">
+                                    <div class="input-icon">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                    <input type="email" id="loginEmail" class="form-control-custom" placeholder="Enter your email"
+                                        required>
+                                    <div class="input-line"></div>
+                                </div>
+
+                                <div class="input-group-custom mb-3">
+                                    <div class="input-icon">
+                                        <i class="fas fa-lock"></i>
+                                    </div>
+                                    <input type="password" id="loginPassword" class="form-control-custom" placeholder="Enter your password"
+                                        required>
+                                    <div class="input-line"></div>
+                                    <div class="password-toggle" onclick="togglePassword(this)">
+                                        <i class="fas fa-eye"></i>
+                                    </div>
+                                </div>
+
+                                <div class="form-options mb-4">
+                                    <div class="custom-checkbox">
+                                        <input type="checkbox" id="rememberMe">
+                                        <label for="rememberMe">
+                                            <span class="checkmark"></span>
+                                            Remember me
+                                        </label>
+                                    </div>
+                                    <a href="forgot-password.html" class="forgot-link">Forgot Password?</a>
+                                </div>
+
+                                <button type="submit" class="btn-custom btn-primary w-25 mb-3">
+                                    <span class="btn-text">Sign In</span>
+                                    <div class="btn-loader"></div>
+                                </button>
+
+                                <div class="divider">
+                                    <span>or</span>
+                                </div>
+
+                                <button type="button" class="btn-custom btn-google w-50 mb-3" onclick="handleGoogleLogin()">
+                                    <i class="fab fa-google"></i>
+                                    Continue with Google
+                                </button>
+
+                                <div class="switch-form">
+                                    <p>Don't have an account?
+                                        <a href="#" onclick="showSignup(); return false;" class="switch-link">Create
+                                            one</a>
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Signup Form -->
+                        <div class="tab-pane fade" id="signup">
+                            <div class="form-header">
+                                <h4 class="welcome-title my-5">Create Account</h4>
+                            </div>
+
+                            <form id="signupForm">
+                                <div class="input-group-custom mb-3">
+                                    <div class="input-icon">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <input type="text" id="signupName" class="form-control-custom" placeholder="Full Name" required>
+                                    <div class="input-line"></div>
+                                </div>
+
+                                <div class="input-group-custom mb-3">
+                                    <div class="input-icon">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                    <input type="email" id="signupEmail" class="form-control-custom" placeholder="Email Address"
+                                        required>
+                                    <div class="input-line"></div>
+                                </div>
+
+                                <div class="input-group-custom mb-3">
+                                    <div class="input-icon">
+                                        <i class="fas fa-lock"></i>
+                                    </div>
+                                    <input type="password" id="signupPassword" class="form-control-custom"
+                                        placeholder="Password (min 6 chars)" minlength="6" required>
+                                    <div class="input-line"></div>
+                                    <div class="password-toggle" onclick="togglePassword(this)">
+                                        <i class="fas fa-eye"></i>
+                                    </div>
+                                </div>
+
+                                <div class="input-group-custom mb-4">
+                                    <div class="input-icon">
+                                        <i class="fas fa-lock"></i>
+                                    </div>
+                                    <input type="password" id="signupConfirmPassword" class="form-control-custom"
+                                        placeholder="Confirm Password" required>
+                                    <div class="input-line"></div>
+                                </div>
+
+                                <div class="password-strength mb-3">
+                                    <div class="strength-bar">
+                                        <div class="strength-fill"></div>
+                                    </div>
+                                    <span class="strength-text">Password strength</span>
+                                </div>
+
+                                <button type="submit" class="btn-custom btn-primary w-100 mb-3">
+                                    <span class="btn-text">Create Account</span>
+                                    <div class="btn-loader"></div>
+                                </button>
+
+                                <div class="divider">
+                                    <span>or</span>
+                                </div>
+
+                                <button type="button" class="btn-custom btn-google w-100 mb-3" onclick="handleGoogleSignup()">
+                                    <i class="fab fa-google"></i>
+                                    Sign up with Google
+                                </button>
+
+                                <div class="switch-form">
+                                    <p>Already have an account?
+                                        <a href="#" onclick="showLogin(); return false;" class="switch-link">Sign in</a>
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container-grid footer-login ">
+            <div class="row ">
+                <div class="col-md-4 discount-detail">
+                    <h6 class="P-2">
+                        SIGN UP TO GET 10% OFF ON YOUR FIRST ORDER AND STAY UP TO DATE ON THE LATEST PRODUCT RELEASES,
+                        SPECIAL OFFERS AND NEWS
+                    </h6>
+                    <input class="w-100 p-3 bg-black my-2" type="email" placeholder="Your Email*">
+                    <button class=" rounded subscribe-btn">SUBSCRIBE</button>
+                </div>
+                <div class="col-md-4 list-item">
+                    <ul>
+                        <li>SHOP</li>
+                        <li>FAQ</li>
+                        <li>SHIPPING</li>
+                        <li>RETURNS</li>
+                        <li>CAREERS</li>
+                        <li>TERMS & CONDITIONS</li>
+                        <li>PRIVACY POLICY</li>
+                    </ul>
+                </div>
+                <div class="col-md-4 webiste-list">
+                    <div class="factory-detail">
+                        <SMALL>IF YOU HAVE ANY QUESTIONS REGRADING YOUR ORDER,PRODUCT IS OUR SERVICE PLEASE CONTACT OUR
+                            CUSTOMER SERVICE</SMALL>
+                        <P>MONDAY - FRIDAY:10:00 - 06:00 PM </P>
+                        <P>PHONE : 7499755467</P>
+                        <p>ADDRESS: 283 N. DIGHORI NAKA, NAGPUR</p>
+                    </div>
+                    <div class="social-icons">
+                        <i class="fa-brands fa-youtube"></i>
+                        <i class="fa-brands fa-square-twitter"></i>
+                        <i class="fa-brands fa-instagram"></i>
+                        <i class="fa-brands fa-facebook"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container text-center ">
+            <p>&copy; 2025 Pyramid | All Rights Reserved</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+        document.getElementById("viewHome").addEventListener("click", function () {
+            window.location.href = "index.html";
+        });
+        document.getElementById("userProfile").addEventListener("click", function () {
+            window.location.href = "login.html";
+        });
+        document.getElementById("viewMen").addEventListener("click", function () {
+            window.location.href = "men-product.html";
+        });
+        document.getElementById("viewWomen").addEventListener("click", function () {
+            window.location.href = "women-product.html";
+        });
+        document.getElementById("viewCart").addEventListener("click", function () {
+            window.location.href = "cart.html";
+        });
+        document.getElementById("viewWishlist").addEventListener("click", function () {
+            window.location.href = "wishlist.html";
+        });
+        document.getElementById("saleBtn").addEventListener("click", function () {
+            window.location.href = "discount.html";
+        });
+        document.getElementById("discountSale").addEventListener("click", function () {
+            window.location.href = "discount.html";
+        });
+
+
+
+
+        document.getElementById("viewHome").addEventListener("click", function () {
+            window.location.href = "index.html";
+        });
+
+        // Simple form switching functions
+        function showSignup() {
+            const loginTab = document.getElementById("login");
+            const signupTab = document.getElementById("signup");
+
+            loginTab.classList.remove("show", "active");
+            signupTab.classList.add("show", "active");
+            console.log("Switched to signup");
+        }
+
+        function showLogin() {
+            const loginTab = document.getElementById("login");
+            const signupTab = document.getElementById("signup");
+
+            signupTab.classList.remove("show", "active");
+            loginTab.classList.add("show", "active");
+            console.log("Switched to login");
+        }
+        <!-- include on pages with forms -->
+
+        // Interactive Features
+        function togglePassword(element) {
+            const input = element.previousElementSibling.previousElementSibling;
+            const icon = element.querySelector('i');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Password Strength Checker
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            if (password.length >= 6) strength += 25;
+            if (password.match(/[a-z]/)) strength += 25;
+            if (password.match(/[A-Z]/)) strength += 25;
+            if (password.match(/[0-9]/) || password.match(/[^a-zA-Z0-9]/)) strength += 25;
+            return strength;
+        }
+
+        // Update password strength indicator
+        document.getElementById('signupPassword')?.addEventListener('input', function () {
+            const strength = checkPasswordStrength(this.value);
+            const strengthFill = document.querySelector('.strength-fill');
+            const strengthText = document.querySelector('.strength-text');
+
+            strengthFill.style.width = strength + '%';
+
+            if (strength < 50) {
+                strengthText.textContent = 'Weak password';
+                strengthText.style.color = '#ff4757';
+            } else if (strength < 75) {
+                strengthText.textContent = 'Medium password';
+                strengthText.style.color = '#ffa502';
+            } else {
+                strengthText.textContent = 'Strong password';
+                strengthText.style.color = '#2ed573';
+            }
+        });
+
+        // Input focus animations
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.form-control-custom').forEach(input => {
+                input.addEventListener('focus', function () {
+                    this.parentElement.classList.add('focused');
+                });
+
+                input.addEventListener('blur', function () {
+                    if (!this.value) {
+                        this.parentElement.classList.remove('focused');
+                    }
+                });
+            });
+        });
+
+        // Auth functions moved to simple-login.js
+
+        // Google Authentication Functions
+        function handleGoogleLogin() {
+            const message = 'Google Sign-In is not yet configured. To enable: Set up Google OAuth in your backend, add Google Client ID to config, and implement OAuth flow.';
+            if (typeof showToast === 'function') {
+                showToast(message, 'info', 5000);
+            } else {
+                console.log('Google login clicked - needs OAuth setup');
+            }
+        }
+
+        function handleGoogleSignup() {
+            const message = 'Google Sign-Up is not yet configured. To enable: Set up Google OAuth in your backend, add Google Client ID to config, and implement OAuth flow.';
+            if (typeof showToast === 'function') {
+                showToast(message, 'info', 5000);
+            } else {
+                console.log('Google signup clicked - needs OAuth setup');
+            }
+        }
+
+    </script>
+    <script src="fixed-login.js"></script>
+
+</body>
+
+</html>

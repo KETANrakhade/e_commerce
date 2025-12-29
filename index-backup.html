@@ -6,15 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PYRAMID | Premium Fashion Brand</title>
     <link rel="icon" type="image/x-icon" href="/img/bars.png">
+    
+    <!-- DNS prefetch for external resources -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap"></noscript>
+    
+    <!-- Preload critical images -->
+    <link rel="preload" href="img/pyramidal.png" as="image">
+    <link rel="preload" href="backup.mp4" as="video" type="video/mp4">
+    
+    <!-- Critical CSS inline, non-critical loaded async -->
     <link rel="stylesheet" href="css/style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"></noscript>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"></noscript>
 
     <style>
         /* Enhanced Modern Styles */
@@ -760,7 +772,7 @@
 
     <!-- Hero Section -->
     <section class="hero-section">
-        <video class="hero-video" autoplay loop muted playsinline>
+        <video class="hero-video" autoplay loop muted playsinline preload="metadata" loading="lazy">
             <source src="backup.mp4" type="video/mp4">
         </video>
         <div class="hero-overlay"></div>
@@ -791,7 +803,7 @@
         </div>
         <div class="carousel-inner">
             <div class="carousel-item active">
-                <img src="img/women/ricky-2127760710.jpg" class="d-block w-100" height="650px" alt="Spring Collection">
+                <img src="img/women/ricky-2127760710.jpg" class="d-block w-100" height="650px" alt="Spring Collection" loading="lazy">
                 <div class="overlay-box">
                     <h1>NEW SPRING COLLECTION</h1>
                     <p>Introducing our new spring fashion collection, perfect for effortless casual chic. From flowy
@@ -801,7 +813,7 @@
                 </div>
             </div>
             <div class="carousel-item">
-                <img src="img/" class="d-block w-100" height="650px" alt="Summer Collection">
+                <img src="img/full-shot-cool-people-wearing-chain-necklace.jpg" class="d-block w-100" height="650px" alt="Summer Collection" loading="lazy">
                 <div class="overlay-box">
                     <h1>SUMMER COLLECTION</h1>
                     <p>Fresh looks for summer with cool fabrics and stylish fits. Perfect balance of comfort and
@@ -811,7 +823,7 @@
             </div>
             <div class="carousel-item">
                 <img src="img/clark-street-mercantile-P3pI6xzovu0-unsplash 2.jpg" height="650px" class="d-block w-100"
-                    alt="Fashion Collection">
+                    alt="Fashion Collection" loading="lazy">
                 <div class="overlay-box">
                     <h1>EXPLORE FASHION COLLECTION</h1>
                     <p>Discover premium styles crafted with detail, designed to fit your lifestyle and enhance your
@@ -835,7 +847,7 @@
     <!-- Featured Section -->
     <section class="container-fluid p-0 hero-wrap animate-on-scroll">
         <div class="container">
-            <img class="hero-img" src="img/MS32LH112-16x9-Teaser-1-v2-w33.avif" alt="Festive Collection">
+            <img class="hero-img" src="img/MS32LH112-16x9-Teaser-1-v2-w33.avif" alt="Festive Collection" loading="lazy">
             <div class="hero-panel">
                 <h2 class="hero-title mb-1">T H E<br>Festive Edit</h2>
                 <h4>Because Every Detail Deserves Attention</h4>
@@ -851,93 +863,93 @@
         <div class="container">
             <h2 class="section-title">Featured Collections</h2>
             <div class="product-grid">
-                <div class="product-item">
-                    <img src="img/men/1ae781d7afbcb047a990cbe64771b96c07cb9823.avif" alt="Men's Fashion">
+                <div class="product-item" onclick="window.location.href='men-product.html'" style="cursor: pointer;">
+                    <img src="img/men/1ae781d7afbcb047a990cbe64771b96c07cb9823.avif" alt="Men's Fashion" loading="lazy">
                     <div class="product-overlay">
                         <div class="product-info">
                             <h4>Men's Collection</h4>
-                            <button class="btn">Shop Now</button>
+                            <button class="btn" onclick="event.stopPropagation(); window.location.href='men-product.html'">Shop Now</button>
                         </div>
                     </div>
                 </div>
-                <div class="product-item">
-                    <img src="img/men/b88fd74ccbc9dd08a231f81f621dc83cae42a3c1.avif" alt="Casual Wear">
+                <div class="product-item" onclick="window.location.href='men-product.html'" style="cursor: pointer;">
+                    <img src="img/men/b88fd74ccbc9dd08a231f81f621dc83cae42a3c1.avif" alt="Casual Wear" loading="lazy">
                     <div class="product-overlay">
                         <div class="product-info">
                             <h4>Casual Wear</h4>
-                            <button class="btn">Shop Now</button>
+                            <button class="btn" onclick="event.stopPropagation(); window.location.href='men-product.html'">Shop Now</button>
                         </div>
                     </div>
                 </div>
-                <div class="product-item">
-                    <img src="img/men/72821c8b4fd1d7a595c2877073ccf04df5ea97e9.avif" alt="Formal Wear">
+                <div class="product-item" onclick="window.location.href='men-product.html'" style="cursor: pointer;">
+                    <img src="img/men/72821c8b4fd1d7a595c2877073ccf04df5ea97e9.avif" alt="Formal Wear" loading="lazy">
                     <div class="product-overlay">
                         <div class="product-info">
                             <h4>Formal Wear</h4>
-                            <button class="btn">Shop Now</button>
+                            <button class="btn" onclick="event.stopPropagation(); window.location.href='men-product.html'">Shop Now</button>
                         </div>
                     </div>
                 </div>
-                <div class="product-item">
-                    <img src="img/men/935a6e4d7456ec7a2af0e8efdaca031ae056a1af.avif" alt="Women's Fashion">
+                <div class="product-item" onclick="window.location.href='women-product.html'" style="cursor: pointer;">
+                    <img src="img/men/935a6e4d7456ec7a2af0e8efdaca031ae056a1af.avif" alt="Women's Fashion" loading="lazy">
                     <div class="product-overlay">
                         <div class="product-info">
                             <h4>Women's Collection</h4>
-                            <button class="btn">Shop Now</button>
+                            <button class="btn" onclick="event.stopPropagation(); window.location.href='women-product.html'">Shop Now</button>
                         </div>
                     </div>
                 </div>
-                <div class="product-item">
-                    <img src="img/men/45759938cd81253c50143ffaaf69497bfe4a7f25 (1).avif" alt="Trendy Styles">
+                <div class="product-item" onclick="window.location.href='men-product.html'" style="cursor: pointer;">
+                    <img src="img/men/45759938cd81253c50143ffaaf69497bfe4a7f25 (1).avif" alt="Trendy Styles" loading="lazy">
                     <div class="product-overlay">
                         <div class="product-info">
                             <h4>Trendy Styles</h4>
-                            <button class="btn">Shop Now</button>
+                            <button class="btn" onclick="event.stopPropagation(); window.location.href='men-product.html'">Shop Now</button>
                         </div>
                     </div>
                 </div>
-                <div class="product-item">
-                    <img src="img/untitled folder/08117e143ec7a36322dc3fe7a3bf89a96af48259.avif" alt="Accessories">
+                <div class="product-item" onclick="window.location.href='women-product.html'" style="cursor: pointer;">
+                    <img src="img/men/1ae781d7afbcb047a990cbe64771b96c07cb9823.avif" alt="Accessories" loading="lazy">
                     <div class="product-overlay">
                         <div class="product-info">
                             <h4>Accessories</h4>
-                            <button class="btn">Shop Now</button>
+                            <button class="btn" onclick="event.stopPropagation(); window.location.href='women-product.html'">Shop Now</button>
                         </div>
                     </div>
                 </div>
-                <div class="product-item">
-                    <img src="img/untitled folder/8f4672d898a135f5de7c52981739edee204bf966.avif" alt="Accessories">
+                <div class="product-item" onclick="window.location.href='women-product.html'" style="cursor: pointer;">
+                    <img src="img/men/45759938cd81253c50143ffaaf69497bfe4a7f25 (1).avif" alt="Accessories" loading="lazy">
                     <div class="product-overlay">
                         <div class="product-info">
                             <h4>SKIRT</h4>
-                            <button class="btn">Shop Now</button>
+                            <button class="btn" onclick="event.stopPropagation(); window.location.href='women-product.html'">Shop Now</button>
                         </div>
                     </div>
                 </div>
-                <div class="product-item">
-                    <img src="img/untitled folder/e2d18aa62be84ed806229c3da616803962c08919.avif" alt="Accessories">
+                <div class="product-item" onclick="window.location.href='men-product.html'" style="cursor: pointer;">
+                    <img src="img/men/d8a85a6bcbdfb16750451b8ba44b05634d4dfd6f.avif" alt="Accessories" loading="lazy">
                     <div class="product-overlay">
                         <div class="product-info">
                             <h4>BLAZERS</h4>
-                            <button class="btn">Shop Now</button>
+                            <button class="btn" onclick="event.stopPropagation(); window.location.href='men-product.html'">Shop Now</button>
                         </div>
                     </div>
                 </div>
-                <div class="product-item">
-                    <img src="img/untitled folder/46d264dea8a6a726c44c4bf9aacb8d943b2139d7.avif" alt="Accessories">
+                <div class="product-item" onclick="window.location.href='men-product.html'" style="cursor: pointer;">
+                    <img src="img/men/fb275470a4ae7902a07c683c9a95aecf547ace8d.avif" alt="Accessories" loading="lazy">
                     <div class="product-overlay">
                         <div class="product-info">
                             <h4>Plain Tshirt</h4>
-                            <button class="btn">Shop Now</button>
+                            <button class="btn" onclick="event.stopPropagation(); window.location.href='men-product.html'">Shop Now</button>
                         </div>
                     </div>
                 </div>
-                <div class="product-item">
-                    <img src="img/women/c2f847228a423c7988c998a7b3cb2b1a90b11a0e.avif" alt="Accessories">
+                <div class="product-item" onclick="window.location.href='women-product.html'" style="cursor: pointer;">
+                    <img src="img/men/935a6e4d7456ec7a2af0e8efdaca031ae056a1af.avif" alt="Accessories" loading="lazy">
                     <div class="product-overlay">
                         <div class="product-info">
                             <h4>Denim Jacket</h4>
-                            <button class="btn">Shop Now</button>
+                            <button class="btn" onclick="event.stopPropagation(); window.location.href='women-product.html'">Shop Now</button>
                         </div>
                     </div>
                 </div>
@@ -949,24 +961,24 @@
     <section class="py-5 animate-on-scroll">
         <div id="slider">
             <div class="arrow left">&#10094;</div>
-            <div class="slide"><img src="img/men/1ae781d7afbcb047a990cbe64771b96c07cb9823.avif" alt=""></div>
-            <div class="slide"><img src="img/men/4442fbac4e3080ec20b2f14e353fea267249b0dd.avif" alt=""></div>
-            <div class="slide"><img src="img/men/45759938cd81253c50143ffaaf69497bfe4a7f25.avif" alt=""></div>
-            <div class="slide"><img src="img/men/5af699e588d72cba035f541790bd1c0278ee0c3e.avif" alt=""></div>
-            <div class="slide"><img src="img/men/72821c8b4fd1d7a595c2877073ccf04df5ea97e9.avif" alt=""></div>
+            <div class="slide"><img src="img/men/1ae781d7afbcb047a990cbe64771b96c07cb9823.avif" alt="Men's Fashion" loading="lazy"></div>
+            <div class="slide"><img src="img/men/4442fbac4e3080ec20b2f14e353fea267249b0dd.avif" alt="Men's Style" loading="lazy"></div>
+            <div class="slide"><img src="img/men/45759938cd81253c50143ffaaf69497bfe4a7f25.avif" alt="Trendy Wear" loading="lazy"></div>
+            <div class="slide"><img src="img/men/5af699e588d72cba035f541790bd1c0278ee0c3e.avif" alt="Casual Style" loading="lazy"></div>
+            <div class="slide"><img src="img/men/72821c8b4fd1d7a595c2877073ccf04df5ea97e9.avif" alt="Formal Wear" loading="lazy"></div>
             <div class="slide"><img src="img/women/untitled folder/342baa60b5956f7ebaac03cf60849a43f29c9d9d.avif"
-                    alt=""></div>
+                    alt="Women's Fashion" loading="lazy"></div>
             <div class="slide"><img src="img/women/untitled folder/73f2600d53217d5bb4fccfbec4aa98c0cb612c6e.avif"
-                    alt=""></div>
+                    alt="Women's Style" loading="lazy"></div>
             <div class="slide"><img src="img/women/untitled folder/d24aa7660be51f38f81d778ed07e53e913fe22af.avif"
-                    alt=""></div>
+                    alt="Women's Collection" loading="lazy"></div>
             <div class="arrow right">&#10095;</div>
         </div>
     </section>
 
     <!-- Enhanced Video Section -->
     <section class="video-section animate-on-scroll">
-        <video class="video-bg" autoplay loop muted playsinline>
+        <video class="video-bg" autoplay loop muted playsinline preload="metadata" loading="lazy">
             <source src="file.mp4" type="video/mp4">
         </video>
         <div class="video-overlay"></div>
@@ -1028,16 +1040,16 @@
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="api-config.js"></script>
-    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="api-config.js" defer></script>
+    <script src="script.js" defer></script>
 
     <script>
         // Page Loader
         window.addEventListener('load', function () {
             setTimeout(() => {
                 document.getElementById('pageLoader').classList.add('hidden');
-            }, 1500);
+            }, 800);
         });
 
         // Navbar Scroll Effect
@@ -1076,11 +1088,9 @@
             });
         });
     </script>
-    <script src="config.js"></script>
-    <script src="api.js"></script>
-    <script src="auth-check.js"></script>
-    <script src="script.js"></script>
-    <script src="auth-check.js"></script>
+    <script src="config.js" defer></script>
+    <script src="api.js" defer></script>
+    <script src="auth-check.js" defer></script>
 
 </body>
 

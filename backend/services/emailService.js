@@ -24,12 +24,37 @@ class EmailService {
   async sendEmail(to, subject, htmlContent, textContent = '') {
     try {
       if (this.emailProvider === 'console') {
-        // For development - log to console
+        // For development - log to console and save to file
         console.log('📧 EMAIL SENT:');
         console.log('To:', to);
         console.log('Subject:', subject);
         console.log('Content:', textContent || htmlContent);
         console.log('---');
+        
+        // Also save to a file for easy access
+        const fs = require('fs');
+        const path = require('path');
+        const emailLog = {
+          timestamp: new Date().toISOString(),
+          to,
+          subject,
+          content: textContent || htmlContent.replace(/<[^>]*>/g, '') // Strip HTML for readability
+        };
+        
+        try {
+          const logPath = path.join(__dirname, '../temp-emails.json');
+          let logs = [];
+          if (fs.existsSync(logPath)) {
+            logs = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+          }
+          logs.push(emailLog);
+          // Keep only last 10 emails
+          if (logs.length > 10) logs = logs.slice(-10);
+          fs.writeFileSync(logPath, JSON.stringify(logs, null, 2));
+        } catch (fileError) {
+          console.log('Could not save email to file:', fileError.message);
+        }
+        
         return { success: true, messageId: 'console-' + Date.now() };
       }
 
@@ -200,6 +225,46 @@ class EmailService {
       </div>
     `;
     const textContent = `Password reset requested. Visit: ${resetUrl}`;
+
+    return await this.sendEmail(user.email, subject, htmlContent, textContent);
+  }
+
+  // Password reset OTP email
+  async sendPasswordResetOTP(user, otp) {
+    console.log('📧 Sending password reset OTP to:', user.email);
+    const subject = 'Password Reset - OTP Code';
+    
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <h1 style="color: #667eea; text-align: center; margin-bottom: 30px;">Password Reset</h1>
+          <p style="font-size: 16px; color: #333;">Hi ${user.name},</p>
+          <p style="font-size: 16px; color: #333;">You requested to reset your password for your PYRAMID account.</p>
+          <p style="font-size: 16px; color: #333;">Your password reset code is:</p>
+          
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 12px; text-align: center; margin: 30px 0;">
+            <h2 style="color: white; font-size: 42px; letter-spacing: 8px; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">${otp}</h2>
+          </div>
+          
+          <p style="font-size: 14px; color: #666; text-align: center;">This code will expire in <strong>10 minutes</strong>.</p>
+          <p style="font-size: 14px; color: #666; text-align: center;">If you didn't request this code, please ignore this email.</p>
+          
+          <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="font-size: 14px; color: #666; margin: 0;">
+              <strong>Security tip:</strong> Never share this code with anyone. PYRAMID will never ask for your OTP via phone or email.
+            </p>
+          </div>
+          
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          
+          <p style="font-size: 14px; color: #999; text-align: center;">
+            Best regards,<br>
+            <strong>The PYRAMID Team</strong>
+          </p>
+        </div>
+      </div>
+    `;
+    const textContent = `Hi ${user.name}, Your password reset code is: ${otp}. This code will expire in 10 minutes. If you didn't request this, please ignore this email.`;
 
     return await this.sendEmail(user.email, subject, htmlContent, textContent);
   }

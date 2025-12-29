@@ -373,6 +373,26 @@ class ApiClient {
     public function getToken() {
         return $this->token;
     }
+    
+    /**
+     * Update admin profile
+     */
+    public function updateAdminProfile($name, $email) {
+        return $this->makeRequest('admin/profile', 'PUT', [
+            'name' => $name,
+            'email' => $email
+        ]);
+    }
+    
+    /**
+     * Change admin password
+     */
+    public function changeAdminPassword($currentPassword, $newPassword) {
+        return $this->makeRequest('admin/change-password', 'PUT', [
+            'currentPassword' => $currentPassword,
+            'newPassword' => $newPassword
+        ]);
+    }
 }
 
 // Global API client instance

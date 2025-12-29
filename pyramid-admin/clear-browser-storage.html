@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Browser Storage</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+        .btn { padding: 10px 20px; margin: 10px; cursor: pointer; border: none; border-radius: 5px; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .status { margin: 20px 0; padding: 15px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    </style>
+</head>
+<body>
+    <h1>🧹 Clear Browser Storage</h1>
+    <p>This will clear all stored authentication data</p>
+    
+    <button class="btn btn-danger" onclick="clearAllStorage()">Clear All Storage</button>
+    <button class="btn btn-success" onclick="goToLogin()">Go to Login</button>
+    
+    <div id="status"></div>
+
+    <script>
+        function clearAllStorage() {
+            try {
+                // Clear localStorage
+                localStorage.clear();
+                
+                // Clear sessionStorage
+                sessionStorage.clear();
+                
+                // Clear cookies
+                document.cookie.split(";").forEach(function(c) { 
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+                });
+                
+                document.getElementById('status').innerHTML = 
+                    '<div class="status success">✅ All browser storage cleared successfully!</div>';
+                
+                console.log('✅ Browser storage cleared');
+                
+            } catch (error) {
+                document.getElementById('status').innerHTML = 
+                    '<div class="status error">❌ Error clearing storage: ' + error.message + '</div>';
+                console.error('❌ Error:', error);
+            }
+        }
+        
+        function goToLogin() {
+            window.location.href = 'login.php';
+        }
+    </script>
+</body>
+</html>

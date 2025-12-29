@@ -5,6 +5,31 @@ const Order = require('../models/orderModel');
 const generateToken = require('../utils/generateToken');
 const bcrypt = require('bcryptjs');
 
+// Helper function for strong password validation
+const validateStrongPassword = (password) => {
+  if (!password) {
+    throw new Error('Password is required');
+  }
+  
+  if (password.length < 6) {
+    throw new Error('Password must be at least 6 characters long');
+  }
+  
+  if (!/[0-9]/.test(password)) {
+    throw new Error('Password must contain at least one number');
+  }
+  
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    throw new Error('Password must contain at least one special character');
+  }
+  
+  if (!/[a-zA-Z]/.test(password)) {
+    throw new Error('Password must contain at least one letter');
+  }
+  
+  return true;
+};
+
 // @desc    Register super admin (first time setup)
 // @route   POST /api/admin/register-super-admin
 // @access  Public (but protected by logic)
@@ -273,6 +298,122 @@ const getSalesAnalytics = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Change admin password
+// @route   PUT /api/admin/change-password
+// @access  Private/Admin
+const changeAdminPassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    res.status(400);
+    throw new Error('Current password and new password are required');
+  }
+
+  try {
+    validateStrongPassword(newPassword);
+  } catch (error) {
+    res.status(400);
+    throw new Error(error.message);
+  }
+
+  // Get current admin user
+  const user = await User.findById(req.user._id);
+
+  if (!user || user.role !== 'admin') {
+    res.status(404);
+    throw new Error('Admin not found');
+  }
+
+  // Check current password
+  const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+  if (!isCurrentPasswordValid) {
+    res.status(400);
+    throw new Error('Current password is incorrect');
+  }
+
+  // Hash new password
+  const salt = await bcrypt.genSalt(10);
+  const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+  // Update password
+  user.password = hashedNewPassword;
+  user.updatedAt = new Date();
+  await user.save();
+
+  console.log('✅ Admin password changed successfully for:', user.email);
+
+  res.json({
+    success: true,
+    message: 'Password changed successfully'
+  });
+});
+
+// @desc    Update admin profile
+// @route   PUT /api/admin/profile
+// @access  Private/Admin
+const updateAdminProfile = asyncHandler(async (req, res) => {
+  const { name, email } = req.body;
+
+  const user = await User.findById(req.user._id);
+
+  if (!user || user.role !== 'admin') {
+    res.status(404);
+    throw new Error('Admin not found');
+  }
+
+  // Validate name if provided
+  if (name) {
+    const trimmedName = name.trim();
+    
+    if (trimmedName.length < 3) {
+      res.status(400);
+      throw new Error('Name must be at least 3 characters long');
+    }
+    
+    if (trimmedName.length > 50) {
+      res.status(400);
+      throw new Error('Name must not exceed 50 characters');
+    }
+    
+    if (!/^[a-zA-Z\s'-\.]+$/.test(trimmedName)) {
+      res.status(400);
+      throw new Error('Name can only contain letters, spaces, hyphens, and apostrophes');
+    }
+    
+    if (!/[a-zA-Z]/.test(trimmedName)) {
+      res.status(400);
+      throw new Error('Name must contain at least one letter');
+    }
+  }
+
+  // Check if email is being changed and if it already exists
+  if (email && email !== user.email) {
+    const emailExists = await User.findOne({ email });
+    if (emailExists) {
+      res.status(400);
+      throw new Error('Email already exists');
+    }
+  }
+
+  // Update fields
+  if (name) user.name = name;
+  if (email) user.email = email;
+  user.updatedAt = new Date();
+
+  const updatedUser = await user.save();
+
+  res.json({
+    success: true,
+    message: 'Profile updated successfully',
+    data: {
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role
+    }
+  });
+});
+
 module.exports = {
   registerSuperAdmin,
   registerAdmin,
@@ -280,5 +421,7 @@ module.exports = {
   getAdminProfile,
   getDashboardStats,
   getRecentOrders,
-  getSalesAnalytics
+  getSalesAnalytics,
+  changeAdminPassword,
+  updateAdminProfile
 };

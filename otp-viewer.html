@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Viewer - Development Tool</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 20px auto; 
+            padding: 20px; 
+            background: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .otp-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: 5px;
+        }
+        .email-list {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .email-item {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #5a6fd8; }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔢 OTP Viewer - Development Tool</h1>
+        <p>This tool helps you view OTPs during development when email is not configured.</p>
+
+        <div>
+            <input type="email" id="emailInput" placeholder="Enter email to get latest OTP" value="ketanrak098@gmail.com">
+            <button onclick="getLatestOTP()">Get Latest OTP</button>
+            <button onclick="getAllEmails()">View All Emails</button>
+        </div>
+
+        <div id="status"></div>
+
+        <div id="otpDisplay" class="otp-display" style="display: none;">
+            <div>Latest OTP:</div>
+            <div id="otpCode"></div>
+        </div>
+
+        <div id="emailList" class="email-list" style="display: none;">
+            <h3>Recent Emails:</h3>
+            <div id="emails"></div>
+        </div>
+
+        <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 8px;">
+            <h3>📧 To Enable Real Email Sending:</h3>
+            <ol>
+                <li>Go to your Gmail account settings</li>
+                <li>Enable 2-Factor Authentication</li>
+                <li>Generate an App Password for "Mail"</li>
+                <li>Update <code>backend/.env</code>:</li>
+                <pre style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 10px 0;">
+EMAIL_PROVIDER=gmail
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-16-digit-app-password</pre>
+                <li>Restart the backend server</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        async function getLatestOTP() {
+            const email = document.getElementById('emailInput').value.trim();
+            if (!email) {
+                showStatus('Please enter an email address', 'error');
+                return;
+            }
+
+            showStatus('Fetching latest OTP...', 'info');
+
+            try {
+                const response = await fetch(`http://localhost:5001/api/test/latest-otp/${email}`);
+                const data = await response.json();
+
+                if (data.otp) {
+                    document.getElementById('otpCode').textContent = data.otp;
+                    document.getElementById('otpDisplay').style.display = 'block';
+                    showStatus(`✅ Latest OTP found! Sent at: ${new Date(data.timestamp).toLocaleString()}`, 'success');
+                } else {
+                    document.getElementById('otpDisplay').style.display = 'none';
+                    showStatus(`❌ ${data.message}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error fetching OTP:', error);
+                showStatus('❌ Failed to fetch OTP. Make sure the backend is running.', 'error');
+            }
+        }
+
+        async function getAllEmails() {
+            showStatus('Fetching all emails...', 'info');
+
+            try {
+                const response = await fetch('http://localhost:5001/api/test/emails');
+                const data = await response.json();
+
+                if (data.emails && data.emails.length > 0) {
+                    let emailsHtml = '';
+                    data.emails.reverse().forEach(email => {
+                        const timestamp = new Date(email.timestamp).toLocaleString();
+                        const otpMatch = email.content.match(/\b\d{6}\b/);
+                        const otp = otpMatch ? `<strong>OTP: ${otpMatch[0]}</strong>` : '';
+                        
+                        emailsHtml += `
+                            <div class="email-item">
+                                <div><strong>To:</strong> ${email.to}</div>
+                                <div><strong>Subject:</strong> ${email.subject}</div>
+                                <div><strong>Time:</strong> ${timestamp}</div>
+                                ${otp ? `<div style="color: #667eea;">${otp}</div>` : ''}
+                            </div>
+                        `;
+                    });
+                    
+                    document.getElementById('emails').innerHTML = emailsHtml;
+                    document.getElementById('emailList').style.display = 'block';
+                    showStatus(`✅ Found ${data.emails.length} emails`, 'success');
+                } else {
+                    document.getElementById('emailList').style.display = 'none';
+                    showStatus('❌ No emails found', 'error');
+                }
+            } catch (error) {
+                console.error('Error fetching emails:', error);
+                showStatus('❌ Failed to fetch emails. Make sure the backend is running.', 'error');
+            }
+        }
+
+        // Auto-refresh every 10 seconds if an email is entered
+        setInterval(() => {
+            const email = document.getElementById('emailInput').value.trim();
+            if (email) {
+                getLatestOTP();
+            }
+        }, 10000);
+
+        console.log('🔢 OTP Viewer ready!');
+        console.log('📝 This tool will help you get OTPs during development');
+    </script>
+</body>
+</html>

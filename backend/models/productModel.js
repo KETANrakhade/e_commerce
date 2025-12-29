@@ -86,12 +86,33 @@ productSchema.index({ price: 1 });
 productSchema.index({ createdAt: -1 });
 
 // Update the updatedAt field before saving
-productSchema.pre('save', function(next) {
+productSchema.pre('save', async function(next) {
   this.updatedAt = Date.now();
-  // Auto-generate slug if not provided
-  if (!this.slug && this.name) {
-    this.slug = this.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+  
+  // Auto-generate slug if not provided or if name changed
+  if (!this.slug || this.isModified('name')) {
+    let baseSlug = this.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+    let slug = baseSlug;
+    let counter = 1;
+    
+    // Check for existing slugs and append number if needed
+    while (true) {
+      const existingProduct = await this.constructor.findOne({ 
+        slug: slug, 
+        _id: { $ne: this._id } // Exclude current product if updating
+      });
+      
+      if (!existingProduct) {
+        break; // Slug is unique
+      }
+      
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+    
+    this.slug = slug;
   }
+  
   next();
 });
 

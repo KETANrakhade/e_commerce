@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Validation Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 20px auto; 
+            padding: 20px; 
+            background: #f8f9fa;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .pass { background: #d4edda; color: #155724; }
+        .fail { background: #f8d7da; color: #721c24; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .validation-demo {
+            border: 2px solid #e9ecef;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        .validation-demo input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 2px solid #e9ecef;
+            border-radius: 4px;
+        }
+        .validation-demo input.invalid {
+            border-color: #dc3545;
+        }
+        .validation-demo input.valid {
+            border-color: #28a745;
+        }
+        .validation-message {
+            font-size: 0.875rem;
+            margin-top: 5px;
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+        .validation-message.error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        .validation-message.success {
+            color: #155724;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Login Validation Test Suite</h1>
+    <p>Testing client-side validation functions from login.html</p>
+
+    <div class="test-section">
+        <h2>📧 Email Validation Tests</h2>
+        <div id="emailTests"></div>
+        <button onclick="runEmailTests()">Run Email Tests</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🔐 Password Validation Tests</h2>
+        <div id="passwordTests"></div>
+        <button onclick="runPasswordTests()">Run Password Tests</button>
+    </div>
+
+    <div class="test-section">
+        <h2>👤 Name Validation Tests</h2>
+        <div id="nameTests"></div>
+        <button onclick="runNameTests()">Run Name Tests</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Live Validation Demo</h2>
+        <p>Try typing in these fields to see real-time validation:</p>
+        
+        <div class="validation-demo">
+            <h4>Sign In Form</h4>
+            <div>
+                <input type="email" id="demoLoginEmail" placeholder="Enter email">
+                <div id="demoLoginEmailMsg"></div>
+            </div>
+            <div>
+                <input type="password" id="demoLoginPassword" placeholder="Enter password">
+                <div id="demoLoginPasswordMsg"></div>
+            </div>
+            <button onclick="testLoginValidation()">Test Login Form Validation</button>
+        </div>
+
+        <div class="validation-demo">
+            <h4>Sign Up Form</h4>
+            <div>
+                <input type="text" id="demoSignupName" placeholder="Enter full name">
+                <div id="demoSignupNameMsg"></div>
+            </div>
+            <div>
+                <input type="email" id="demoSignupEmail" placeholder="Enter email">
+                <div id="demoSignupEmailMsg"></div>
+            </div>
+            <div>
+                <input type="password" id="demoSignupPassword" placeholder="Enter password">
+                <div id="demoSignupPasswordMsg"></div>
+            </div>
+            <div>
+                <input type="password" id="demoSignupConfirm" placeholder="Confirm password">
+                <div id="demoSignupConfirmMsg"></div>
+            </div>
+            <button onclick="testSignupValidation()">Test Signup Form Validation</button>
+        </div>
+    </div>
+
+    <script>
+        // Copy validation functions from login.html
+        function validateEmail(email) {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailPattern.test(email);
+        }
+        
+        function validatePassword(password) {
+            return password.length >= 6;
+        }
+        
+        function validateName(name) {
+            return name.trim().length >= 2;
+        }
+
+        function createValidationMessage(input, message, type = 'error') {
+            const messageDiv = input.parentElement.querySelector('.validation-message') || 
+                              input.parentElement.querySelector('[id$="Msg"]');
+            if (messageDiv) {
+                messageDiv.className = `validation-message ${type}`;
+                messageDiv.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i> ${message}`;
+            }
+        }
+
+        function clearValidationMessage(input) {
+            const messageDiv = input.parentElement.querySelector('.validation-message') || 
+                              input.parentElement.querySelector('[id$="Msg"]');
+            if (messageDiv) {
+                messageDiv.innerHTML = '';
+                messageDiv.className = '';
+            }
+        }
+
+        // Test functions
+        function runTest(testName, testFunction, expected) {
+            try {
+                const result = testFunction();
+                const passed = result === expected;
+                return {
+                    name: testName,
+                    passed: passed,
+                    result: result,
+                    expected: expected
+                };
+            } catch (error) {
+                return {
+                    name: testName,
+                    passed: false,
+                    result: `Error: ${error.message}`,
+                    expected: expected
+                };
+            }
+        }
+
+        function displayTestResults(containerId, tests) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            tests.forEach(test => {
+                const div = document.createElement('div');
+                div.className = `test-result ${test.passed ? 'pass' : 'fail'}`;
+                div.innerHTML = `
+                    ${test.passed ? '✅' : '❌'} ${test.name}<br>
+                    <small>Expected: ${test.expected}, Got: ${test.result}</small>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function runEmailTests() {
+            const tests = [
+                runTest('Valid email', () => validateEmail('test@example.com'), true),
+                runTest('Valid email with subdomain', () => validateEmail('user@mail.example.com'), true),
+                runTest('Invalid email - no @', () => validateEmail('testexample.com'), false),
+                runTest('Invalid email - no domain', () => validateEmail('test@'), false),
+                runTest('Invalid email - no TLD', () => validateEmail('test@example'), false),
+                runTest('Empty email', () => validateEmail(''), false),
+                runTest('Email with spaces', () => validateEmail('test @example.com'), false)
+            ];
+            displayTestResults('emailTests', tests);
+        }
+
+        function runPasswordTests() {
+            const tests = [
+                runTest('Valid password - 6 chars', () => validatePassword('123456'), true),
+                runTest('Valid password - long', () => validatePassword('verylongpassword'), true),
+                runTest('Invalid password - 5 chars', () => validatePassword('12345'), false),
+                runTest('Invalid password - empty', () => validatePassword(''), false),
+                runTest('Valid password - special chars', () => validatePassword('Pass@123'), true)
+            ];
+            displayTestResults('passwordTests', tests);
+        }
+
+        function runNameTests() {
+            const tests = [
+                runTest('Valid name - 2 chars', () => validateName('Jo'), true),
+                runTest('Valid name - full name', () => validateName('John Doe'), true),
+                runTest('Invalid name - 1 char', () => validateName('J'), false),
+                runTest('Invalid name - empty', () => validateName(''), false),
+                runTest('Invalid name - spaces only', () => validateName('   '), false),
+                runTest('Valid name - with spaces', () => validateName('  John  '), true)
+            ];
+            displayTestResults('nameTests', tests);
+        }
+
+        // Live demo functions
+        function setupLiveValidation() {
+            // Login form demo
+            document.getElementById('demoLoginEmail').addEventListener('input', function() {
+                const email = this.value.trim();
+                if (email === '') {
+                    this.classList.remove('valid', 'invalid');
+                    clearValidationMessage(this);
+                } else if (validateEmail(email)) {
+                    this.classList.remove('invalid');
+                    this.classList.add('valid');
+                    createValidationMessage(this, 'Valid email format', 'success');
+                } else {
+                    this.classList.remove('valid');
+                    this.classList.add('invalid');
+                    createValidationMessage(this, 'Please enter a valid email address', 'error');
+                }
+            });
+
+            document.getElementById('demoLoginPassword').addEventListener('input', function() {
+                const password = this.value;
+                if (password === '') {
+                    this.classList.remove('valid', 'invalid');
+                    clearValidationMessage(this);
+                } else if (validatePassword(password)) {
+                    this.classList.remove('invalid');
+                    this.classList.add('valid');
+                    createValidationMessage(this, 'Password length is valid', 'success');
+                } else {
+                    this.classList.remove('valid');
+                    this.classList.add('invalid');
+                    createValidationMessage(this, 'Password must be at least 6 characters long', 'error');
+                }
+            });
+
+            // Signup form demo
+            document.getElementById('demoSignupName').addEventListener('input', function() {
+                const name = this.value.trim();
+                if (name === '') {
+                    this.classList.remove('valid', 'invalid');
+                    clearValidationMessage(this);
+                } else if (validateName(name)) {
+                    this.classList.remove('invalid');
+                    this.classList.add('valid');
+                    createValidationMessage(this, 'Valid name', 'success');
+                } else {
+                    this.classList.remove('valid');
+                    this.classList.add('invalid');
+                    createValidationMessage(this, 'Name must be at least 2 characters long', 'error');
+                }
+            });
+
+            document.getElementById('demoSignupEmail').addEventListener('input', function() {
+                const email = this.value.trim();
+                if (email === '') {
+                    this.classList.remove('valid', 'invalid');
+                    clearValidationMessage(this);
+                } else if (validateEmail(email)) {
+                    this.classList.remove('invalid');
+                    this.classList.add('valid');
+                    createValidationMessage(this, 'Valid email format', 'success');
+                } else {
+                    this.classList.remove('valid');
+                    this.classList.add('invalid');
+                    createValidationMessage(this, 'Please enter a valid email address', 'error');
+                }
+            });
+
+            document.getElementById('demoSignupPassword').addEventListener('input', function() {
+                const password = this.value;
+                if (password === '') {
+                    this.classList.remove('valid', 'invalid');
+                    clearValidationMessage(this);
+                } else if (validatePassword(password)) {
+                    this.classList.remove('invalid');
+                    this.classList.add('valid');
+                    createValidationMessage(this, 'Strong password', 'success');
+                } else {
+                    this.classList.remove('valid');
+                    this.classList.add('invalid');
+                    createValidationMessage(this, 'Password must be at least 6 characters long', 'error');
+                }
+                
+                // Re-validate confirm password if it has a value
+                const confirmPassword = document.getElementById('demoSignupConfirm');
+                if (confirmPassword.value) {
+                    confirmPassword.dispatchEvent(new Event('input'));
+                }
+            });
+
+            document.getElementById('demoSignupConfirm').addEventListener('input', function() {
+                const confirmPassword = this.value;
+                const password = document.getElementById('demoSignupPassword').value;
+                
+                if (confirmPassword === '') {
+                    this.classList.remove('valid', 'invalid');
+                    clearValidationMessage(this);
+                } else if (confirmPassword === password && confirmPassword.length >= 6) {
+                    this.classList.remove('invalid');
+                    this.classList.add('valid');
+                    createValidationMessage(this, 'Passwords match', 'success');
+                } else {
+                    this.classList.remove('valid');
+                    this.classList.add('invalid');
+                    createValidationMessage(this, 'Passwords do not match', 'error');
+                }
+            });
+        }
+
+        function testLoginValidation() {
+            const email = document.getElementById('demoLoginEmail').value.trim();
+            const password = document.getElementById('demoLoginPassword').value;
+            
+            let isValid = true;
+            let messages = [];
+            
+            if (!email) {
+                messages.push('❌ Email is required');
+                isValid = false;
+            } else if (!validateEmail(email)) {
+                messages.push('❌ Invalid email format');
+                isValid = false;
+            } else {
+                messages.push('✅ Email is valid');
+            }
+            
+            if (!password) {
+                messages.push('❌ Password is required');
+                isValid = false;
+            } else if (!validatePassword(password)) {
+                messages.push('❌ Password too short');
+                isValid = false;
+            } else {
+                messages.push('✅ Password is valid');
+            }
+            
+            alert(`Login Form Validation:\n\n${messages.join('\n')}\n\nForm ${isValid ? 'PASSES' : 'FAILS'} validation`);
+        }
+
+        function testSignupValidation() {
+            const name = document.getElementById('demoSignupName').value.trim();
+            const email = document.getElementById('demoSignupEmail').value.trim();
+            const password = document.getElementById('demoSignupPassword').value;
+            const confirmPassword = document.getElementById('demoSignupConfirm').value;
+            
+            let isValid = true;
+            let messages = [];
+            
+            if (!name) {
+                messages.push('❌ Name is required');
+                isValid = false;
+            } else if (!validateName(name)) {
+                messages.push('❌ Name too short');
+                isValid = false;
+            } else {
+                messages.push('✅ Name is valid');
+            }
+            
+            if (!email) {
+                messages.push('❌ Email is required');
+                isValid = false;
+            } else if (!validateEmail(email)) {
+                messages.push('❌ Invalid email format');
+                isValid = false;
+            } else {
+                messages.push('✅ Email is valid');
+            }
+            
+            if (!password) {
+                messages.push('❌ Password is required');
+                isValid = false;
+            } else if (!validatePassword(password)) {
+                messages.push('❌ Password too short');
+                isValid = false;
+            } else {
+                messages.push('✅ Password is valid');
+            }
+            
+            if (!confirmPassword) {
+                messages.push('❌ Confirm password is required');
+                isValid = false;
+            } else if (password !== confirmPassword) {
+                messages.push('❌ Passwords do not match');
+                isValid = false;
+            } else {
+                messages.push('✅ Passwords match');
+            }
+            
+            alert(`Signup Form Validation:\n\n${messages.join('\n')}\n\nForm ${isValid ? 'PASSES' : 'FAILS'} validation`);
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setupLiveValidation();
+            console.log('✅ Login validation test suite ready');
+        });
+    </script>
+</body>
+</html>

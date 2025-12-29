@@ -7,10 +7,13 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['user','admin'], default: 'user' },
   isActive: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: false }, // Email verification status
+  isEmailVerified: { type: Boolean, default: false }, // For Google OAuth users
   otp: { type: String }, // 6-digit OTP
   otpExpiry: { type: Date }, // OTP expiration time
   lastLogin: Date,
   phone: String,
+  googleId: { type: String }, // Google OAuth ID
+  avatar: { type: String }, // Profile picture URL
   address: {
     street: String,
     city: String,
@@ -24,6 +27,9 @@ const userSchema = new mongoose.Schema({
   }],
   resetPasswordToken: String,
   resetPasswordExpire: Date,
+  resetPasswordOTP: String, // OTP for password reset
+  resetPasswordOTPExpire: Date, // OTP expiration time
+  resetPasswordOTPVerified: Boolean, // Flag to track OTP verification
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

@@ -13,12 +13,44 @@ class AuthService {
       throw new Error('Email and password are required');
     }
 
+    // Name validation
     if (!name) {
       throw new Error('Name is required');
     }
+    
+    const trimmedName = name.trim();
+    
+    if (trimmedName.length < 3) {
+      throw new Error('Name must be at least 3 characters long');
+    }
+    
+    if (trimmedName.length > 50) {
+      throw new Error('Name must not exceed 50 characters');
+    }
+    
+    if (!/^[a-zA-Z\s'-\.]+$/.test(trimmedName)) {
+      throw new Error('Name can only contain letters, spaces, hyphens, and apostrophes');
+    }
+    
+    if (!/[a-zA-Z]/.test(trimmedName)) {
+      throw new Error('Name must contain at least one letter');
+    }
 
+    // Strong password validation
     if (password.length < 6) {
-      throw new Error('Password must be at least 6 characters');
+      throw new Error('Password must be at least 6 characters long');
+    }
+    
+    if (!/[0-9]/.test(password)) {
+      throw new Error('Password must contain at least one number');
+    }
+    
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      throw new Error('Password must contain at least one special character');
+    }
+    
+    if (!/[a-zA-Z]/.test(password)) {
+      throw new Error('Password must contain at least one letter');
     }
 
     // Check if user exists

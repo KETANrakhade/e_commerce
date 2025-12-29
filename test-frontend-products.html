@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Frontend Products</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .product { border: 1px solid #ddd; margin: 10px; padding: 15px; border-radius: 5px; }
+        .product img { width: 100px; height: 100px; object-fit: cover; }
+        .error { color: red; background: #ffe6e6; padding: 10px; border-radius: 5px; }
+        .success { color: green; background: #e6ffe6; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h2>🧪 Frontend Products Test</h2>
+    <div id="status">Loading...</div>
+    <div id="products"></div>
+
+    <script>
+        // Set API base URL manually
+        window.API_BASE_URL = 'http://localhost:5001/api';
+        
+        async function testProducts() {
+            const statusDiv = document.getElementById('status');
+            const productsDiv = document.getElementById('products');
+            
+            try {
+                statusDiv.innerHTML = '🔄 Fetching products from API...';
+                
+                const response = await fetch(window.API_BASE_URL + '/products/category/men');
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.products) {
+                    const products = data.data.products;
+                    statusDiv.innerHTML = `✅ Success! Found ${products.length} men's products`;
+                    
+                    productsDiv.innerHTML = products.map(product => `
+                        <div class="product">
+                            <h4>${product.name}</h4>
+                            <p>Price: ₹${product.price}</p>
+                            <p>Stock: ${product.stock}</p>
+                            <p>Category: ${product.category?.name || 'N/A'}</p>
+                            <p>Images: ${product.images?.length || 0} | ImageUrls: ${product.imageUrls?.length || 0}</p>
+                            ${product.images?.[0]?.url ? `<img src="${product.images[0].url}" alt="${product.name}" onerror="this.style.display='none'">` : '<p>No image</p>'}
+                            <small>ID: ${product._id}</small>
+                        </div>
+                    `).join('');
+                } else {
+                    statusDiv.innerHTML = '❌ API returned success=false or no products';
+                    productsDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `❌ Error: ${error.message}`;
+                productsDiv.innerHTML = `<div class="error">
+                    <h4>Network Error</h4>
+                    <p>Could not fetch products. This could be:</p>
+                    <ul>
+                        <li>Backend server not running on port 5001</li>
+                        <li>CORS issue</li>
+                        <li>Network connectivity problem</li>
+                    </ul>
+                    <p>Error details: ${error.message}</p>
+                </div>`;
+            }
+        }
+        
+        // Test on page load
+        testProducts();
+    </script>
+</body>
+</html>

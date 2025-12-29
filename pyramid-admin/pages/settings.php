@@ -3,16 +3,58 @@
 $success = '';
 $error = '';
 
+// Get API client
+require_once __DIR__ . '/../config/api_client.php';
+$apiClient = getApiClient();
+
 // Handle form submissions
 if ($_POST) {
     $action = $_POST['action'] ?? '';
     
     if ($action === 'update_profile') {
-        // This would typically update admin profile via API
-        $success = 'Profile updated successfully';
+        $name = $_POST['name'] ?? '';
+        $email = $_POST['email'] ?? '';
+        
+        if (empty($name) || empty($email)) {
+            $error = 'Name and email are required';
+        } else {
+            $result = $apiClient->makeRequest('admin/profile', 'PUT', [
+                'name' => $name,
+                'email' => $email
+            ]);
+            
+            if ($result['success']) {
+                $success = 'Profile updated successfully';
+                // Update session data
+                $_SESSION['admin_name'] = $name;
+                $_SESSION['admin_email'] = $email;
+            } else {
+                $error = $result['error'] ?? 'Failed to update profile';
+            }
+        }
     } elseif ($action === 'change_password') {
-        // This would typically change password via API
-        $success = 'Password changed successfully';
+        $currentPassword = $_POST['current_password'] ?? '';
+        $newPassword = $_POST['new_password'] ?? '';
+        $confirmPassword = $_POST['confirm_password'] ?? '';
+        
+        if (empty($currentPassword) || empty($newPassword) || empty($confirmPassword)) {
+            $error = 'All password fields are required';
+        } elseif ($newPassword !== $confirmPassword) {
+            $error = 'New passwords do not match';
+        } elseif (strlen($newPassword) < 6) {
+            $error = 'New password must be at least 6 characters long';
+        } else {
+            $result = $apiClient->makeRequest('admin/change-password', 'PUT', [
+                'currentPassword' => $currentPassword,
+                'newPassword' => $newPassword
+            ]);
+            
+            if ($result['success']) {
+                $success = 'Password changed successfully! Please use your new password for future logins.';
+            } else {
+                $error = $result['error'] ?? 'Failed to change password';
+            }
+        }
     }
 }
 ?>

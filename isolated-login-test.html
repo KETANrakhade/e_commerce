@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isolated Login Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 400px; 
+            margin: 50px auto; 
+            padding: 20px; 
+        }
+        input { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+        }
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+        }
+        button:disabled { 
+            background: #ccc; 
+        }
+        .status { 
+            margin: 15px 0; 
+            padding: 10px; 
+            border-radius: 4px; 
+        }
+        .success { 
+            background: #d4edda; 
+            color: #155724; 
+        }
+        .error { 
+            background: #f8d7da; 
+            color: #721c24; 
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 Isolated Login Test</h1>
+    <p>This test has NO other scripts that could interfere.</p>
+    
+    <form id="testLoginForm">
+        <input type="email" id="email" placeholder="Email" value="ketanrak098@gmail.com" required>
+        <input type="password" id="password" placeholder="Password" value="Something@123" required>
+        <button type="submit" id="loginBtn">Login & Redirect</button>
+    </form>
+    
+    <div id="status"></div>
+    
+    <script>
+        document.getElementById('testLoginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+            const statusDiv = document.getElementById('status');
+            const loginBtn = document.getElementById('loginBtn');
+            
+            console.log('🔵 Starting isolated login test...');
+            console.log('📧 Email:', email);
+            console.log('🔐 Password length:', password.length);
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+            
+            statusDiv.innerHTML = '<div class="status">🔄 Logging in...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/users/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                console.log('📦 Response:', data);
+                
+                if (data.success && data.data && data.data.token) {
+                    console.log('✅ Login successful!');
+                    
+                    // Save to localStorage
+                    localStorage.setItem('token', data.data.token);
+                    localStorage.setItem('user', JSON.stringify(data.data));
+                    
+                    console.log('💾 Data saved to localStorage');
+                    
+                    statusDiv.innerHTML = `
+                        <div class="status success">
+                            ✅ Login successful!<br>
+                            User: ${data.data.name}<br>
+                            🔄 Redirecting in 3 seconds...
+                        </div>
+                    `;
+                    
+                    // Countdown redirect
+                    let countdown = 3;
+                    const countdownInterval = setInterval(() => {
+                        countdown--;
+                        statusDiv.innerHTML = `
+                            <div class="status success">
+                                ✅ Login successful!<br>
+                                User: ${data.data.name}<br>
+                                🔄 Redirecting in ${countdown} seconds...
+                            </div>
+                        `;
+                        
+                        if (countdown <= 0) {
+                            clearInterval(countdownInterval);
+                            console.log('🔄 Executing redirect...');
+                            
+                            if (data.data.role === 'admin') {
+                                console.log('🔑 Redirecting admin to admin panel');
+                                window.location.replace('http://localhost:8000');
+                            } else {
+                                console.log('👤 Redirecting user to test homepage');
+                                window.location.replace('test-homepage.html');
+                            }
+                        }
+                    }, 1000);
+                    
+                } else {
+                    console.error('❌ Login failed:', data);
+                    statusDiv.innerHTML = `
+                        <div class="status error">
+                            ❌ Login failed: ${data.error || 'Invalid credentials'}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('❌ Network error:', error);
+                statusDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Network error: ${error.message}
+                    </div>
+                `;
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login & Redirect';
+            }
+        });
+        
+        console.log('✅ Isolated login test ready');
+    </script>
+</body>
+</html>

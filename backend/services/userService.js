@@ -14,8 +14,10 @@ class UserService {
       throw new Error('Name, email, and password are required');
     }
 
-    // Check if user exists
-    const userExists = await User.findOne({ email });
+    // Check if user exists (case-insensitive)
+    const userExists = await User.findOne({ 
+      email: { $regex: new RegExp(`^${email}$`, 'i') }
+    });
     if (userExists) {
       throw new Error('User already exists with this email');
     }
@@ -24,10 +26,10 @@ class UserService {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
+    // Create user (normalize email to lowercase)
     const user = await User.create({
       name,
-      email,
+      email: email.toLowerCase(),
       password: hashedPassword,
       phone,
       address
@@ -56,8 +58,10 @@ class UserService {
       throw new Error('Email and password are required');
     }
 
-    // Find user
-    const user = await User.findOne({ email });
+    // Find user (case-insensitive)
+    const user = await User.findOne({ 
+      email: { $regex: new RegExp(`^${email}$`, 'i') }
+    });
 
     if (!user) {
       throw new Error('Invalid email or password');
@@ -110,15 +114,15 @@ class UserService {
     // Update fields
     if (updateData.name) user.name = updateData.name;
     if (updateData.email) {
-      // Check if email is already taken
+      // Check if email is already taken (case-insensitive)
       const emailExists = await User.findOne({ 
-        email: updateData.email, 
+        email: { $regex: new RegExp(`^${updateData.email}$`, 'i') },
         _id: { $ne: userId } 
       });
       if (emailExists) {
         throw new Error('Email already in use');
       }
-      user.email = updateData.email;
+      user.email = updateData.email.toLowerCase();
     }
     if (updateData.phone) user.phone = updateData.phone;
     if (updateData.address) user.address = updateData.address;

@@ -505,41 +505,179 @@ body[data-layout=horizontal] .footer {
   display: block !important;
 }
 
-/* Fix for logo alignment when sidebar is collapsed */
+/* Optimized fix for header elements when sidebar is collapsed */
+.vertical-collpsed .navbar-header .d-flex:first-child {
+  flex: 0 1 auto !important;
+  max-width: calc(100% - 70px) !important;
+  overflow: hidden !important;
+}
+
+.vertical-collpsed .app-search {
+  flex: 0 0 160px !important;
+  max-width: 160px !important;
+}
+
+.vertical-collpsed .app-search .form-control {
+  width: 100% !important;
+  max-width: 160px !important;
+  font-size: 0.875rem !important;
+}
+
+.vertical-collpsed .dropdown-mega {
+  flex: 0 0 auto !important;
+  margin-left: 0.5rem !important;
+}
+
+.vertical-collpsed .dropdown-megamenu {
+  max-width: calc(100vw - 150px) !important;
+  left: auto !important;
+  right: 0 !important;
+}
+
+/* Compact header items when collapsed */
+.vertical-collpsed .navbar-header .d-flex:first-child > * {
+  margin-right: 0.25rem !important;
+  flex-shrink: 1 !important;
+}
+
+.vertical-collpsed .navbar-header .d-flex:first-child > *:last-child {
+  margin-right: 0 !important;
+}
+
+/* Hide or minimize less important elements when space is tight */
+.vertical-collpsed .dropdown-mega .btn {
+  padding: 0.375rem 0.5rem !important;
+  font-size: 0.875rem !important;
+}
+
+.vertical-collpsed .dropdown-mega span {
+  display: none !important;
+}
+
+.vertical-collpsed .dropdown-mega i {
+  margin: 0 !important;
+}
+
+/* Make header more compact overall when collapsed */
+.vertical-collpsed .navbar-header {
+  padding-right: 0.5rem !important;
+}
+
+.vertical-collpsed .header-item {
+  padding: 0.375rem 0.5rem !important;
+  margin-left: 0.125rem !important;
+  margin-right: 0.125rem !important;
+}
+
+/* Optimize button spacing - vertical menu button removed */
+/* .vertical-collpsed #vertical-menu-btn {
+  margin-right: 0.5rem !important;
+  flex-shrink: 0 !important;
+} */
+
+/* Ensure right side elements stay compact */
+.vertical-collpsed .navbar-header .d-flex:last-child {
+  flex: 0 0 auto !important;
+  gap: 0.25rem !important;
+}
+
+/* Hide mega menu text on smaller screens when collapsed */
+@media (max-width: 1200px) {
+  .vertical-collpsed .dropdown-mega {
+    display: none !important;
+  }
+}
+
+
+
+/* Enhanced Fix for logo alignment when sidebar is collapsed */
 .vertical-collpsed .navbar-brand-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 70px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  transition: all 0.3s ease;
 }
 
 .vertical-collpsed .navbar-brand-box .logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 70px;
-  width: 100%;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 70px !important;
+  width: 100% !important;
+  line-height: 1 !important;
 }
 
 /* Ensure proper logo display in normal state */
+body:not(.vertical-collpsed) .navbar-brand-box {
+  width: 250px !important;
+  display: block !important;
+  text-align: center !important;
+  padding: 0 1.5rem !important;
+  transition: all 0.3s ease;
+}
+
+body:not(.vertical-collpsed) .navbar-brand-box .logo {
+  display: block !important;
+  line-height: 70px !important;
+}
+
 body:not(.vertical-collpsed) .logo span.logo-lg {
   display: flex !important;
-  align-items: center;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 body:not(.vertical-collpsed) .logo span.logo-sm {
   display: none !important;
+  visibility: hidden !important;
 }
 
-/* Additional fixes for logo positioning */
-.navbar-brand-box .logo {
-  display: flex;
-  align-items: center;
-  height: 70px;
+/* Enhanced collapsed state logo styling */
+.vertical-collpsed .logo span.logo-lg {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+.vertical-collpsed .logo span.logo-sm {
+  display: block !important;
+  visibility: visible !important;
+  text-align: center !important;
 }
 
 .vertical-collpsed .logo span.logo-sm img {
-  margin: 0 auto;
+  display: block !important;
+  margin: 0 auto !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
 }
+
+/* Force override any conflicting styles */
+.navbar-brand-box .logo span {
+  transition: all 0.3s ease !important;
+}
+
+/* Mobile responsiveness - show full logo on mobile even when collapsed */
+@media (max-width: 991.98px) {
+  .vertical-collpsed .navbar-brand-box {
+    width: 250px !important;
+  }
+  
+  .vertical-collpsed .logo span.logo-lg {
+    display: flex !important;
+    visibility: visible !important;
+  }
+  
+  .vertical-collpsed .logo span.logo-sm {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  
+
+}
+
+
 .vertical-collpsed .vertical-menu {
   position: absolute;
   width: 70px !important;

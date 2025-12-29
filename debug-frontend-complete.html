@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔍 Complete Frontend Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; }
+        .btn { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .result { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #007bff; }
+        .error { border-left-color: #dc3545; background: #f8d7da; }
+        .success { border-left-color: #28a745; background: #d4edda; }
+        .warning { border-left-color: #ffc107; background: #fff3cd; }
+        pre { background: #f1f1f1; padding: 10px; border-radius: 3px; overflow-x: auto; max-height: 300px; }
+        .product-card { border: 1px solid #ddd; padding: 15px; margin: 10px; border-radius: 5px; display: inline-block; width: 200px; }
+        .product-card img { width: 100%; height: 150px; object-fit: cover; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🔍 Complete Frontend Debug Tool</h2>
+        <p>This will test everything needed for frontend product display with images.</p>
+        
+        <div>
+            <button class="btn" onclick="testApiConfig()">1. Test API Config</button>
+            <button class="btn" onclick="testMenProducts()">2. Test Men's Products</button>
+            <button class="btn" onclick="testImagePaths()">3. Test Image Paths</button>
+            <button class="btn" onclick="simulateFrontendLoad()">4. Simulate Frontend Load</button>
+            <button class="btn" onclick="testUploadedImages()">5. Test Uploaded Images</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Set API base URL
+        window.API_BASE_URL = 'http://localhost:5001/api';
+        
+        function addResult(title, content, type = 'result') {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = `<h4>${title}</h4><div>${content}</div>`;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        function testApiConfig() {
+            addResult('API Configuration', `
+                <strong>Environment:</strong> ${window.location.hostname === 'localhost' ? 'development' : 'production'}<br>
+                <strong>API Base URL:</strong> ${window.API_BASE_URL}<br>
+                <strong>Current URL:</strong> ${window.location.href}<br>
+                <strong>Frontend Port:</strong> ${window.location.port || '80'}<br>
+                <strong>Expected Backend:</strong> localhost:5001
+            `, 'success');
+        }
+
+        async function testMenProducts() {
+            try {
+                addResult('Testing Men\'s Products API...', 'Fetching from: ' + window.API_BASE_URL + '/products/category/men');
+                
+                const response = await fetch(window.API_BASE_URL + '/products/category/men');
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    const products = data.data?.products || [];
+                    addResult('Men\'s Products API - SUCCESS', `
+                        <strong>Status:</strong> ${response.status}<br>
+                        <strong>Products found:</strong> ${products.length}<br>
+                        <strong>Sample products:</strong><br>
+                        <pre>${JSON.stringify(products.slice(0, 3).map(p => ({
+                            name: p.name,
+                            price: p.price,
+                            images: p.images,
+                            imageUrls: p.imageUrls,
+                            category: p.category?.name
+                        })), null, 2)}</pre>
+                    `, 'success');
+                    
+                    // Store products for other tests
+                    window.testProducts = products;
+                } else {
+                    addResult('Men\'s Products API - ERROR', `
+                        <strong>Status:</strong> ${response.status}<br>
+                        <strong>Error:</strong> <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `, 'error');
+                }
+            } catch (error) {
+                addResult('Men\'s Products API - NETWORK ERROR', `
+                    <strong>Error:</strong> ${error.message}<br>
+                    This usually means CORS issue or backend not running
+                `, 'error');
+            }
+        }
+
+        async function testImagePaths() {
+            if (!window.testProducts) {
+                addResult('Image Path Test - ERROR', 'Run "Test Men\'s Products" first!', 'error');
+                return;
+            }
+            
+            const products = window.testProducts;
+            const productsWithImages = products.filter(p => p.images?.length > 0 || p.imageUrls?.length > 0);
+            
+            addResult('Image Path Analysis', `
+                <strong>Total products:</strong> ${products.length}<br>
+                <strong>Products with images:</strong> ${productsWithImages.length}<br>
+                <strong>Products without images:</strong> ${products.length - productsWithImages.length}<br><br>
+                <strong>Image path examples:</strong><br>
+                <pre>${JSON.stringify(productsWithImages.slice(0, 5).map(p => ({
+                    name: p.name,
+                    images: p.images,
+                    imageUrls: p.imageUrls
+                })), null, 2)}</pre>
+            `, productsWithImages.length > 0 ? 'success' : 'warning');
+            
+            // Test if uploaded images directory is accessible
+            try {
+                const testResponse = await fetch('http://localhost:3000/uploads/products/.gitkeep');
+                if (testResponse.ok) {
+                    addResult('Uploads Directory Test', '✅ uploads/products/ directory is accessible from frontend', 'success');
+                } else {
+                    addResult('Uploads Directory Test', '❌ uploads/products/ directory not accessible (404)', 'error');
+                }
+            } catch (error) {
+                addResult('Uploads Directory Test', `❌ Cannot access uploads directory: ${error.message}`, 'error');
+            }
+        }
+
+        async function simulateFrontendLoad() {
+            if (!window.testProducts) {
+                addResult('Frontend Simulation - ERROR', 'Run "Test Men\'s Products" first!', 'error');
+                return;
+            }
+            
+            const products = window.testProducts.slice(0, 6); // Test with first 6 products
+            let html = '<div style="display: flex; flex-wrap: wrap;">';
+            
+            products.forEach(product => {
+                // Simulate the same logic as men-products-loader.js
+                const imageUrl = product.images?.[0]?.url || product.imageUrls?.[0] || 'https://via.placeholder.com/400x500/65AAC3/FFFFFF?text=No+Image';
+                const price = product.price ? `₹${product.price.toLocaleString()}` : 'Price not available';
+                
+                html += `
+                    <div class="product-card">
+                        <img src="${imageUrl}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/200x150/ff6b6b/ffffff?text=Image+Error'">
+                        <h4>${product.name}</h4>
+                        <p>${price}</p>
+                        <small>Category: ${product.category?.name || 'N/A'}</small><br>
+                        <small>Image: ${imageUrl}</small>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            addResult('Frontend Product Simulation', html, 'success');
+        }
+
+        async function testUploadedImages() {
+            // Test if any products have uploaded images in the uploads/products/ directory
+            if (!window.testProducts) {
+                addResult('Uploaded Images Test - ERROR', 'Run "Test Men\'s Products" first!', 'error');
+                return;
+            }
+            
+            const products = window.testProducts;
+            const uploadedImageProducts = products.filter(p => 
+                p.images?.some(img => img.url?.includes('uploads/products/')) ||
+                p.imageUrls?.some(url => url?.includes('uploads/products/'))
+            );
+            
+            addResult('Uploaded Images Analysis', `
+                <strong>Products with uploaded images:</strong> ${uploadedImageProducts.length}<br>
+                <strong>Products with external URLs:</strong> ${products.filter(p => 
+                    p.images?.some(img => img.url?.startsWith('http')) ||
+                    p.imageUrls?.some(url => url?.startsWith('http'))
+                ).length}<br>
+                <strong>Products with no images:</strong> ${products.filter(p => 
+                    (!p.images || p.images.length === 0) && (!p.imageUrls || p.imageUrls.length === 0)
+                ).length}<br><br>
+                ${uploadedImageProducts.length > 0 ? 
+                    `<strong>Uploaded image examples:</strong><br><pre>${JSON.stringify(uploadedImageProducts.slice(0, 3).map(p => ({
+                        name: p.name,
+                        images: p.images,
+                        imageUrls: p.imageUrls
+                    })), null, 2)}</pre>` : 
+                    '<strong>No products found with uploaded images.</strong><br>Try adding a product with file upload in admin panel.'
+                }
+            `, uploadedImageProducts.length > 0 ? 'success' : 'warning');
+        }
+
+        // Auto-run basic tests
+        window.onload = function() {
+            testApiConfig();
+            setTimeout(() => testMenProducts(), 1000);
+            setTimeout(() => testImagePaths(), 2000);
+        };
+    </script>
+</body>
+</html>

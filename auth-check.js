@@ -22,7 +22,16 @@ function updateNavigationBasedOnAuth() {
         
         // Update user profile button
         if (userProfileBtn) {
-            userProfileBtn.innerHTML = `<i class="fa-regular fa-user"></i> ${user.name}`;
+            // Check if we're on product pages
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            const isProductPage = currentPage === 'men-product.html' || currentPage === 'women-product.html';
+            
+            // Show only icon on product pages, icon + name on other pages
+            if (isProductPage) {
+                userProfileBtn.innerHTML = `<i class="fa-regular fa-user"></i>`;
+            } else {
+                userProfileBtn.innerHTML = `<i class="fa-regular fa-user"></i> ${user.name}`;
+            }
             userProfileBtn.style.cursor = 'pointer';
         }
         
@@ -92,6 +101,13 @@ function addLogoutButton() {
     // Check if logout button already exists
     if (document.getElementById('logoutBtn')) return;
     
+    // Don't add logout button on product pages
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    if (currentPage === 'men-product.html' || currentPage === 'women-product.html') {
+        console.log('🚫 Logout button disabled on product pages');
+        return;
+    }
+    
     const userProfileBtn = document.getElementById('userProfile');
     if (!userProfileBtn) return;
     
@@ -105,7 +121,7 @@ function addLogoutButton() {
         window.location.href = 'login.html';
     };
     
-    // Or create a separate logout button
+    // Create a separate logout button
     const logoutBtn = document.createElement('span');
     logoutBtn.id = 'logoutBtn';
     logoutBtn.className = 'icon-btn ms-2';

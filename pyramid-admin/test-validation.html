@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login Validation Test</title>
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/icons.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; padding: 50px 0; }
+        .test-container { max-width: 600px; margin: 0 auto; }
+        .test-case { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .test-result { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1><i class="mdi mdi-shield-check"></i> Admin Login Validation Test</h1>
+        
+        <div class="test-case">
+            <h3>✅ Validation Features Implemented</h3>
+            <ul>
+                <li><strong>Real-time Email Validation</strong>
+                    <ul>
+                        <li>Required field validation</li>
+                        <li>Email format validation (regex pattern)</li>
+                        <li>Visual feedback with green/red borders</li>
+                        <li>Inline error messages with icons</li>
+                    </ul>
+                </li>
+                <li><strong>Real-time Password Validation</strong>
+                    <ul>
+                        <li>Required field validation</li>
+                        <li>Minimum length validation (6 characters)</li>
+                        <li>Visual feedback with green/red borders</li>
+                        <li>Inline error messages with icons</li>
+                    </ul>
+                </li>
+                <li><strong>Form Submission Validation</strong>
+                    <ul>
+                        <li>Prevents submission if validation fails</li>
+                        <li>Shows general error message</li>
+                        <li>Focuses on first error field</li>
+                        <li>Smooth scrolling to error</li>
+                    </ul>
+                </li>
+                <li><strong>Enhanced UX Features</strong>
+                    <ul>
+                        <li>Loading state with spinner during submission</li>
+                        <li>Password visibility toggle</li>
+                        <li>Auto-focus on email field</li>
+                        <li>Enter key navigation (email → password → submit)</li>
+                        <li>Smooth animations and transitions</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="test-case">
+            <h3>🧪 Test Cases</h3>
+            
+            <div class="test-result info">
+                <strong>Test 1: Empty Fields</strong><br>
+                Try submitting without filling any fields → Should show "Email is required" and "Password is required"
+            </div>
+            
+            <div class="test-result info">
+                <strong>Test 2: Invalid Email Format</strong><br>
+                Enter "invalid-email" → Should show "Please enter a valid email address"
+            </div>
+            
+            <div class="test-result info">
+                <strong>Test 3: Short Password</strong><br>
+                Enter password with less than 6 characters → Should show "Password must be at least 6 characters long"
+            </div>
+            
+            <div class="test-result info">
+                <strong>Test 4: Valid Input</strong><br>
+                Enter valid email and password → Should show green borders and allow submission
+            </div>
+            
+            <div class="test-result info">
+                <strong>Test 5: Real-time Validation</strong><br>
+                Type in fields and tab out → Should validate immediately on blur
+            </div>
+        </div>
+        
+        <div class="test-case">
+            <h3>🎯 Validation Rules</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Rules</th>
+                        <th>Error Messages</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Email</strong></td>
+                        <td>
+                            • Required<br>
+                            • Valid email format<br>
+                            • No spaces allowed
+                        </td>
+                        <td>
+                            • "Email is required"<br>
+                            • "Please enter a valid email address"
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Password</strong></td>
+                        <td>
+                            • Required<br>
+                            • Minimum 6 characters<br>
+                            • Any characters allowed
+                        </td>
+                        <td>
+                            • "Password is required"<br>
+                            • "Password must be at least 6 characters long"
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="test-case">
+            <h3>🔗 Test the Actual Login Page</h3>
+            <p>Click the button below to test the validation on the actual admin login page:</p>
+            <a href="login.php" class="btn btn-primary btn-lg">
+                <i class="mdi mdi-login"></i> Test Admin Login Validation
+            </a>
+        </div>
+        
+        <div class="test-case">
+            <h3>📋 Implementation Details</h3>
+            <div class="test-result success">
+                <strong>✅ Client-side Validation Added</strong><br>
+                • Real-time validation on input and blur events<br>
+                • Visual feedback with Bootstrap validation classes<br>
+                • Custom error messages with icons<br>
+                • Form submission prevention when invalid<br>
+                • Loading states and user feedback<br>
+                • Enhanced accessibility and keyboard navigation
+            </div>
+        </div>
+    </div>
+    
+    <script src="assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

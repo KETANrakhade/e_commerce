@@ -39,7 +39,7 @@ window.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const email = emailInput.value.trim();
+        const email = emailInput.value.trim().toLowerCase();
         const password = passwordInput.value;
         
         console.log('📧 Email:', email);
@@ -63,13 +63,17 @@ window.addEventListener('DOMContentLoaded', function() {
         
         try {
             console.log('🌐 Calling backend API...');
+            console.log('📤 Request data:', { email, password: password ? `${password.length} chars` : 'empty' });
+            
+            const requestBody = JSON.stringify({ email, password });
+            console.log('📤 Request body:', requestBody);
             
             const response = await fetch('http://localhost:5001/api/users/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email, password })
+                body: requestBody
             });
             
             console.log('📡 Response status:', response.status);

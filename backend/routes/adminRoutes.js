@@ -7,7 +7,9 @@ const {
   getAdminProfile,
   getDashboardStats,
   getRecentOrders,
-  getSalesAnalytics
+  getSalesAnalytics,
+  changeAdminPassword,
+  updateAdminProfile
 } = require('../controllers/adminController');
 const {
   getAdminProducts,
@@ -68,6 +70,8 @@ router.post('/register-admin', adminProtect, registerAdmin);
 
 // Protected admin routes
 router.get('/profile', adminProtect, getAdminProfile);
+router.put('/profile', adminProtect, updateAdminProfile);
+router.put('/change-password', adminProtect, changeAdminPassword);
 router.get('/stats', adminProtect, getDashboardStats);
 router.get('/recent-orders', adminProtect, getRecentOrders);
 router.get('/sales-analytics', adminProtect, getSalesAnalytics);

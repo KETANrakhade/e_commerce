@@ -15,6 +15,13 @@ const adminProtect = asyncHandler(async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       // Get user from token and check if admin
+      // Validate that decoded.id is a valid ObjectId
+      const mongoose = require('mongoose');
+      if (!mongoose.Types.ObjectId.isValid(decoded.id)) {
+        res.status(401);
+        throw new Error('Not authorized, invalid user ID in token');
+      }
+      
       const user = await User.findById(decoded.id).select('-password');
 
       if (!user) {

@@ -38,6 +38,7 @@ app.use('/api/brands', require('./routes/brandRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/payments', require('./routes/payment'));
+app.use('/api/test', require('./routes/test'));
 
 
 

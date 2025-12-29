@@ -1,52 +1,97 @@
 <?php
-session_start();
+require_once 'config/admin_config.php';
+require_once 'config/api_client.php';
 
-echo "<h1>Pyramid Admin - API Debug</h1>";
+echo "<h1>🔍 Admin Panel API Debug</h1>";
 
-echo "<h2>Session Info:</h2>";
-echo "<pre>";
-echo "Session Status: " . session_status() . "\n";
-echo "Admin Logged In: " . (isset($_SESSION['admin_logged_in']) ? 'YES' : 'NO') . "\n";
-echo "Admin Token: " . (isset($_SESSION['admin_token']) ? substr($_SESSION['admin_token'], 0, 20) . '...' : 'NOT SET') . "\n";
-echo "Admin Email: " . ($_SESSION['admin_email'] ?? 'NOT SET') . "\n";
-echo "Admin Name: " . ($_SESSION['admin_name'] ?? 'NOT SET') . "\n";
-echo "</pre>";
+// Check session
+echo "<h2>Session Status:</h2>";
+echo "<p><strong>Admin Logged In:</strong> " . (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] ? 'YES' : 'NO') . "</p>";
+echo "<p><strong>Admin Token:</strong> " . (isset($_SESSION['admin_token']) ? 'YES (' . substr($_SESSION['admin_token'], 0, 20) . '...)' : 'NO') . "</p>";
+echo "<p><strong>Admin Name:</strong> " . ($_SESSION['admin_name'] ?? 'Not set') . "</p>";
+echo "<p><strong>Admin Email:</strong> " . ($_SESSION['admin_email'] ?? 'Not set') . "</p>";
 
-echo "<h2>Test Backend Connection:</h2>";
+echo "<h2>API Connection Test:</h2>";
 
-// Test products endpoint (no auth needed)
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, 'http://localhost:5001/api/products');
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-$response = curl_exec($ch);
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-curl_close($ch);
+// Test API connection
+$apiClient = getApiClient();
 
-echo "<h3>Products API (No Auth):</h3>";
-echo "Status: " . $httpCode . "<br>";
-echo "Response: <pre>" . substr($response, 0, 200) . "...</pre>";
-
-// Test admin stats endpoint (needs auth)
-if (isset($_SESSION['admin_token'])) {
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'http://localhost:5001/api/admin/stats');
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . $_SESSION['admin_token']
-    ]);
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    echo "<h3>Admin Stats API (With Auth):</h3>";
-    echo "Status: " . $httpCode . "<br>";
-    echo "Response: <pre>" . $response . "</pre>";
-} else {
-    echo "<h3>Admin Stats API:</h3>";
-    echo "<p style='color: red;'>Cannot test - No admin token in session. Please login first.</p>";
+// Test 1: Basic connection
+echo "<h3>Test 1: Backend Health Check</h3>";
+try {
+    $result = $apiClient->makeRequest('health', 'GET');
+    echo "<div style='background: #d4edda; padding: 10px; border-radius: 5px; margin: 10px 0;'>";
+    echo "<strong>✅ Backend Connection:</strong> SUCCESS<br>";
+    echo "<strong>Response:</strong> " . htmlspecialchars(is_array($result) ? json_encode($result) : $result) . "<br>";
+    echo "</div>";
+} catch (Exception $e) {
+    echo "<div style='background: #f8d7da; padding: 10px; border-radius: 5px; margin: 10px 0;'>";
+    echo "<strong>❌ Backend Connection:</strong> FAILED<br>";
+    echo "<strong>Error:</strong> " . htmlspecialchars($e->getMessage()) . "<br>";
+    echo "</div>";
 }
 
-echo "<hr>";
-echo "<a href='login.php'>Go to Login</a> | ";
-echo "<a href='index.php'>Go to Dashboard</a>";
+// Test 2: Admin login to get token
+echo "<h3>Test 2: Admin Authentication</h3>";
+try {
+    $loginResult = $apiClient->adminLogin('admin@admin.com', 'admin123');
+    echo "<div style='background: #d4edda; padding: 10px; border-radius: 5px; margin: 10px 0;'>";
+    echo "<strong>✅ Admin Login:</strong> SUCCESS<br>";
+    echo "<strong>Response:</strong> <pre>" . htmlspecialchars(json_encode($loginResult, JSON_PRETTY_PRINT)) . "</pre>";
+    
+    // Update session with token if login successful
+    if ($loginResult['success'] && isset($loginResult['data']['data']['token'])) {
+        $_SESSION['admin_token'] = $loginResult['data']['data']['token'];
+        $_SESSION['admin_logged_in'] = true;
+        $_SESSION['admin_name'] = $loginResult['data']['data']['name'] ?? 'Admin';
+        $_SESSION['admin_email'] = $loginResult['data']['data']['email'] ?? 'admin@admin.com';
+        echo "<strong>🔄 Session Updated:</strong> Token saved to session<br>";
+    }
+    echo "</div>";
+} catch (Exception $e) {
+    echo "<div style='background: #f8d7da; padding: 10px; border-radius: 5px; margin: 10px 0;'>";
+    echo "<strong>❌ Admin Login:</strong> FAILED<br>";
+    echo "<strong>Error:</strong> " . htmlspecialchars($e->getMessage()) . "<br>";
+    echo "</div>";
+}
+
+// Test 3: Dashboard data with token
+echo "<h3>Test 3: Dashboard Data (with token)</h3>";
+try {
+    $apiClient = getApiClient(); // Reinitialize with new token
+    $dashboardResult = $apiClient->getDashboardStats();
+    echo "<div style='background: #d4edda; padding: 10px; border-radius: 5px; margin: 10px 0;'>";
+    echo "<strong>✅ Dashboard Data:</strong> SUCCESS<br>";
+    echo "<strong>Response:</strong> <pre>" . htmlspecialchars(json_encode($dashboardResult, JSON_PRETTY_PRINT)) . "</pre>";
+    echo "</div>";
+} catch (Exception $e) {
+    echo "<div style='background: #f8d7da; padding: 10px; border-radius: 5px; margin: 10px 0;'>";
+    echo "<strong>❌ Dashboard Data:</strong> FAILED<br>";
+    echo "<strong>Error:</strong> " . htmlspecialchars($e->getMessage()) . "<br>";
+    echo "</div>";
+}
+
+// Test 4: Products data
+echo "<h3>Test 4: Products Data</h3>";
+try {
+    $productsResult = $apiClient->getProducts();
+    echo "<div style='background: #d4edda; padding: 10px; border-radius: 5px; margin: 10px 0;'>";
+    echo "<strong>✅ Products Data:</strong> SUCCESS<br>";
+    echo "<strong>Count:</strong> " . (isset($productsResult['data']['products']) ? count($productsResult['data']['products']) : 'Unknown') . " products<br>";
+    echo "<strong>Response:</strong> <pre>" . htmlspecialchars(json_encode($productsResult, JSON_PRETTY_PRINT)) . "</pre>";
+    echo "</div>";
+} catch (Exception $e) {
+    echo "<div style='background: #f8d7da; padding: 10px; border-radius: 5px; margin: 10px 0;'>";
+    echo "<strong>❌ Products Data:</strong> FAILED<br>";
+    echo "<strong>Error:</strong> " . htmlspecialchars($e->getMessage()) . "<br>";
+    echo "</div>";
+}
+
+echo "<h2>Quick Actions:</h2>";
+echo "<a href='index.php' style='padding: 10px; background: #007bff; color: white; text-decoration: none; margin: 5px; border-radius: 3px;'>Go to Dashboard</a>";
+echo "<a href='login.php' style='padding: 10px; background: #28a745; color: white; text-decoration: none; margin: 5px; border-radius: 3px;'>Login Page</a>";
+echo "<a href='logout.php' style='padding: 10px; background: #dc3545; color: white; text-decoration: none; margin: 5px; border-radius: 3px;'>Logout</a>";
+
+echo "<h2>Session Data:</h2>";
+echo "<pre>" . htmlspecialchars(print_r($_SESSION, true)) . "</pre>";
 ?>

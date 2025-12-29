@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logo Fix Test</title>
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/icons.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; padding: 50px 0; }
+        .test-container { max-width: 800px; margin: 0 auto; }
+        .test-case { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .btn-test { margin: 5px; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1><i class="mdi mdi-cog-outline"></i> Logo Fix Test & Debug</h1>
+        
+        <div class="test-case">
+            <h3>🔧 Logo Fix Status</h3>
+            <div id="status-info" class="status info">
+                <strong>Checking logo fix implementation...</strong>
+            </div>
+        </div>
+        
+        <div class="test-case">
+            <h3>🧪 Test Controls</h3>
+            <p>Use these buttons to test the logo fix functionality:</p>
+            
+            <button class="btn btn-primary btn-test" onclick="testLogoFix()">
+                <i class="mdi mdi-play"></i> Test Logo Fix
+            </button>
+            
+            <button class="btn btn-success btn-test" onclick="simulateToggle()">
+                <i class="mdi mdi-toggle-switch"></i> Simulate Sidebar Toggle
+            </button>
+            
+            <button class="btn btn-info btn-test" onclick="checkElements()">
+                <i class="mdi mdi-magnify"></i> Check Elements
+            </button>
+            
+            <button class="btn btn-warning btn-test" onclick="forceUpdate()">
+                <i class="mdi mdi-refresh"></i> Force Logo Update
+            </button>
+            
+            <button class="btn btn-secondary btn-test" onclick="showDebugInfo()">
+                <i class="mdi mdi-bug"></i> Debug Info
+            </button>
+        </div>
+        
+        <div class="test-case">
+            <h3>📊 Current State</h3>
+            <div id="current-state">
+                <p>Loading state information...</p>
+            </div>
+        </div>
+        
+        <div class="test-case">
+            <h3>📝 Test Results</h3>
+            <div id="test-results">
+                <p>No tests run yet. Click the test buttons above.</p>
+            </div>
+        </div>
+        
+        <div class="test-case">
+            <h3>🔗 Quick Links</h3>
+            <a href="index.php" class="btn btn-primary">
+                <i class="mdi mdi-home"></i> Go to Admin Dashboard
+            </a>
+            <a href="login.php" class="btn btn-secondary">
+                <i class="mdi mdi-login"></i> Admin Login
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status-info');
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = `<strong>${message}</strong>`;
+        }
+        
+        function addTestResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('test-results');
+            const timestamp = new Date().toLocaleTimeString();
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `status ${type}`;
+            resultDiv.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            resultsDiv.appendChild(resultDiv);
+        }
+        
+        function updateCurrentState() {
+            const stateDiv = document.getElementById('current-state');
+            const hasVerticalBtn = !!document.getElementById('vertical-menu-btn');
+            const bodyClasses = document.body.className;
+            const isCollapsed = document.body.classList.contains('vertical-collpsed');
+            
+            stateDiv.innerHTML = `
+                <table class="table table-sm">
+                    <tr><td><strong>Vertical Menu Button:</strong></td><td>${hasVerticalBtn ? '✅ Found' : '❌ Not Found'}</td></tr>
+                    <tr><td><strong>Body Classes:</strong></td><td>${bodyClasses || 'None'}</td></tr>
+                    <tr><td><strong>Sidebar Collapsed:</strong></td><td>${isCollapsed ? '✅ Yes' : '❌ No'}</td></tr>
+                    <tr><td><strong>Window Width:</strong></td><td>${window.innerWidth}px</td></tr>
+                    <tr><td><strong>Logo Fix JS:</strong></td><td>${typeof window.updateLogoDisplay === 'function' ? '✅ Loaded' : '❌ Not Loaded'}</td></tr>
+                </table>
+            `;
+        }
+        
+        function testLogoFix() {
+            addTestResult('🧪 Starting logo fix test...', 'info');
+            
+            // Check if elements exist
+            const verticalBtn = document.getElementById('vertical-menu-btn');
+            const logoLg = document.querySelectorAll('.logo-lg');
+            const logoSm = document.querySelectorAll('.logo-sm');
+            
+            if (!verticalBtn) {
+                addTestResult('❌ Test failed: Vertical menu button not found', 'warning');
+                addTestResult('💡 This test page is not the actual admin panel. Go to the admin dashboard to test.', 'info');
+                return;
+            }
+            
+            addTestResult(`✅ Found ${logoLg.length} logo-lg elements and ${logoSm.length} logo-sm elements`, 'success');
+            
+            // Test the logo fix function
+            if (typeof window.updateLogoDisplay === 'function') {
+                window.updateLogoDisplay();
+                addTestResult('✅ Logo fix function executed successfully', 'success');
+            } else {
+                addTestResult('❌ Logo fix function not available', 'warning');
+            }
+            
+            updateCurrentState();
+        }
+        
+        function simulateToggle() {
+            addTestResult('🔄 Simulating sidebar toggle...', 'info');
+            
+            const isCurrentlyCollapsed = document.body.classList.contains('vertical-collpsed');
+            
+            if (isCurrentlyCollapsed) {
+                document.body.classList.remove('vertical-collpsed');
+                addTestResult('📖 Expanded sidebar (removed vertical-collpsed class)', 'success');
+            } else {
+                document.body.classList.add('vertical-collpsed');
+                addTestResult('📕 Collapsed sidebar (added vertical-collpsed class)', 'success');
+            }
+            
+            // Trigger logo update if available
+            if (typeof window.updateLogoDisplay === 'function') {
+                setTimeout(() => {
+                    window.updateLogoDisplay();
+                    addTestResult('🔧 Logo display updated', 'success');
+                }, 100);
+            }
+            
+            updateCurrentState();
+        }
+        
+        function checkElements() {
+            addTestResult('🔍 Checking page elements...', 'info');
+            
+            const elements = {
+                'Vertical Menu Button': document.getElementById('vertical-menu-btn'),
+                'Logo LG elements': document.querySelectorAll('.logo-lg'),
+                'Logo SM elements': document.querySelectorAll('.logo-sm'),
+                'Navbar Brand Box': document.querySelector('.navbar-brand-box'),
+                'Logo Fix Script': document.querySelector('script[src*="logo-fix"]')
+            };
+            
+            Object.entries(elements).forEach(([name, element]) => {
+                if (element) {
+                    if (element.length !== undefined) {
+                        addTestResult(`✅ ${name}: Found ${element.length} elements`, 'success');
+                    } else {
+                        addTestResult(`✅ ${name}: Found`, 'success');
+                    }
+                } else {
+                    addTestResult(`❌ ${name}: Not found`, 'warning');
+                }
+            });
+            
+            updateCurrentState();
+        }
+        
+        function forceUpdate() {
+            addTestResult('🔧 Forcing logo update...', 'info');
+            
+            if (typeof window.updateLogoDisplay === 'function') {
+                window.updateLogoDisplay();
+                addTestResult('✅ Manual logo update completed', 'success');
+            } else {
+                addTestResult('❌ Logo update function not available', 'warning');
+                addTestResult('💡 Make sure you are on the admin panel page with logo-fix.js loaded', 'info');
+            }
+            
+            updateCurrentState();
+        }
+        
+        function showDebugInfo() {
+            addTestResult('🐛 Collecting debug information...', 'info');
+            
+            const debugInfo = {
+                'User Agent': navigator.userAgent,
+                'Screen Size': `${screen.width}x${screen.height}`,
+                'Window Size': `${window.innerWidth}x${window.innerHeight}`,
+                'Document Ready State': document.readyState,
+                'Body Classes': document.body.className || 'None',
+                'Current URL': window.location.href
+            };
+            
+            Object.entries(debugInfo).forEach(([key, value]) => {
+                addTestResult(`📋 ${key}: ${value}`, 'info');
+            });
+            
+            // Check for console errors
+            addTestResult('💡 Check browser console (F12) for any JavaScript errors', 'info');
+            
+            updateCurrentState();
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('✅ Logo fix test page loaded successfully', 'success');
+            updateCurrentState();
+            
+            // Auto-check elements on load
+            setTimeout(checkElements, 500);
+        });
+        
+        // Update state periodically
+        setInterval(updateCurrentState, 5000);
+    </script>
+</body>
+</html>

@@ -4,14 +4,14 @@ document.addEventListener('DOMContentLoaded', function() {
   const viewHome = document.getElementById("viewHome");
   if (viewHome) {
     viewHome.addEventListener("click", function () {
-      window.location.href = "index.html";
+      window.location.href = "index-backup.html";
     });
   }
 
   const viewHome2 = document.getElementById("viewHome2");
   if (viewHome2) {
     viewHome2.addEventListener("click", function () {
-      window.location.href = "index.html";
+      window.location.href = "index-backup.html";
     });
   }
 
@@ -150,11 +150,57 @@ const login = async (email, password) => {
   return data;
 };
 
+// Debug function to test API connection
+const testApiConnection = async () => {
+  try {
+    console.log('🔍 Testing API connection...');
+    const apiUrl = window.API_BASE_URL || 'http://localhost:5001/api';
+    console.log('API URL:', apiUrl);
+    
+    const response = await fetch(`${apiUrl}/products`);
+    console.log('Response status:', response.status);
+    console.log('Response ok:', response.ok);
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('API Response:', data);
+      console.log('Products found:', data.data?.products?.length || 0);
+      
+      // Test category filtering
+      const products = data.data?.products || [];
+      const menProducts = products.filter(product => {
+        const categoryName = product.category?.name?.toLowerCase() || '';
+        const categorySlug = product.category?.slug?.toLowerCase() || '';
+        return categoryName === 'men' || categoryName === 'male' || categorySlug === 'men' || categorySlug === 'male';
+      });
+      
+      const womenProducts = products.filter(product => {
+        const categoryName = product.category?.name?.toLowerCase() || '';
+        const categorySlug = product.category?.slug?.toLowerCase() || '';
+        return categoryName === 'women' || categoryName === 'female' || categorySlug === 'women' || categorySlug === 'female';
+      });
+      
+      console.log('🔍 Category breakdown:');
+      console.log('  Men products:', menProducts.length);
+      console.log('  Women products:', womenProducts.length);
+      
+      return data;
+    } else {
+      console.error('API Error:', response.status, response.statusText);
+      return null;
+    }
+  } catch (error) {
+    console.error('Connection Error:', error);
+    return null;
+  }
+};
+
 // Fetch Products function
 const fetchProducts = async () => {
   try {
     // Products endpoint doesn't require authentication based on backend routes
-    const res = await fetch('http://localhost:5001/api/products', {
+    const apiUrl = window.API_BASE_URL || 'http://localhost:5001/api';
+    const res = await fetch(`${apiUrl}/products`, {
       headers: {
         'Content-Type': 'application/json'
       }
@@ -175,46 +221,163 @@ const fetchProducts = async () => {
   }
 };
 
+// Fetch products by category
+const fetchProductsByCategory = async (category) => {
+  try {
+    const apiUrl = window.API_BASE_URL || 'http://localhost:5001/api';
+    const res = await fetch(`${apiUrl}/products/category/${category}`, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!res.ok) {
+      console.log(`Error fetching ${category} products:`, res.status);
+      return [];
+    }
+
+    const data = await res.json();
+    const products = data.data?.products || data.products || data;
+    console.log(`Fetched ${category} products:`, products);
+    return products;
+  } catch (error) {
+    console.error(`Error fetching ${category} products:`, error);
+    return [];
+  }
+};
+
 // Display products on homepage
 const displayProducts = async () => {
   const products = await fetchProducts();
   const productGrid = document.querySelector('.product-grid');
   
-  if (!productGrid || !products || products.length === 0) {
-    console.log('No products to display or product grid not found');
+  if (!productGrid) {
+    console.log('Product grid not found');
     return;
   }
   
-  // Clear existing hardcoded products
-  productGrid.innerHTML = '';
+  if (!products || products.length === 0) {
+    console.log('No products found - keeping existing static content');
+    return; // Keep the existing static content if no products
+  }
   
-  // Display up to 12 products on homepage
-  const displayProducts = products.slice(0, 12);
-  
-  displayProducts.forEach(product => {
-    const imageUrl = product.images?.[0]?.url || product.imageUrls?.[0] || 'https://via.placeholder.com/300x400/65AAC3/FFFFFF?text=No+Image';
-    const price = product.price ? `₹${product.price}` : 'Price not available';
+  // Separate products by category
+  const menProducts = products.filter(product => {
+    const categoryName = product.category?.name?.toLowerCase() || '';
+    const categorySlug = product.category?.slug?.toLowerCase() || '';
+    const categoryDirect = (product.category || '').toLowerCase();
     
-    const productHTML = `
-      <div class="product-item">
-        <img src="${imageUrl}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x400/65AAC3/FFFFFF?text=No+Image'">
-        <div class="product-overlay">
-          <h3>${product.name}</h3>
-          <p>${price}</p>
-          <button class="btn btn-light" onclick="viewProduct('${product._id}')">View Details</button>
-        </div>
-      </div>
-    `;
-    
-    productGrid.innerHTML += productHTML;
+    return categoryName === 'men' || 
+           categoryName === 'male' || 
+           categorySlug === 'men' || 
+           categorySlug === 'male' ||
+           categoryDirect === 'men' ||
+           categoryDirect === 'male';
   });
   
-  console.log(`✅ Displayed ${displayProducts.length} products`);
+  const womenProducts = products.filter(product => {
+    const categoryName = product.category?.name?.toLowerCase() || '';
+    const categorySlug = product.category?.slug?.toLowerCase() || '';
+    const categoryDirect = (product.category || '').toLowerCase();
+    
+    return categoryName === 'women' || 
+           categoryName === 'female' || 
+           categorySlug === 'women' || 
+           categorySlug === 'female' ||
+           categoryDirect === 'women' ||
+           categoryDirect === 'female';
+  });
+  
+  // Featured products (can be from any category, limit to 8)
+  let featuredProducts = products.filter(product => product.featured === true).slice(0, 8);
+  
+  // If no featured products, show recent products (limit to 8)
+  if (featuredProducts.length === 0) {
+    featuredProducts = products.slice(0, 8);
+    console.log('No featured products found, showing recent products instead');
+  }
+  
+  console.log(`📊 Products breakdown:`, {
+    total: products.length,
+    men: menProducts.length,
+    women: womenProducts.length,
+    featured: featuredProducts.length
+  });
+  
+  // Only replace content if we have products to show
+  if (featuredProducts.length > 0) {
+    // Clear existing hardcoded products
+    productGrid.innerHTML = '';
+    
+    featuredProducts.forEach(product => {
+      // Handle image URL with proper validation
+      let imageUrl = 'https://via.placeholder.com/300x400/65AAC3/FFFFFF?text=No+Image';
+      
+      if (product.images && product.images.length > 0) {
+          const firstImage = product.images[0];
+          if (typeof firstImage === 'string' && firstImage !== 'has_images' && firstImage !== '') {
+              // Ensure the path starts from root
+              imageUrl = firstImage.startsWith('/') ? firstImage : '/' + firstImage;
+          } else if (firstImage && firstImage.url && firstImage.url !== 'has_images' && firstImage.url !== '') {
+              // Ensure the path starts from root
+              imageUrl = firstImage.url.startsWith('/') ? firstImage.url : '/' + firstImage.url;
+          }
+      } else if (product.imageUrls && product.imageUrls.length > 0) {
+          const firstUrl = product.imageUrls[0];
+          if (firstUrl && firstUrl !== 'has_images' && firstUrl !== '') {
+              // Ensure the path starts from root
+              imageUrl = firstUrl.startsWith('/') ? firstUrl : '/' + firstUrl;
+          }
+      }
+      
+      // Final check: Skip broken "has_images" placeholder or empty URLs
+      if (imageUrl === 'has_images' || imageUrl === '/has_images' || imageUrl === '' || imageUrl === '/') {
+          imageUrl = 'https://via.placeholder.com/300x400/65AAC3/FFFFFF?text=No+Image';
+      }
+      
+      const price = product.price ? `₹${product.price}` : 'Price not available';
+      
+      const productHTML = `
+        <div class="product-item" onclick="viewProduct('${product._id}')" style="cursor: pointer;">
+          <img src="${imageUrl}" alt="${product.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x400/65AAC3/FFFFFF?text=No+Image'">
+          <div class="product-overlay">
+            <div class="product-info">
+              <h4>${product.name}</h4>
+              <p>${price}</p>
+              <div class="product-actions">
+                <button class="btn" onclick="event.stopPropagation(); viewProduct('${product._id}')">View Details</button>
+                <button class="btn btn-outline-light ms-2" onclick="event.stopPropagation(); addToCartFromHome('${product._id}', '${product.name}', ${product.price}, '${imageUrl}')">
+                  <i class="fas fa-shopping-cart"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      productGrid.innerHTML += productHTML;
+    });
+    
+    console.log(`✅ Displayed ${featuredProducts.length} products in Featured Collections`);
+  } else {
+    console.log('No products to display - keeping static content');
+  }
 };
 
 // View product details
 const viewProduct = (productId) => {
   window.location.href = `product.html?id=${productId}`;
+};
+
+// Add to cart from home page
+const addToCartFromHome = (productId, name, price, image) => {
+  const product = {
+    id: productId,
+    name: name,
+    price: price,
+    image: image
+  };
+  addToCart(product);
 };
 
 // Product search function
@@ -244,7 +407,27 @@ const searchProducts = async (keyword) => {
 // Example usage
 // Call this when page loads or button clicks
 document.addEventListener("DOMContentLoaded", () => {
-  displayProducts(); // Display products on homepage
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  
+  console.log('🔍 Current page:', currentPage);
+  
+  // Test API connection first
+  testApiConnection();
+  
+  // Load dynamic products on homepage and other pages
+  if (currentPage === 'index.html' || currentPage === 'index-backup.html' || currentPage === '') {
+    console.log('🏠 Homepage detected - loading dynamic products for Featured Collections');
+    
+    // Add a small delay to ensure DOM is fully loaded
+    setTimeout(() => {
+      displayProducts(); // Load products for Featured Collections
+    }, 500);
+  } else if (currentPage !== 'men-product.html' && currentPage !== 'women-product.html') {
+    console.log('📦 Loading dynamic products for page:', currentPage);
+    displayProducts(); // Display products on other pages
+  } else {
+    console.log('👔 Men/Women page detected - products loaded by specific loaders');
+  }
 });
 
 // Authentication utilities
@@ -280,7 +463,7 @@ const logout = () => {
   // Hide admin button when logging out
   hideAdminButton();
   
-  window.location.href = 'index.html';
+  window.location.href = 'index-backup.html';
 };
 
 // Update admin crown icon visibility

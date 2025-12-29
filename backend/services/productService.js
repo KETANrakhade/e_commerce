@@ -50,8 +50,8 @@ class ProductService {
         // Try to find category by name or slug
         const categoryDoc = await Category.findOne({
           $or: [
-            { name: { $regex: category, $options: 'i' } },
-            { slug: category }
+            { name: { $regex: `^${category}$`, $options: 'i' } },
+            { slug: { $regex: `^${category}$`, $options: 'i' } }
           ],
           isActive: true
         });
@@ -146,11 +146,30 @@ class ProductService {
       throw new Error('Invalid category');
     }
 
-    // Verify brand if provided
+    // Handle brand - support both ObjectId and brand name
+    let brandId = null;
     if (brand) {
-      const brandExists = await Brand.findById(brand);
-      if (!brandExists) {
-        throw new Error('Invalid brand');
+      // Check if brand is a valid ObjectId
+      if (brand.match(/^[0-9a-fA-F]{24}$/)) {
+        // It's an ObjectId, verify it exists
+        const brandExists = await Brand.findById(brand);
+        if (!brandExists) {
+          throw new Error('Invalid brand ID');
+        }
+        brandId = brand;
+      } else {
+        // It's a brand name, find or create the brand
+        let brandDoc = await Brand.findOne({ name: { $regex: new RegExp(`^${brand}$`, 'i') } });
+        if (!brandDoc) {
+          // Create new brand if it doesn't exist
+          brandDoc = await Brand.create({
+            name: brand,
+            slug: brand.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+            description: `${brand} brand products`,
+            isActive: true
+          });
+        }
+        brandId = brandDoc._id;
       }
     }
 
@@ -189,7 +208,7 @@ class ProductService {
       price: Number(price),
       category,
       subcategory,
-      brand,
+      brand: brandId,
       stock: Number(stock),
       images: processedImages,
       imageUrls: processedImageUrls,
