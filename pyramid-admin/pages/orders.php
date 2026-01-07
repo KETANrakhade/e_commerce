@@ -1,4 +1,8 @@
 <?php
+// Suppress warnings and notices for cleaner user interface
+error_reporting(E_ERROR | E_PARSE);
+ini_set('display_errors', 0);
+
 // Include API client
 require_once __DIR__ . '/../config/api_client.php';
 
@@ -297,13 +301,22 @@ if ($action === 'view' && $orderId) {
                                                         </td>
                                                         <td>
                                                             <span class="badge badge-pill badge-soft-<?php 
-                                                                echo match($ord['status']) {
-                                                                    'delivered' => 'success',
-                                                                    'shipped' => 'info',
-                                                                    'processing' => 'warning',
-                                                                    'cancelled' => 'danger',
-                                                                    default => 'secondary'
-                                                                };
+                                                                $statusClass = 'secondary';
+                                                                switch($ord['status']) {
+                                                                    case 'delivered':
+                                                                        $statusClass = 'success';
+                                                                        break;
+                                                                    case 'shipped':
+                                                                        $statusClass = 'info';
+                                                                        break;
+                                                                    case 'processing':
+                                                                        $statusClass = 'warning';
+                                                                        break;
+                                                                    case 'cancelled':
+                                                                        $statusClass = 'danger';
+                                                                        break;
+                                                                }
+                                                                echo $statusClass;
                                                             ?> font-size-11"><?php echo ucfirst($ord['status']); ?></span>
                                                         </td>
                                                         <td>

@@ -1,7 +1,7 @@
 <?php
-// Enable error reporting for debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// Disable error reporting for production
+error_reporting(0);
+ini_set('display_errors', 0);
 
 // Start output buffering to prevent header issues
 ob_start();
@@ -242,12 +242,68 @@ if ($_POST && isset($_POST['action'])) {
         }
         
         // Validation
+        $validationErrors = [];
+        
+        // Product name validation
         if (empty($productData['name'])) {
-            $error = 'Product name is required';
-        } elseif ($productData['price'] <= 0) {
-            $error = 'Product price must be greater than 0';
-        } elseif (empty($productData['category'])) {
-            $error = 'Product category is required';
+            $validationErrors[] = 'Product name is required';
+        } elseif (strlen(trim($productData['name'])) < 2) {
+            $validationErrors[] = 'Product name must be at least 2 characters long';
+        } elseif (strlen(trim($productData['name'])) > 100) {
+            $validationErrors[] = 'Product name must be less than 100 characters';
+        } elseif (!preg_match('/^[a-zA-Z0-9\s\-\.\,\(\)&]+$/', trim($productData['name']))) {
+            $validationErrors[] = 'Product name contains invalid characters';
+        }
+        
+        // Price validation
+        if ($productData['price'] <= 0) {
+            $validationErrors[] = 'Product price must be greater than 0';
+        } elseif ($productData['price'] > 999999) {
+            $validationErrors[] = 'Product price cannot exceed ₹999,999';
+        }
+        
+        // Stock validation
+        if ($productData['stock'] < 0) {
+            $validationErrors[] = 'Stock quantity cannot be negative';
+        } elseif ($productData['stock'] > 99999) {
+            $validationErrors[] = 'Stock quantity cannot exceed 99,999';
+        }
+        
+        // Category validation
+        if (empty($productData['category'])) {
+            $validationErrors[] = 'Product category is required';
+        }
+        
+        // Description validation
+        if (empty(trim($productData['description'] ?? ''))) {
+            $validationErrors[] = 'Product description is required';
+        } elseif (strlen(trim($productData['description'])) < 10) {
+            $validationErrors[] = 'Product description must be at least 10 characters long';
+        } elseif (strlen(trim($productData['description'])) > 2000) {
+            $validationErrors[] = 'Product description must be less than 2000 characters';
+        }
+        
+        // Brand validation (optional but if provided, must be valid)
+        if (!empty($productData['brand'])) {
+            if (strlen(trim($productData['brand'])) > 50) {
+                $validationErrors[] = 'Brand name must be less than 50 characters';
+            } elseif (!preg_match('/^[a-zA-Z0-9\s\-\.\&]+$/', trim($productData['brand']))) {
+                $validationErrors[] = 'Brand name contains invalid characters';
+            }
+        }
+        
+        // Image validation
+        $hasImages = false;
+        if (!empty($allImages)) {
+            $hasImages = true;
+        }
+        if (!$hasImages) {
+            $validationErrors[] = 'At least one product image is required';
+        }
+        
+        // If there are validation errors, show them
+        if (!empty($validationErrors)) {
+            $error = 'Validation failed:<br>• ' . implode('<br>• ', $validationErrors);
         } else {
             // Ensure images are in correct format for backend
             if (isset($productData['images']) && is_array($productData['images'])) {
@@ -360,13 +416,13 @@ if ($_POST && isset($_POST['action'])) {
         }
     } elseif ($postAction === 'update' && $productId) {
         $productData = [
-            'name' => $_POST['name'],
-            'description' => $_POST['description'],
-            'price' => floatval($_POST['price']),
-            'category' => $_POST['category'],
-            'subcategory' => !empty($_POST['subcategory']) ? $_POST['subcategory'] : null,
-            'stock' => intval($_POST['stock']),
-            'brand' => $_POST['brand'],
+            'name' => trim($_POST['name'] ?? ''),
+            'description' => trim($_POST['description'] ?? ''),
+            'price' => max(0, floatval($_POST['price'] ?? 0)),
+            'category' => trim($_POST['category'] ?? ''),
+            'subcategory' => !empty($_POST['subcategory']) ? trim($_POST['subcategory']) : null,
+            'stock' => max(0, intval($_POST['stock'] ?? 0)),
+            'brand' => trim($_POST['brand'] ?? ''),
             'featured' => isset($_POST['featured']),
             'isActive' => isset($_POST['isActive'])
         ];
@@ -434,7 +490,63 @@ if ($_POST && isset($_POST['action'])) {
             }
         }
         
-        // Only proceed if no upload errors occurred
+        // Server-side validation for update
+        $validationErrors = [];
+        
+        // Product name validation
+        if (empty($productData['name'])) {
+            $validationErrors[] = 'Product name is required';
+        } elseif (strlen($productData['name']) < 2) {
+            $validationErrors[] = 'Product name must be at least 2 characters long';
+        } elseif (strlen($productData['name']) > 100) {
+            $validationErrors[] = 'Product name must be less than 100 characters';
+        } elseif (!preg_match('/^[a-zA-Z0-9\s\-\.\,\(\)&]+$/', $productData['name'])) {
+            $validationErrors[] = 'Product name contains invalid characters';
+        }
+        
+        // Price validation
+        if ($productData['price'] <= 0) {
+            $validationErrors[] = 'Product price must be greater than 0';
+        } elseif ($productData['price'] > 999999) {
+            $validationErrors[] = 'Product price cannot exceed ₹999,999';
+        }
+        
+        // Stock validation
+        if ($productData['stock'] < 0) {
+            $validationErrors[] = 'Stock quantity cannot be negative';
+        } elseif ($productData['stock'] > 99999) {
+            $validationErrors[] = 'Stock quantity cannot exceed 99,999';
+        }
+        
+        // Category validation
+        if (empty($productData['category'])) {
+            $validationErrors[] = 'Product category is required';
+        }
+        
+        // Description validation
+        if (empty($productData['description'])) {
+            $validationErrors[] = 'Product description is required';
+        } elseif (strlen($productData['description']) < 10) {
+            $validationErrors[] = 'Product description must be at least 10 characters long';
+        } elseif (strlen($productData['description']) > 2000) {
+            $validationErrors[] = 'Product description must be less than 2000 characters';
+        }
+        
+        // Brand validation (optional)
+        if (!empty($productData['brand'])) {
+            if (strlen($productData['brand']) > 50) {
+                $validationErrors[] = 'Brand name must be less than 50 characters';
+            } elseif (!preg_match('/^[a-zA-Z0-9\s\-\.\&]+$/', $productData['brand'])) {
+                $validationErrors[] = 'Brand name contains invalid characters';
+            }
+        }
+        
+        // If there are validation errors, show them
+        if (!empty($validationErrors)) {
+            $error = 'Validation failed:<br>• ' . implode('<br>• ', $validationErrors);
+        }
+        
+        // Only proceed if no upload errors occurred and validation passed
         if (!isset($error)) {
             $result = $apiClient->updateProduct($productId, $productData);
             if ($result['success']) {
@@ -737,38 +849,60 @@ if ($action === 'edit' && $productId) {
                                 <h4 class="card-title"><?php echo $action === 'create' ? 'Add New Product' : 'Edit Product'; ?></h4>
                                 <p class="card-title-desc">Fill all information below</p>
 
-                                <form method="POST" action="" enctype="multipart/form-data">
+                                <form method="POST" action="" enctype="multipart/form-data" id="productForm" novalidate>
                                     <input type="hidden" name="action" value="<?php echo $action === 'create' ? 'create' : 'update'; ?>">
                                     
                                     <div class="row">
                                         <div class="col-sm-6">
                                             <div class="mb-3">
-                                                <label for="name">Product Name</label>
+                                                <label for="name" class="form-label">Product Name <span class="text-danger">*</span></label>
                                                 <input id="name" name="name" type="text" class="form-control" 
-                                                       value="<?php echo htmlspecialchars($product['name'] ?? ''); ?>" required>
+                                                       value="<?php echo htmlspecialchars($product['name'] ?? ''); ?>" 
+                                                       required minlength="2" maxlength="100"
+                                                       pattern="[a-zA-Z0-9\s\-\.\,\(\)&]+"
+                                                       title="Product name should be 2-100 characters and contain only letters, numbers, spaces, and basic punctuation">
+                                                <div class="invalid-feedback">
+                                                    Please provide a valid product name (2-100 characters, letters, numbers, and basic punctuation only).
+                                                </div>
+                                                <small class="text-muted">2-100 characters, letters, numbers, and basic punctuation allowed</small>
                                             </div>
                                             <div class="mb-3">
-                                                <label for="price">Price</label>
-                                                <input id="price" name="price" type="number" step="0.01" min="0" class="form-control" 
+                                                <label for="price" class="form-label">Price (₹) <span class="text-danger">*</span></label>
+                                                <input id="price" name="price" type="number" step="0.01" min="1" max="999999" class="form-control" 
                                                        value="<?php echo $product['price'] ?? ''; ?>" required>
+                                                <div class="invalid-feedback">
+                                                    Please provide a valid price between ₹1 and ₹999,999.
+                                                </div>
+                                                <small class="text-muted">Minimum ₹1, maximum ₹999,999</small>
                                             </div>
                                             <div class="mb-3">
-                                                <label for="brand">Brand</label>
+                                                <label for="brand" class="form-label">Brand</label>
                                                 <input id="brand" name="brand" type="text" class="form-control" 
-                                                       value="<?php echo htmlspecialchars($product['brand'] ?? ''); ?>">
+                                                       value="<?php echo htmlspecialchars($product['brand'] ?? ''); ?>"
+                                                       maxlength="50"
+                                                       pattern="[a-zA-Z0-9\s\-\.\&]+"
+                                                       title="Brand name should contain only letters, numbers, spaces, hyphens, dots, and ampersands">
+                                                <div class="invalid-feedback">
+                                                    Brand name should be maximum 50 characters and contain only letters, numbers, spaces, and basic punctuation.
+                                                </div>
+                                                <small class="text-muted">Optional, maximum 50 characters</small>
                                             </div>
                                         </div>
 
                                         <div class="col-sm-6">
                                             <div class="mb-3">
-                                                <label for="stock">Stock Quantity</label>
-                                                <input id="stock" name="stock" type="number" min="0" class="form-control" 
+                                                <label for="stock" class="form-label">Stock Quantity <span class="text-danger">*</span></label>
+                                                <input id="stock" name="stock" type="number" min="0" max="99999" class="form-control" 
                                                        value="<?php echo $product['stock'] ?? '0'; ?>" required>
+                                                <div class="invalid-feedback">
+                                                    Please provide a valid stock quantity (0-99,999).
+                                                </div>
+                                                <small class="text-muted">0-99,999 items</small>
                                             </div>
                                             <div class="row">
                                                 <div class="col-sm-6">
                                                     <div class="mb-3">
-                                                        <label for="category">Category <span class="text-danger">*</span></label>
+                                                        <label for="category" class="form-label">Category <span class="text-danger">*</span></label>
                                                         <select id="category" name="category" class="form-control" required>
                                                             <option value="">Select Category</option>
                                                             <?php 
@@ -827,6 +961,9 @@ if ($action === 'edit' && $productId) {
                                                                 </option>
                                                             <?php endforeach; ?>
                                                         </select>
+                                                        <div class="invalid-feedback">
+                                                            Please select a category for this product.
+                                                        </div>
                                                         <?php if (empty($availableCategories)): ?>
                                                             <div class="alert alert-warning mt-2 mb-0" role="alert" style="font-size: 0.875rem;">
                                                                 <strong>⚠️ No categories found!</strong><br>
@@ -846,10 +983,13 @@ if ($action === 'edit' && $productId) {
                                                 </div>
                                                 <div class="col-sm-6">
                                                     <div class="mb-3">
-                                                        <label for="subcategory">Sub-Category</label>
+                                                        <label for="subcategory" class="form-label">Sub-Category</label>
                                                         <select id="subcategory" name="subcategory" class="form-control">
                                                             <option value="">Select Sub-Category (Optional)</option>
                                                         </select>
+                                                        <div class="invalid-feedback">
+                                                            Please select a valid sub-category.
+                                                        </div>
                                                         <small class="text-muted">Select a category first to load sub-categories</small>
                                                     </div>
                                                 </div>
@@ -872,24 +1012,66 @@ if ($action === 'edit' && $productId) {
                                                 <style>
                                                 .image-file {
                                                     cursor: pointer;
+                                                    background-color: #fff !important;
+                                                    color: #495057 !important;
                                                 }
                                                 .image-file::-webkit-file-upload-button {
-                                                    background: #007bff;
-                                                    color: white;
+                                                    background: #007bff !important;
+                                                    color: white !important;
                                                     border: none;
                                                     padding: 8px 16px;
                                                     border-radius: 4px;
                                                     cursor: pointer;
                                                     margin-right: 10px;
+                                                    transition: none !important;
                                                 }
                                                 .image-file::-webkit-file-upload-button:hover {
-                                                    background: #0056b3;
+                                                    background: #007bff !important;
+                                                    color: white !important;
+                                                }
+                                                .image-file::-moz-file-upload-button {
+                                                    background: #007bff !important;
+                                                    color: white !important;
+                                                    border: none;
+                                                    padding: 8px 16px;
+                                                    border-radius: 4px;
+                                                    cursor: pointer;
+                                                    margin-right: 10px;
+                                                    transition: none !important;
+                                                }
+                                                .image-file::-moz-file-upload-button:hover {
+                                                    background: #007bff !important;
+                                                    color: white !important;
+                                                }
+                                                .image-file::file-selector-button {
+                                                    background: #007bff !important;
+                                                    color: white !important;
+                                                    border: none;
+                                                    padding: 8px 16px;
+                                                    border-radius: 4px;
+                                                    cursor: pointer;
+                                                    margin-right: 10px;
+                                                    transition: none !important;
+                                                }
+                                                .image-file::file-selector-button:hover {
+                                                    background: #007bff !important;
+                                                    color: white !important;
                                                 }
                                                 .image-preview {
                                                     transition: all 0.3s ease;
+                                                    border: 2px dashed #ddd;
+                                                    border-radius: 8px;
+                                                    background: #f8f9fa;
                                                 }
                                                 .image-preview:hover {
                                                     border-color: #007bff !important;
+                                                    background: #e3f2fd;
+                                                }
+                                                .image-file:focus {
+                                                    background-color: #fff !important;
+                                                    color: #495057 !important;
+                                                    border-color: #80bdff;
+                                                    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
                                                 }
                                                 </style>
                                                 <div id="imageContainer">
@@ -975,12 +1157,17 @@ if ($action === 'edit' && $productId) {
                                             </div>
                                             <div class="card-body">
                                                 <div class="mb-3">
-                                                    <label for="description">Detailed Description</label>
+                                                    <label for="description" class="form-label">Detailed Description <span class="text-danger">*</span></label>
                                                     <textarea class="form-control" id="description" name="description" rows="6" 
-                                                              placeholder="Enter detailed product description, features, specifications, etc."><?php echo htmlspecialchars($product['description'] ?? ''); ?></textarea>
+                                                              placeholder="Enter detailed product description, features, specifications, etc."
+                                                              required minlength="10" maxlength="2000"><?php echo htmlspecialchars($product['description'] ?? ''); ?></textarea>
+                                                    <div class="invalid-feedback">
+                                                        Please provide a detailed description (10-2000 characters).
+                                                    </div>
                                                     <small class="text-muted">
                                                         <i class="mdi mdi-information-outline"></i> 
-                                                        Provide a detailed description to help customers understand your product better.
+                                                        Provide a detailed description to help customers understand your product better (10-2000 characters).
+                                                        <span id="descriptionCount" class="float-end">0/2000</span>
                                                     </small>
                                                 </div>
                                             </div>
@@ -1007,11 +1194,18 @@ if ($action === 'edit' && $productId) {
                                     </div>
 
                                     <div class="d-flex flex-wrap gap-2">
-                                        <button type="submit" class="btn btn-primary waves-effect waves-light">
+                                        <button type="submit" class="btn btn-primary waves-effect waves-light" id="submitBtn">
+                                            <i class="mdi mdi-content-save me-1"></i>
                                             <?php echo $action === 'create' ? 'Create Product' : 'Update Product'; ?>
                                         </button>
                                         <button type="button" class="btn btn-secondary waves-effect waves-light" 
-                                                onclick="window.location.href='index.php?page=products'">Cancel</button>
+                                                onclick="window.location.href='index.php?page=products'">
+                                            <i class="mdi mdi-arrow-left me-1"></i>Cancel
+                                        </button>
+                                        <button type="button" class="btn btn-outline-warning waves-effect waves-light" 
+                                                onclick="resetForm()">
+                                            <i class="mdi mdi-refresh me-1"></i>Reset Form
+                                        </button>
                                     </div>
                                 </form>
                             </div>
@@ -1036,6 +1230,9 @@ document.addEventListener('DOMContentLoaded', function() {
             successModal.hide();
         }, 3000);
     <?php endif; ?>
+    
+    // Initialize form validation
+    initializeFormValidation();
     
     // Initialize image management
     updateImagesHiddenField();
@@ -1107,6 +1304,243 @@ document.addEventListener('DOMContentLoaded', function() {
         <?php endif; ?>
     }
 });
+
+// Form validation initialization
+function initializeFormValidation() {
+    const form = document.getElementById('productForm');
+    if (!form) return;
+    
+    // Real-time validation for all inputs
+    const inputs = form.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            validateField(this);
+        });
+        
+        input.addEventListener('input', function() {
+            // Clear invalid state on input
+            this.classList.remove('is-invalid');
+            
+            // Real-time character count for description
+            if (this.id === 'description') {
+                updateDescriptionCount();
+            }
+            
+            // Real-time validation for some fields
+            if (this.type === 'number' || this.type === 'email') {
+                validateField(this);
+            }
+        });
+    });
+    
+    // Description character counter
+    updateDescriptionCount();
+    
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Show error message
+            showValidationError('Please fix the errors below before submitting.');
+            
+            // Focus on first invalid field
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.focus();
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        } else {
+            // Show loading state
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin me-1"></i>Creating Product...';
+            }
+        }
+    });
+}
+
+// Validate individual field
+function validateField(field) {
+    let isValid = true;
+    let errorMessage = '';
+    
+    // Check HTML5 validity first
+    if (!field.checkValidity()) {
+        isValid = false;
+        errorMessage = field.validationMessage;
+    }
+    
+    // Custom validations
+    switch (field.id) {
+        case 'name':
+            if (field.value.trim().length < 2) {
+                isValid = false;
+                errorMessage = 'Product name must be at least 2 characters long.';
+            } else if (field.value.trim().length > 100) {
+                isValid = false;
+                errorMessage = 'Product name must be less than 100 characters.';
+            } else if (!/^[a-zA-Z0-9\s\-\.\,\(\)&]+$/.test(field.value.trim())) {
+                isValid = false;
+                errorMessage = 'Product name contains invalid characters.';
+            }
+            break;
+            
+        case 'price':
+            const price = parseFloat(field.value);
+            if (isNaN(price) || price < 1) {
+                isValid = false;
+                errorMessage = 'Price must be at least ₹1.';
+            } else if (price > 999999) {
+                isValid = false;
+                errorMessage = 'Price cannot exceed ₹999,999.';
+            }
+            break;
+            
+        case 'stock':
+            const stock = parseInt(field.value);
+            if (isNaN(stock) || stock < 0) {
+                isValid = false;
+                errorMessage = 'Stock must be 0 or greater.';
+            } else if (stock > 99999) {
+                isValid = false;
+                errorMessage = 'Stock cannot exceed 99,999.';
+            }
+            break;
+            
+        case 'brand':
+            if (field.value.trim() && field.value.trim().length > 50) {
+                isValid = false;
+                errorMessage = 'Brand name must be less than 50 characters.';
+            } else if (field.value.trim() && !/^[a-zA-Z0-9\s\-\.\&]+$/.test(field.value.trim())) {
+                isValid = false;
+                errorMessage = 'Brand name contains invalid characters.';
+            }
+            break;
+            
+        case 'description':
+            if (field.value.trim().length < 10) {
+                isValid = false;
+                errorMessage = 'Description must be at least 10 characters long.';
+            } else if (field.value.trim().length > 2000) {
+                isValid = false;
+                errorMessage = 'Description must be less than 2000 characters.';
+            }
+            break;
+            
+        case 'category':
+            if (!field.value) {
+                isValid = false;
+                errorMessage = 'Please select a category.';
+            }
+            break;
+    }
+    
+    // Update field state
+    if (isValid) {
+        field.classList.remove('is-invalid');
+        field.classList.add('is-valid');
+    } else {
+        field.classList.remove('is-valid');
+        field.classList.add('is-invalid');
+        
+        // Update custom error message
+        const feedback = field.parentNode.querySelector('.invalid-feedback');
+        if (feedback) {
+            feedback.textContent = errorMessage;
+        }
+    }
+    
+    return isValid;
+}
+
+// Validate entire form
+function validateForm() {
+    const form = document.getElementById('productForm');
+    if (!form) return false;
+    
+    let isValid = true;
+    const requiredFields = form.querySelectorAll('[required]');
+    
+    requiredFields.forEach(field => {
+        if (!validateField(field)) {
+            isValid = false;
+        }
+    });
+    
+    // Validate at least one image
+    const imageInputs = form.querySelectorAll('.image-file');
+    const existingImages = form.querySelectorAll('input[name="existing_images[]"]');
+    
+    let hasImages = false;
+    
+    // Check for uploaded files
+    imageInputs.forEach(input => {
+        if (input.files && input.files.length > 0) {
+            hasImages = true;
+        }
+    });
+    
+    // Check for existing images
+    if (!hasImages) {
+        existingImages.forEach(input => {
+            if (input.value.trim()) {
+                hasImages = true;
+            }
+        });
+    }
+    
+    if (!hasImages) {
+        showValidationError('Please upload at least one product image.');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+// Update description character count
+function updateDescriptionCount() {
+    const description = document.getElementById('description');
+    const counter = document.getElementById('descriptionCount');
+    
+    if (description && counter) {
+        const count = description.value.length;
+        counter.textContent = `${count}/2000`;
+        
+        if (count > 2000) {
+            counter.style.color = '#dc3545';
+        } else if (count > 1800) {
+            counter.style.color = '#ffc107';
+        } else {
+            counter.style.color = '#6c757d';
+        }
+    }
+}
+
+// Show validation error message
+function showValidationError(message) {
+    // Remove existing error alerts
+    const existingAlerts = document.querySelectorAll('.validation-error-alert');
+    existingAlerts.forEach(alert => alert.remove());
+    
+    // Create new error alert
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-danger alert-dismissible fade show validation-error-alert';
+    alert.innerHTML = `
+        <i class="mdi mdi-alert-circle me-2"></i>
+        <strong>Validation Error:</strong> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Insert at top of form
+    const form = document.getElementById('productForm');
+    if (form) {
+        form.insertBefore(alert, form.firstChild);
+        alert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
 
 function applyFilters() {
     const search = document.getElementById('searchInput').value;
@@ -1345,21 +1779,44 @@ document.addEventListener('submit', function(e) {
 // Reset form function
 function resetForm() {
     if (confirm('Are you sure you want to reset the form? All entered data will be lost.')) {
-        document.querySelector('form').reset();
-        
-        // Reset image previews
-        const previews = document.querySelectorAll('.image-preview');
-        previews.forEach(preview => {
-            preview.innerHTML = '<i class="mdi mdi-image-outline text-muted"></i>';
-        });
-        
-        // Reset subcategory dropdown
-        const subcategorySelect = document.getElementById('subcategory');
-        if (subcategorySelect) {
-            subcategorySelect.innerHTML = '<option value="">Select Sub-Category (Optional)</option>';
+        const form = document.querySelector('#productForm');
+        if (form) {
+            form.reset();
+            
+            // Clear validation states
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.classList.remove('is-valid', 'is-invalid');
+            });
+            
+            // Reset image previews
+            const previews = document.querySelectorAll('.image-preview');
+            previews.forEach(preview => {
+                preview.innerHTML = '<i class="mdi mdi-image-outline text-muted"></i>';
+            });
+            
+            // Reset subcategory dropdown
+            const subcategorySelect = document.getElementById('subcategory');
+            if (subcategorySelect) {
+                subcategorySelect.innerHTML = '<option value="">Select Sub-Category (Optional)</option>';
+            }
+            
+            // Reset description counter
+            updateDescriptionCount();
+            
+            // Remove any validation error alerts
+            const errorAlerts = document.querySelectorAll('.validation-error-alert');
+            errorAlerts.forEach(alert => alert.remove());
+            
+            // Reset submit button
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="mdi mdi-content-save me-1"></i><?php echo $action === 'create' ? 'Create Product' : 'Update Product'; ?>';
+            }
+            
+            updateImagesHiddenField();
         }
-        
-        updateImagesHiddenField();
     }
 }
 </script>
