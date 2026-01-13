@@ -799,6 +799,17 @@
         async function addToCartFromWishlist(productId) {
             console.log('🛒 Adding to cart from wishlist:', productId);
             
+            // Check if user is logged in
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showSuccessMessage('Please login to add items to cart');
+                // Redirect to login page after showing message
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1500);
+                return;
+            }
+            
             // Find item by any ID format
             const item = wishlist.find(item => 
                 item._id === productId || item.id === productId || item.productId === productId
@@ -812,34 +823,31 @@
             const CART_KEY = 'cart_v1';
             const productIdToUse = item._id || item.id || item.productId;
             
-            // Try backend API if user is logged in
-            const token = localStorage.getItem('token');
-            if (token) {
-                try {
-                    const response = await fetch('http://localhost:5001/api/cart', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify({
-                            productId: productIdToUse,
-                            quantity: 1
-                        })
-                    });
-                    
-                    if (response.ok) {
-                        console.log('✅ Added to backend cart');
-                        showSuccessMessage(`${item.name} added to cart`);
-                        updateCartBadge();
-                        return;
-                    }
-                } catch (error) {
-                    console.error('❌ Backend cart add failed:', error);
+            // Try backend API since user is logged in
+            try {
+                const response = await fetch('http://localhost:5001/api/cart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        productId: productIdToUse,
+                        quantity: 1
+                    })
+                });
+                
+                if (response.ok) {
+                    console.log('✅ Added to backend cart');
+                    showSuccessMessage(`${item.name} added to cart`);
+                    updateCartBadge();
+                    return;
                 }
+            } catch (error) {
+                console.error('❌ Backend cart add failed:', error);
             }
             
-            // Fallback to localStorage cart
+            // Fallback to localStorage cart (still requires login)
             const cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
             const existingItem = cart.find(cartItem => 
                 cartItem.productId === productIdToUse || 

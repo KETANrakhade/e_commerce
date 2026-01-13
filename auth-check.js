@@ -111,6 +111,8 @@ function addLogoutButton() {
     const userProfileBtn = document.getElementById('userProfile');
     if (!userProfileBtn) return;
     
+
+    
     // Make user profile button clickable
     userProfileBtn.style.cursor = 'pointer';
     userProfileBtn.title = 'View Profile';
@@ -162,7 +164,7 @@ function logout() {
         }
     }
 }
-
+ 
 function requireAuth() {
     const token = localStorage.getItem('token');
     if (!token) {

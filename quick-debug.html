@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Debug</title>
+</head>
+<body>
+    <h1>Quick Image Upload Debug</h1>
+    
+    <form method="POST" action="pyramid-admin/pages/products.php" enctype="multipart/form-data">
+        <input type="hidden" name="action" value="create">
+        <input type="hidden" name="name" value="Debug Test Product">
+        <input type="hidden" name="price" value="100">
+        <input type="hidden" name="category" value="69209ef3499994abc1a16ce9">
+        <input type="hidden" name="stock" value="10">
+        <input type="hidden" name="description" value="Debug test product">
+        
+        <p><strong>Select images:</strong></p>
+        <input type="file" name="image_files[]" multiple accept="image/*" required>
+        <br><br>
+        <button type="submit">Test Submit</button>
+    </form>
+    
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const fileInput = document.querySelector('input[type="file"]');
+            console.log('Files selected:', fileInput.files.length);
+            
+            for (let i = 0; i < fileInput.files.length; i++) {
+                const file = fileInput.files[i];
+                console.log(`File ${i}: ${file.name}, Size: ${file.size} bytes`);
+            }
+            
+            if (fileInput.files.length === 0) {
+                alert('No files selected!');
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

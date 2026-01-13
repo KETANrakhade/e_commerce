@@ -668,8 +668,23 @@
   width: 100%;
   height: 100%;
   border-radius: 12px;
-  object-fit: contain; 
+  object-fit: cover; /* Changed from contain to cover to fill entire space */
   background: #fff;
+}
+
+/* Remove any default margins/padding that might cause gaps */
+.splide {
+  margin: 0 !important;
+}
+
+.splide__track {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.splide__list {
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 
@@ -686,6 +701,54 @@
     .slider-show {
       display: flex;
       width: 100%;
+      min-height: 600px; /* Ensure minimum height */
+    }
+
+    /* Make both columns equal height */
+    .product-page .row {
+      display: flex;
+      align-items: stretch;
+    }
+
+    .product-page .col-md-6 {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Ensure image slider takes full height */
+    #primary_slider {
+      flex: 1;
+      min-height: 600px; /* Increased height to cover gap */
+      margin-bottom: 10px; /* Reduced margin to minimize gap */
+    }
+
+    #primary_slider .splide__track,
+    #primary_slider .splide__list {
+      height: 100%;
+    }
+
+    #primary_slider .splide__slide {
+      height: 100%;
+    }
+
+    #primary_slider .splide__slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    /* Ensure no gaps between sliders */
+    .col-md-6[style*="width: 80%"] {
+      display: flex;
+      flex-direction: column;
+      gap: 8px; /* Small controlled gap */
+    }
+
+    /* Make thumbnail slider compact */
+    #thumbnail_slider {
+      margin-top: 0 !important;
+      padding-top: 0 !important;
     }
   </style>
 </head>
@@ -741,13 +804,13 @@
   <div class="container product-page">
     <div class="row slider-show w-50">
       <div class="col-md-6" style="width: 80%;">
-        <div id="primary_slider" class="splide mb-3">
+        <div id="primary_slider" class="splide mb-2">
           <div class="splide__track">
             <ul class="splide__list" id="primaryList"></ul>
           </div>
         </div>
 
-        <div id="thumbnail_slider" class="splide mt-3">
+        <div id="thumbnail_slider" class="splide mt-2">
           <div class="splide__track">
             <ul class="splide__list" id="thumbnailList"></ul>
           </div>
@@ -893,13 +956,25 @@
     const CART_KEY = 'cart_v1'; // Use same key as cart.html
     
     function addToCart(id, name, price, image) {
+      // Check if user is logged in
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        showErrorMessage('Please login to add items to cart');
+        // Redirect to login page after showing message
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 1500);
+        return;
+      }
+
       let cart = JSON.parse(localStorage.getItem(CART_KEY)) || [];
 
       const existingItem = cart.find(item => item.id === id);
       if (existingItem) {
         existingItem.quantity += 1;
       } else {
-        cart.push({ id, name, price, image, quantity: 1 });
+        cart.push({ _id: id, id, name, price, image, quantity: 1 });
       }
 
       localStorage.setItem(CART_KEY, JSON.stringify(cart));
@@ -935,6 +1010,18 @@
     }
 
     function addToWishlist() {
+      // Check if user is logged in
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        showErrorMessage('Please login to add items to wishlist');
+        // Redirect to login page after showing message
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 1500);
+        return;
+      }
+
       const product = window.product;
       if (!product) return;
 
@@ -973,6 +1060,28 @@
         top: 20px;
         right: 20px;
         background: #27ae60;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        z-index: 10000;
+        animation: slideInRight 0.3s ease-out;
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+
+    function showErrorMessage(message) {
+      // Create a simple error toast notification
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #e74c3c;
         color: white;
         padding: 15px 20px;
         border-radius: 8px;
@@ -1095,7 +1204,8 @@
             
             // Convert API product to match expected format
             product = {
-              id: product._id,
+              _id: product._id, // Keep original MongoDB ObjectId
+              id: product._id,  // Also set id for compatibility
               name: product.name,
               price: product.price,
               mrp: product.price * 1.2, // Estimate MRP
@@ -1157,10 +1267,12 @@
       // Initialize Splide sliders
       var primarySlider = new Splide('#primary_slider', {
         type: 'fade',
-        heightRatio: 0.6,
+        // Remove heightRatio to allow full height
+        // heightRatio: 0.6,
         pagination: false,
         arrows: false,
         cover: true,
+        height: '600px', // Increased height to cover gap
       });
 
       var thumbnailSlider = new Splide('#thumbnail_slider', {
@@ -1251,11 +1363,23 @@
 
     // Enhanced Add to Cart Function
     function addToCartWithAnimation(id, name, price, image) {
-      // Add to cart logic
+      // Check if user is logged in first
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        showErrorMessage('Please login to add items to cart');
+        // Redirect to login page after showing message
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 1500);
+        return;
+      }
+
+      // Add to cart logic (only if authenticated)
       const cart = getCart();
       const found = cart.find(i => i.id === id);
       if (found) found.quantity += 1;
-      else cart.push({ id: id, name, price, image: image, quantity: 1 });
+      else cart.push({ _id: id, id: id, name, price, image: image, quantity: 1 });
       saveCart(cart);
 
       // Show success popup
@@ -1359,6 +1483,22 @@
     }
 
     function addToWishlist() {
+      // Check if user is logged in
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        if (typeof showToast === 'function') {
+          showToast('Please login to add items to wishlist', 'error');
+        } else {
+          showErrorMessage('Please login to add items to wishlist');
+        }
+        // Redirect to login page after showing message
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 1500);
+        return;
+      }
+
       const product = window.product;
       if (!product) {
         if (typeof showToast === 'function') {

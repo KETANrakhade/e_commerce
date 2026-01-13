@@ -121,15 +121,24 @@ if ($_POST && isset($_POST['action']) && $_POST['action'] === 'update_status' &&
 
 // Get single order for details
 $order = null;
+$orderResult = null;
 if ($action === 'view' && $orderId) {
     $orderResult = $apiClient->getOrderById($orderId);
+    
+    // Debug: Log the API response
+    error_log("Order API Response: " . print_r($orderResult, true));
+    
     if ($orderResult['success']) {
         // API client already extracts: { success: true, data: order }
         if (isset($orderResult['data'])) {
             $order = $orderResult['data'];
+            error_log("Order data extracted: " . print_r($order, true));
         } else {
             $order = null;
+            error_log("No order data found in response");
         }
+    } else {
+        error_log("Order API call failed: " . ($orderResult['error'] ?? 'Unknown error'));
     }
 }
 ?>
@@ -563,6 +572,56 @@ if ($action === 'view' && $orderId) {
                                             </tbody>
                                         </table>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php elseif ($action === 'view' && $orderId && !$order): ?>
+                <!-- Order Not Found -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <div class="mb-4">
+                                    <i class="bx bx-error-circle display-4 text-warning"></i>
+                                </div>
+                                <h4 class="mb-3">Order Details Not Available</h4>
+                                <p class="text-muted mb-4">
+                                    The order with ID "<?php echo htmlspecialchars($orderId); ?>" could not be loaded.
+                                </p>
+                                
+                                <div class="alert alert-info text-start">
+                                    <strong>Possible causes:</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li><strong>Authentication Issue:</strong> Your admin session may have expired - try <a href="login.php">logging in again</a></li>
+                                        <li><strong>Invalid Order ID:</strong> The order ID may not exist in the database</li>
+                                        <li><strong>Backend Connection:</strong> Backend server may not be running on port 5001</li>
+                                        <li><strong>Database Issue:</strong> Order data may be corrupted or missing related data</li>
+                                    </ul>
+                                </div>
+                                
+                                <?php if (isset($orderResult)): ?>
+                                    <div class="alert alert-secondary text-start">
+                                        <strong>Debug Information:</strong><br>
+                                        API Success: <?php echo $orderResult['success'] ? 'Yes' : 'No'; ?><br>
+                                        HTTP Code: <?php echo $orderResult['http_code'] ?? 'Unknown'; ?><br>
+                                        <?php if (isset($orderResult['error'])): ?>
+                                            Error: <?php echo htmlspecialchars($orderResult['error']); ?><br>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
+                                
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <button type="button" class="btn btn-secondary" onclick="window.location.href='index.php?page=orders'">
+                                        <i class="bx bx-arrow-back me-1"></i> Back to Orders
+                                    </button>
+                                    <button type="button" class="btn btn-primary" onclick="window.location.reload()">
+                                        <i class="bx bx-refresh me-1"></i> Retry
+                                    </button>
+                                    <a href="login.php" class="btn btn-warning">
+                                        <i class="bx bx-log-in me-1"></i> Re-login
+                                    </a>
                                 </div>
                             </div>
                         </div>

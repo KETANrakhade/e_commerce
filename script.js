@@ -372,6 +372,7 @@ const viewProduct = (productId) => {
 // Add to cart from home page
 const addToCartFromHome = (productId, name, price, image) => {
   const product = {
+    _id: productId,
     id: productId,
     name: name,
     price: price,
@@ -568,13 +569,32 @@ function saveWishlist(wishlist) {
 }
 
 function addToCart(product) {
+  // Check if user is logged in
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    showNotification('Please login to add items to cart', 'info');
+    // Optionally redirect to login page
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 1500);
+    return;
+  }
+
   const cart = getCart();
-  const existingItem = cart.find(item => item.id === product.id);
+  const existingItem = cart.find(item => item.id === product.id || item._id === product._id);
   
   if (existingItem) {
     existingItem.quantity += 1;
   } else {
-    cart.push({ ...product, quantity: 1 });
+    // Ensure both _id and id fields are preserved
+    const cartItem = { 
+      ...product, 
+      quantity: 1,
+      _id: product._id || product.id,
+      id: product.id || product._id
+    };
+    cart.push(cartItem);
   }
   
   saveCart(cart);
@@ -586,6 +606,10 @@ async function addToWishlist(product) {
   
   if (!token) {
     showNotification('Please login to add items to wishlist', 'info');
+    // Optionally redirect to login page
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 1500);
     return;
   }
 

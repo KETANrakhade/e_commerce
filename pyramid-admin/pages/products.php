@@ -26,13 +26,13 @@ error_log('Request method: ' . $_SERVER['REQUEST_METHOD']);
 error_log('POST data: ' . json_encode($_POST));
 
 // Get products data from Node.js backend API only
-$page = $_GET['page'] ?? 1;
+$currentPage = $_GET['p'] ?? 1; // Use 'p' parameter for pagination to avoid conflict with main 'page' parameter
 $search = $_GET['search'] ?? '';
 $category = $_GET['category'] ?? '';
 $status = $_GET['status'] ?? '';
 
 $queryParams = http_build_query([
-    'page' => $page,
+    'page' => $currentPage,
     'limit' => 10,
     'search' => $search,
     'category' => $category,
@@ -42,15 +42,37 @@ $queryParams = http_build_query([
 // Include API client
 require_once __DIR__ . '/../config/api_client.php';
 
-// Fetch products from API
+// Fetch products from API with retry logic for better reliability
 $apiClient = getApiClient();
-$productsData = $apiClient->getAdminProducts([
-    'page' => $page,
-    'limit' => 10,
-    'search' => $search,
-    'category' => $category,
-    'status' => $status
-]);
+$productsData = null;
+$maxRetries = 3;
+$retryCount = 0;
+
+while ($retryCount < $maxRetries && (!$productsData || !$productsData['success'])) {
+    $productsData = $apiClient->getAdminProducts([
+        'page' => $currentPage,
+        'limit' => 10,
+        'search' => $search,
+        'category' => $category,
+        'status' => $status,
+        '_t' => time() // Cache busting parameter
+    ]);
+    
+    if (!$productsData || !$productsData['success']) {
+        $retryCount++;
+        if ($retryCount < $maxRetries) {
+            // Small delay before retry
+            usleep(200000); // 200ms
+        }
+    }
+}
+
+// Debug pagination data
+error_log('Pagination debug - Current page: ' . $currentPage);
+error_log('Pagination debug - API success: ' . ($productsData['success'] ? 'true' : 'false'));
+if (isset($productsData['data']['pagination'])) {
+    error_log('Pagination debug - Pagination info: ' . json_encode($productsData['data']['pagination']));
+}
 
 // Extract products from response
 // Handle different response structures
@@ -167,27 +189,42 @@ if ($_POST && isset($_POST['action'])) {
             'featured' => isset($_POST['featured']) ? true : false
         ];
         
-        // Handle images - process file uploads
+        // Handle images - process file uploads with comprehensive debugging
         $uploadedImages = [];
+        
+        // Debug: Log all upload data
+        error_log("UPLOAD DEBUG - FILES array: " . print_r($_FILES, true));
+        error_log("UPLOAD DEBUG - POST data keys: " . implode(', ', array_keys($_POST)));
+        
         if (!empty($_FILES['image_files']['name'][0])) {
+            error_log("UPLOAD DEBUG - Processing " . count($_FILES['image_files']['name']) . " files");
+            
             // Process uploaded files
             for ($i = 0; $i < count($_FILES['image_files']['name']); $i++) {
-                if ($_FILES['image_files']['error'][$i] === UPLOAD_ERR_OK) {
+                $fileName = $_FILES['image_files']['name'][$i];
+                $errorCode = $_FILES['image_files']['error'][$i];
+                
+                error_log("UPLOAD DEBUG - File $i: $fileName (error: $errorCode)");
+                
+                if ($errorCode === UPLOAD_ERR_OK) {
                     $tmpName = $_FILES['image_files']['tmp_name'][$i];
-                    $fileName = $_FILES['image_files']['name'][$i];
                     $fileSize = $_FILES['image_files']['size'][$i];
                     $fileType = $_FILES['image_files']['type'][$i];
+                    
+                    error_log("UPLOAD DEBUG - File details: Size=$fileSize, Type=$fileType, Temp=$tmpName");
                     
                     // Validate file type
                     $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
                     if (!in_array($fileType, $allowedTypes)) {
                         $error = 'Invalid file type. Only JPG, PNG, WebP, and GIF images are allowed.';
+                        error_log("UPLOAD DEBUG - Invalid file type: $fileType");
                         break;
                     }
                     
-                    // Validate file size (5MB max)
-                    if ($fileSize > 5 * 1024 * 1024) {
-                        $error = 'File size too large. Maximum 5MB per image.';
+                    // Validate file size (2MB max based on PHP config)
+                    if ($fileSize > 2 * 1024 * 1024) {
+                        $error = 'File size too large. Maximum 2MB per image.';
+                        error_log("UPLOAD DEBUG - File too large: $fileSize bytes");
                         break;
                     }
                     
@@ -196,22 +233,40 @@ if ($_POST && isset($_POST['action'])) {
                     $uniqueName = 'product_' . time() . '_' . $i . '.' . $extension;
                     $uploadPath = __DIR__ . '/../../uploads/products/' . $uniqueName;
                     
+                    error_log("UPLOAD DEBUG - Target path: $uploadPath");
+                    
                     // Create upload directory if it doesn't exist
                     $uploadDir = dirname($uploadPath);
                     if (!is_dir($uploadDir)) {
                         mkdir($uploadDir, 0755, true);
+                        error_log("UPLOAD DEBUG - Created directory: $uploadDir");
                     }
                     
                     // Move uploaded file
                     if (move_uploaded_file($tmpName, $uploadPath)) {
                         // Store relative path for database (accessible from frontend root)
                         $uploadedImages[] = 'uploads/products/' . $uniqueName;
+                        error_log("UPLOAD DEBUG - SUCCESS: Uploaded uploads/products/$uniqueName");
                     } else {
                         $error = 'Failed to upload image: ' . $fileName;
+                        error_log("UPLOAD DEBUG - FAILED: Could not move $tmpName to $uploadPath");
                         break;
                     }
+                } else {
+                    $errorMessages = [
+                        UPLOAD_ERR_INI_SIZE => 'File exceeds upload_max_filesize',
+                        UPLOAD_ERR_FORM_SIZE => 'File exceeds MAX_FILE_SIZE',
+                        UPLOAD_ERR_PARTIAL => 'File was only partially uploaded',
+                        UPLOAD_ERR_NO_FILE => 'No file was uploaded',
+                        UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder',
+                        UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk',
+                        UPLOAD_ERR_EXTENSION => 'File upload stopped by extension'
+                    ];
+                    error_log("UPLOAD DEBUG - Upload error for file $i: " . ($errorMessages[$errorCode] ?? "Unknown error ($errorCode)"));
                 }
             }
+        } else {
+            error_log("UPLOAD DEBUG - No files received or first file name is empty");
         }
         
         // Handle existing images (for edit mode)
@@ -292,11 +347,17 @@ if ($_POST && isset($_POST['action'])) {
             }
         }
         
-        // Image validation
+        // Image validation with debugging
         $hasImages = false;
         if (!empty($allImages)) {
             $hasImages = true;
         }
+        
+        // Log for debugging
+        error_log("UPLOAD DEBUG - Uploaded images: " . print_r($uploadedImages, true));
+        error_log("UPLOAD DEBUG - All images: " . print_r($allImages, true));
+        error_log("UPLOAD DEBUG - Has images: " . ($hasImages ? 'YES' : 'NO'));
+        
         if (!$hasImages) {
             $validationErrors[] = 'At least one product image is required';
         }
@@ -359,7 +420,17 @@ if ($_POST && isset($_POST['action'])) {
             // Set session success message for simple popup
             $_SESSION['product_success'] = 'Product created successfully!';
             $_SESSION['product_success_type'] = 'create';
-            header('Location: index.php?page=products');
+            
+            // Add a small delay to ensure database consistency
+            usleep(100000); // 100ms
+            
+            // Use JavaScript redirect for better handling
+            echo '<script>
+                setTimeout(function() {
+                    window.location.href = "index.php?page=products&refresh=' . time() . '";
+                }, 500);
+            </script>';
+            echo '<noscript><meta http-equiv="refresh" content="1;url=index.php?page=products"></noscript>';
             exit();
         } else {
             error_log('Product creation failed, showing error');
@@ -553,7 +624,17 @@ if ($_POST && isset($_POST['action'])) {
                 // Set session success message for simple popup
                 $_SESSION['product_success'] = 'Product updated successfully!';
                 $_SESSION['product_success_type'] = 'update';
-                header('Location: index.php?page=products');
+                
+                // Add a small delay to ensure database consistency
+                usleep(100000); // 100ms
+                
+                // Use JavaScript redirect for better handling
+                echo '<script>
+                    setTimeout(function() {
+                        window.location.href = "index.php?page=products&refresh=' . time() . '";
+                    }, 500);
+                </script>';
+                echo '<noscript><meta http-equiv="refresh" content="1;url=index.php?page=products"></noscript>';
                 exit();
             } else {
                 $error = $result['error'] ?? ($result['data']['error'] ?? 'Failed to update product');
@@ -568,7 +649,17 @@ if ($_POST && isset($_POST['action'])) {
             // Set session success message for simple popup
             $_SESSION['product_success'] = 'Product deleted successfully!';
             $_SESSION['product_success_type'] = 'delete';
-            header('Location: index.php?page=products');
+            
+            // Add a small delay to ensure database consistency
+            usleep(100000); // 100ms
+            
+            // Use JavaScript redirect for better handling
+            echo '<script>
+                setTimeout(function() {
+                    window.location.href = "index.php?page=products&refresh=' . time() . '";
+                }, 500);
+            </script>';
+            echo '<noscript><meta http-equiv="refresh" content="1;url=index.php?page=products"></noscript>';
             exit();
         } else {
             $error = $result['error'] ?? ($result['data']['error'] ?? 'Failed to delete product');
@@ -583,9 +674,21 @@ if ($_POST && isset($_POST['action'])) {
 $product = null;
 if ($action === 'edit' && $productId) {
     $productResult = $apiClient->getProductById($productId);
+    
+    // Debug: Log the API response
+    error_log("Product API Response for ID $productId: " . print_r($productResult, true));
+    
     if ($productResult['success']) {
         // API client already extracts: { success: true, data: product }
         $product = $productResult['data'] ?? null;
+        
+        if ($product) {
+            error_log("Product data loaded successfully: " . $product['name']);
+        } else {
+            error_log("No product data found in successful response");
+        }
+    } else {
+        error_log("Product API call failed: " . ($productResult['error'] ?? 'Unknown error'));
     }
 }
 ?>
@@ -841,16 +944,43 @@ if ($action === 'edit' && $productId) {
                 </div>
 
             <?php elseif ($action === 'create' || $action === 'edit'): ?>
-                <!-- Product Form -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title"><?php echo $action === 'create' ? 'Add New Product' : 'Edit Product'; ?></h4>
-                                <p class="card-title-desc">Fill all information below</p>
+                <?php if ($action === 'edit' && $productId && !$product): ?>
+                    <!-- Product Not Found for Edit -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="alert alert-danger" role="alert">
+                                <h4 class="alert-heading">Product Not Found</h4>
+                                <p>The product with ID "<?php echo htmlspecialchars($productId); ?>" could not be loaded for editing.</p>
+                                <hr>
+                                <p class="mb-0">
+                                    <strong>Possible causes:</strong><br>
+                                    • Product ID is invalid or doesn't exist<br>
+                                    • Your admin session may have expired - try <a href="login.php" class="alert-link">logging in again</a><br>
+                                    • Backend server connection issue<br>
+                                    • Database connection problem
+                                </p>
+                                <div class="mt-3">
+                                    <a href="index.php?page=products" class="btn btn-secondary">
+                                        <i class="bx bx-arrow-back me-1"></i> Back to Products
+                                    </a>
+                                    <button type="button" class="btn btn-primary" onclick="window.location.reload()">
+                                        <i class="bx bx-refresh me-1"></i> Retry
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <!-- Product Form -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title"><?php echo $action === 'create' ? 'Add New Product' : 'Edit Product'; ?></h4>
+                                    <p class="card-title-desc">Fill all information below</p>
 
-                                <form method="POST" action="" enctype="multipart/form-data" id="productForm" novalidate>
-                                    <input type="hidden" name="action" value="<?php echo $action === 'create' ? 'create' : 'update'; ?>">
+                                    <form method="POST" action="" enctype="multipart/form-data" id="productForm" novalidate>
+                                        <input type="hidden" name="action" value="<?php echo $action === 'create' ? 'create' : 'update'; ?>">
                                     
                                     <div class="row">
                                         <div class="col-sm-6">
@@ -1212,6 +1342,7 @@ if ($action === 'edit' && $productId) {
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
             <?php endif; ?>
         </div>
     </div>
@@ -1220,6 +1351,22 @@ if ($action === 'edit' && $productId) {
 <script>
 // Product management JavaScript
 document.addEventListener('DOMContentLoaded', function() {
+    // Show loading state initially if no products are visible
+    const tableBody = document.querySelector('tbody');
+    const hasProducts = tableBody && tableBody.children.length > 0;
+    
+    if (!hasProducts) {
+        showLoadingState();
+        // Reload page after a short delay if no products are shown
+        setTimeout(function() {
+            const currentUrl = window.location.href;
+            if (currentUrl.includes('page=products') && !currentUrl.includes('action=')) {
+                // Only reload if we're on the products list page (not create/edit)
+                window.location.reload();
+            }
+        }, 1000);
+    }
+    
     // Show simple success popup if it exists
     <?php if (!empty($sessionSuccess)): ?>
         const successModal = new bootstrap.Modal(document.getElementById('successModal'));
@@ -1338,7 +1485,32 @@ function initializeFormValidation() {
     
     // Form submission validation
     form.addEventListener('submit', function(e) {
+        console.log('Form submission started');
+        
+        // Debug: Check file inputs
+        const fileInputs = form.querySelectorAll('.image-file');
+        console.log('Found file inputs:', fileInputs.length);
+        
+        fileInputs.forEach((input, index) => {
+            console.log(`File input ${index}:`, input.files);
+            if (input.files.length > 0) {
+                for (let i = 0; i < input.files.length; i++) {
+                    const file = input.files[i];
+                    console.log(`  File ${i}: ${file.name}, Size: ${file.size} bytes (${(file.size/1024/1024).toFixed(2)} MB), Type: ${file.type}`);
+                    
+                    // Check if file is too large
+                    if (file.size > 2 * 1024 * 1024) {
+                        console.error(`File ${file.name} is too large: ${(file.size/1024/1024).toFixed(2)} MB (max 2MB)`);
+                        alert(`File "${file.name}" is too large (${(file.size/1024/1024).toFixed(2)} MB). Please choose files under 2MB.`);
+                        e.preventDefault();
+                        return;
+                    }
+                }
+            }
+        });
+        
         if (!validateForm()) {
+            console.log('Form validation failed');
             e.preventDefault();
             e.stopPropagation();
             
@@ -1352,6 +1524,8 @@ function initializeFormValidation() {
                 firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         } else {
+            console.log('Form validation passed, submitting...');
+            
             // Show loading state
             const submitBtn = document.getElementById('submitBtn');
             if (submitBtn) {
@@ -1474,22 +1648,36 @@ function validateForm() {
     const imageInputs = form.querySelectorAll('.image-file');
     const existingImages = form.querySelectorAll('input[name="existing_images[]"]');
     
+    console.log('Image validation - Found inputs:', imageInputs.length);
+    console.log('Image validation - Found existing:', existingImages.length);
+    
     let hasImages = false;
     
     // Check for uploaded files
-    imageInputs.forEach(input => {
+    imageInputs.forEach((input, index) => {
+        console.log(`Checking input ${index}:`, input.files.length, 'files');
         if (input.files && input.files.length > 0) {
             hasImages = true;
+            console.log('Found uploaded files:', input.files.length);
         }
     });
     
     // Check for existing images
     if (!hasImages) {
-        existingImages.forEach(input => {
+        existingImages.forEach((input, index) => {
+            console.log(`Checking existing ${index}:`, input.value);
             if (input.value.trim()) {
                 hasImages = true;
+                console.log('Found existing image:', input.value);
             }
         });
+    }
+    
+    console.log('Image validation - hasImages:', hasImages);
+    
+    // Add visible alert for debugging
+    if (!hasImages) {
+        alert('DEBUG: No images detected!\nFile inputs found: ' + imageInputs.length + '\nCheck console for details.');
     }
     
     if (!hasImages) {
@@ -1602,7 +1790,7 @@ function loadSubcategories(categoryId, selectedSubcategoryId = '') {
 }
 
 function deleteProduct(productId) {
-    if (confirm('Are you sure you want to delete this product?')) {
+    if (confirm('⚠️ PERMANENT DELETE\n\nAre you sure you want to permanently delete this product?\n\nThis action CANNOT be undone!\n\nThe product will be completely removed from the database.')) {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = `index.php?page=products&action=delete&id=${productId}`;
@@ -1817,6 +2005,26 @@ function resetForm() {
             
             updateImagesHiddenField();
         }
+    }
+}
+
+// Show loading state for products table
+function showLoadingState() {
+    const tableBody = document.querySelector('tbody');
+    if (tableBody && tableBody.children.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center py-4">
+                    <div class="d-flex flex-column align-items-center">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="text-muted">Loading products...</div>
+                        <small class="text-muted mt-1">Please wait while we fetch your products</small>
+                    </div>
+                </td>
+            </tr>
+        `;
     }
 }
 </script>

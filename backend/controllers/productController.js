@@ -150,14 +150,14 @@ const updateProduct = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Delete product (admin)
+// @desc    Delete product (admin) - PERMANENT DELETE
 // @route   DELETE /api/admin/products/:id
 // @access  Private/Admin
 const deleteProduct = asyncHandler(async (req, res) => {
-  const result = await productService.deleteProduct(req.params.id);
+  const result = await productService.hardDeleteProduct(req.params.id);
   res.json({ 
     success: true, 
-    message: result.message
+    message: 'Product permanently deleted successfully'
   });
 });
 

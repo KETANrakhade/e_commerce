@@ -108,11 +108,11 @@
     .progress-line {
       width: 60px;
       height: 2px;
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.3); 
       margin: 0 20px;
     }
 
-    .checkout-content {
+    .checkout-content { 
       padding: 40px;
     }
 
@@ -830,13 +830,28 @@
       
       // Prepare order data
       const orderData = {
-        orderItems: cart.map(item => ({
-          productId: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-          image: item.image
-        })),
+        orderItems: cart.map(item => {
+          // Get the product ID, trying multiple fields
+          const productId = item._id || item.id || item.productId;
+          
+          // Validate that productId exists and looks like a MongoDB ObjectId (24 hex characters)
+          if (!productId) {
+            throw new Error(`Product ID missing for item: ${item.name}`);
+          }
+          
+          if (typeof productId !== 'string' || !/^[0-9a-fA-F]{24}$/.test(productId)) {
+            console.warn(`Invalid ObjectId format for ${item.name}: ${productId}`);
+            // Still proceed, let the backend handle validation
+          }
+          
+          return {
+            productId: productId,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image
+          };
+        }),
         shippingAddress: {
           address: address,
           city: city,
@@ -849,6 +864,20 @@
         taxPrice: 0,
         totalPrice: total
       };
+
+      // Debug: Log cart and order data to identify the issue
+      console.log('🛒 Cart items:', cart);
+      console.log('📦 Order items:', orderData.orderItems);
+      
+      // Validate that all items have valid productId
+      const invalidItems = orderData.orderItems.filter(item => !item.productId);
+      if (invalidItems.length > 0) {
+        console.error('❌ Items missing productId:', invalidItems);
+        if (typeof showToast === 'function') {
+          showToast('Some items in your cart are invalid. Please refresh and try again.', 'error');
+        }
+        return;
+      }
 
       try {
         setCheckoutLoading(true);

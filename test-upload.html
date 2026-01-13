@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test File Upload</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="file"] { margin-bottom: 10px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .debug { background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Test File Upload</h1>
+    <p>This form tests the same file upload mechanism used in the admin panel.</p>
+    
+    <form action="test-upload-handler.php" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label>Product Name:</label>
+            <input type="text" name="name" value="Test Product" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Price:</label>
+            <input type="number" name="price" value="100" step="0.01" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Category:</label>
+            <select name="category" required>
+                <option value="69209ef3499994abc1a16ce9">Men</option>
+                <option value="69209ef3499994abc1a16cea">Women</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Stock:</label>
+            <input type="number" name="stock" value="10" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Description:</label>
+            <textarea name="description" required>Test product description for upload testing.</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>Product Images (select multiple):</label>
+            <input type="file" name="image_files[]" multiple accept="image/*" required>
+            <small>Select 2-5 images to test</small>
+        </div>
+        
+        <input type="hidden" name="action" value="create">
+        
+        <button type="submit">Create Test Product</button>
+    </form>
+    
+    <div class="debug">
+        <h3>Debug Information:</h3>
+        <p><strong>PHP Upload Limits:</strong></p>
+        <ul>
+            <li>upload_max_filesize: <?php echo ini_get('upload_max_filesize'); ?></li>
+            <li>post_max_size: <?php echo ini_get('post_max_size'); ?></li>
+            <li>max_file_uploads: <?php echo ini_get('max_file_uploads'); ?></li>
+        </ul>
+        
+        <p><strong>Instructions:</strong></p>
+        <ol>
+            <li>Select 2-5 small image files (under 2MB each)</li>
+            <li>Fill in the form and click "Create Test Product"</li>
+            <li>Check the results to see if files are uploaded correctly</li>
+        </ol>
+    </div>
+</body>
+</html>

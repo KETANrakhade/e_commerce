@@ -92,23 +92,52 @@ function displayWomensProducts(products) {
     
     // Create product cards
     products.forEach((product, index) => {
-        // Handle image URL with proper validation
+        // Handle image URL with proper validation and debugging
         let imageUrl = 'https://via.placeholder.com/400x500/FF69B4/FFFFFF?text=No+Image';
+        
+        console.log(`🔍 Product ${product.name} image data:`, {
+            images: product.images,
+            imageUrls: product.imageUrls,
+            firstImage: product.images?.[0]
+        });
         
         if (product.images && product.images.length > 0) {
             const firstImage = product.images[0];
             if (typeof firstImage === 'string' && firstImage !== 'has_images' && firstImage !== '') {
-                // Ensure the path starts from root
-                imageUrl = firstImage.startsWith('/') ? firstImage : '/' + firstImage;
+                // Handle different path formats
+                if (firstImage.startsWith('http')) {
+                    imageUrl = firstImage; // Full URL
+                } else if (firstImage.startsWith('uploads/')) {
+                    imageUrl = '/' + firstImage; // Relative path from root
+                } else if (firstImage.startsWith('/uploads/')) {
+                    imageUrl = firstImage; // Already has leading slash
+                } else {
+                    imageUrl = '/uploads/products/' + firstImage; // Just filename
+                }
             } else if (firstImage && firstImage.url && firstImage.url !== 'has_images' && firstImage.url !== '') {
-                // Ensure the path starts from root
-                imageUrl = firstImage.url.startsWith('/') ? firstImage.url : '/' + firstImage.url;
+                const imgUrl = firstImage.url;
+                if (imgUrl.startsWith('http')) {
+                    imageUrl = imgUrl; // Full URL
+                } else if (imgUrl.startsWith('uploads/')) {
+                    imageUrl = '/' + imgUrl; // Relative path from root
+                } else if (imgUrl.startsWith('/uploads/')) {
+                    imageUrl = imgUrl; // Already has leading slash
+                } else {
+                    imageUrl = '/uploads/products/' + imgUrl; // Just filename
+                }
             }
         } else if (product.imageUrls && product.imageUrls.length > 0) {
             const firstUrl = product.imageUrls[0];
             if (firstUrl && firstUrl !== 'has_images' && firstUrl !== '') {
-                // Ensure the path starts from root
-                imageUrl = firstUrl.startsWith('/') ? firstUrl : '/' + firstUrl;
+                if (firstUrl.startsWith('http')) {
+                    imageUrl = firstUrl; // Full URL
+                } else if (firstUrl.startsWith('uploads/')) {
+                    imageUrl = '/' + firstUrl; // Relative path from root
+                } else if (firstUrl.startsWith('/uploads/')) {
+                    imageUrl = firstUrl; // Already has leading slash
+                } else {
+                    imageUrl = '/uploads/products/' + firstUrl; // Just filename
+                }
             }
         }
         
@@ -117,7 +146,7 @@ function displayWomensProducts(products) {
             imageUrl = 'https://via.placeholder.com/400x500/FF69B4/FFFFFF?text=No+Image';
         }
         
-        console.log(`🖼️ Women's Image URL for ${product.name}:`, imageUrl);
+        console.log(`🖼️ Final Women's Image URL for ${product.name}:`, imageUrl);
         const price = product.price ? `₹${product.price.toLocaleString()}` : 'Price not available';
         // Use subcategory name/slug for filtering, fallback to category name, then to product name analysis
         let categoryFilter = 'all';

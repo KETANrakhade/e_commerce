@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart Debug - Pyramid</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .cart-item {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .field {
+            margin: 5px 0;
+        }
+        .field strong {
+            display: inline-block;
+            width: 120px;
+        }
+        .valid {
+            color: green;
+        }
+        .invalid {
+            color: red;
+        }
+        .warning {
+            color: orange;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cart Debug Tool</h1>
+    <p>This tool helps debug cart structure and product ID issues.</p>
+    
+    <button onclick="debugCart()">Debug Current Cart</button>
+    <button onclick="clearCart()">Clear Cart</button>
+    
+    <div id="cartDebug"></div>
+
+    <script>
+        function debugCart() {
+            const cart = JSON.parse(localStorage.getItem('cart_v1') || '[]');
+            const debugDiv = document.getElementById('cartDebug');
+            
+            if (cart.length === 0) {
+                debugDiv.innerHTML = '<p>Cart is empty</p>';
+                return;
+            }
+            
+            let html = `<h2>Cart Items (${cart.length} items)</h2>`;
+            
+            cart.forEach((item, index) => {
+                const hasId = !!item.id;
+                const has_Id = !!item._id;
+                const hasProductId = !!item.productId;
+                
+                const idValid = item.id && /^[0-9a-fA-F]{24}$/.test(item.id);
+                const _idValid = item._id && /^[0-9a-fA-F]{24}$/.test(item._id);
+                const productIdValid = item.productId && /^[0-9a-fA-F]{24}$/.test(item.productId);
+                
+                html += `
+                    <div class="cart-item">
+                        <h3>Item ${index + 1}: ${item.name || 'Unnamed'}</h3>
+                        <div class="field">
+                            <strong>id:</strong> 
+                            <span class="${hasId ? (idValid ? 'valid' : 'warning') : 'invalid'}">
+                                ${item.id || 'Missing'} ${hasId ? (idValid ? '✓' : '⚠️ Invalid format') : '❌'}
+                            </span>
+                        </div>
+                        <div class="field">
+                            <strong>_id:</strong> 
+                            <span class="${has_Id ? (_idValid ? 'valid' : 'warning') : 'invalid'}">
+                                ${item._id || 'Missing'} ${has_Id ? (_idValid ? '✓' : '⚠️ Invalid format') : '❌'}
+                            </span>
+                        </div>
+                        <div class="field">
+                            <strong>productId:</strong> 
+                            <span class="${hasProductId ? (productIdValid ? 'valid' : 'warning') : 'invalid'}">
+                                ${item.productId || 'Missing'} ${hasProductId ? (productIdValid ? '✓' : '⚠️ Invalid format') : '❌'}
+                            </span>
+                        </div>
+                        <div class="field"><strong>name:</strong> ${item.name || 'Missing'}</div>
+                        <div class="field"><strong>price:</strong> ${item.price || 'Missing'}</div>
+                        <div class="field"><strong>quantity:</strong> ${item.quantity || 'Missing'}</div>
+                        <div class="field"><strong>image:</strong> ${item.image || 'Missing'}</div>
+                        
+                        <h4>Raw JSON:</h4>
+                        <pre style="background: #eee; padding: 10px; border-radius: 4px; overflow-x: auto;">
+${JSON.stringify(item, null, 2)}
+                        </pre>
+                    </div>
+                `;
+            });
+            
+            // Summary
+            const validItems = cart.filter(item => 
+                (item._id && /^[0-9a-fA-F]{24}$/.test(item._id)) || 
+                (item.id && /^[0-9a-fA-F]{24}$/.test(item.id)) ||
+                (item.productId && /^[0-9a-fA-F]{24}$/.test(item.productId))
+            );
+            
+            html += `
+                <div style="background: #e8f4fd; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                    <h3>Summary</h3>
+                    <p><strong>Total items:</strong> ${cart.length}</p>
+                    <p><strong>Items with valid ObjectId:</strong> ${validItems.length}</p>
+                    <p><strong>Items with issues:</strong> ${cart.length - validItems.length}</p>
+                    ${cart.length - validItems.length > 0 ? 
+                        '<p style="color: red;"><strong>⚠️ Some items may cause checkout issues!</strong></p>' : 
+                        '<p style="color: green;"><strong>✅ All items look good!</strong></p>'
+                    }
+                </div>
+            `;
+            
+            debugDiv.innerHTML = html;
+        }
+        
+        function clearCart() {
+            if (confirm('Are you sure you want to clear the cart?')) {
+                localStorage.removeItem('cart_v1');
+                debugCart();
+                alert('Cart cleared!');
+            }
+        }
+        
+        // Auto-debug on page load
+        window.addEventListener('load', debugCart);
+    </script>
+</body>
+</html>

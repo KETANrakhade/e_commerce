@@ -205,7 +205,22 @@ class ApiClient {
      * Get product by ID from Node.js
      */
     public function getProductById($id) {
-        return $this->makeRequest('admin/products/' . $id);
+        $result = $this->makeRequest('admin/products/' . $id);
+        // Backend returns: {success: true, data: product}
+        // makeRequest wraps it, so extract: $result['data']['data']
+        if ($result['success'] && isset($result['data'])) {
+            if (isset($result['data']['data'])) {
+                return [
+                    'success' => true,
+                    'data' => $result['data']['data'],
+                    'http_code' => $result['http_code']
+                ];
+            } else {
+                // Fallback: data might be directly in result['data']
+                return $result;
+            }
+        }
+        return $result;
     }
     
     /**
@@ -257,7 +272,22 @@ class ApiClient {
      * Get order by ID from Node.js
      */
     public function getOrderById($id) {
-        return $this->makeRequest('admin/orders/' . $id);
+        $result = $this->makeRequest('admin/orders/' . $id);
+        // Backend returns: {success: true, data: order}
+        // makeRequest wraps it, so extract: $result['data']['data']
+        if ($result['success'] && isset($result['data'])) {
+            if (isset($result['data']['data'])) {
+                return [
+                    'success' => true,
+                    'data' => $result['data']['data'],
+                    'http_code' => $result['http_code']
+                ];
+            } else {
+                // Fallback: data might be directly in result['data']
+                return $result;
+            }
+        }
+        return $result;
     }
     
     /**
