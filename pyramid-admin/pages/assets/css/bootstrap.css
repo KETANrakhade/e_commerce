@@ -14385,13 +14385,14 @@ label {
 }
 
 .badge-soft-warning {
-  color: #f1b44c;
-  background-color: rgba(241, 180, 76, 0.18);
+  color: #d89614;
+  background-color: rgba(216, 150, 20, 0.35);
+  font-weight: 600;
 }
 .badge-soft-warning[href]:hover, .badge-soft-warning[href]:focus {
-  color: #f1b44c;
+  color: #d89614;
   text-decoration: none;
-  background-color: rgba(241, 180, 76, 0.4);
+  background-color: rgba(216, 150, 20, 0.5);
 }
 
 .badge.bg-danger[href]:hover, .badge.bg-danger[href]:focus {
