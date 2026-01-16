@@ -44,7 +44,7 @@ if (USE_NODEJS_BACKEND && isset($_SESSION['admin_token'])) {
 $page = $_GET['page'] ?? 'dashboard';
 
 // Validate page
-$allowed_pages = ['dashboard', 'products', 'orders', 'users', 'settings'];
+$allowed_pages = ['dashboard', 'products', 'edit-product', 'orders', 'users', 'settings'];
 if (!in_array($page, $allowed_pages)) {
     $page = 'dashboard';
 }
@@ -59,6 +59,9 @@ switch($page) {
         break;
     case 'products':
         include("pages/products.php");
+        break;
+    case 'edit-product':
+        include("pages/edit-product.php");
         break;
     case 'orders':
         include("pages/orders.php");

@@ -5001,3 +5001,79 @@ table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control:before {
 }bs-categories a:hover {
   color: #556ee6;
 }
+
+/* =============================Dark Badge Styles for Orders Page========================== */
+/* Override badge-soft styles to make them darker and more visible */
+
+.badge-soft-success {
+  color: #ffffff !important;
+  background-color: #28a745 !important;
+  font-weight: 600;
+}
+
+.badge-soft-warning {
+  color: #ffffff !important;
+  background-color: #ffc107 !important;
+  font-weight: 600;
+}
+
+.badge-soft-info {
+  color: #ffffff !important;
+  background-color: #17a2b8 !important;
+  font-weight: 600;
+}
+
+.badge-soft-danger {
+  color: #ffffff !important;
+  background-color: #dc3545 !important;
+  font-weight: 600;
+}
+
+.badge-soft-secondary {
+  color: #ffffff !important;
+  background-color: #6c757d !important;
+  font-weight: 600;
+}
+
+.badge-soft-primary {
+  color: #ffffff !important;
+  background-color: #007bff !important;
+  font-weight: 600;
+}
+
+/* Hover effects for badge links */
+.badge-soft-success[href]:hover, .badge-soft-success[href]:focus {
+  color: #ffffff !important;
+  background-color: #218838 !important;
+  text-decoration: none;
+}
+
+.badge-soft-warning[href]:hover, .badge-soft-warning[href]:focus {
+  color: #ffffff !important;
+  background-color: #e0a800 !important;
+  text-decoration: none;
+}
+
+.badge-soft-info[href]:hover, .badge-soft-info[href]:focus {
+  color: #ffffff !important;
+  background-color: #138496 !important;
+  text-decoration: none;
+}
+
+.badge-soft-danger[href]:hover, .badge-soft-danger[href]:focus {
+  color: #ffffff !important;
+  background-color: #c82333 !important;
+  text-decoration: none;
+}
+
+.badge-soft-secondary[href]:hover, .badge-soft-secondary[href]:focus {
+  color: #ffffff !important;
+  background-color: #5a6268 !important;
+  text-decoration: none;
+}
+
+.badge-soft-primary[href]:hover, .badge-soft-primary[href]:focus {
+  color: #ffffff !important;
+  background-color: #0056b3 !important;
+  text-decoration: none;
+}

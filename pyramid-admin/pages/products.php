@@ -1,7 +1,7 @@
 <?php
-// Disable error reporting for production
-error_reporting(0);
-ini_set('display_errors', 0);
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Start output buffering to prevent header issues
 ob_start();
@@ -871,7 +871,7 @@ if ($action === 'edit' && $productId) {
                                                         </td>
                                                         <td>
                                                             <div class="d-flex gap-3">
-                                                                <a href="index.php?page=products&action=edit&id=<?php echo $prod['_id']; ?>" 
+                                                                <a href="index.php?page=edit-product&id=<?php echo $prod['_id']; ?>" 
                                                                    class="text-success">
                                                                     <i class="mdi mdi-pencil font-size-18"></i>
                                                                 </a>
@@ -1008,7 +1008,17 @@ if ($action === 'edit' && $productId) {
                                             <div class="mb-3">
                                                 <label for="brand" class="form-label">Brand</label>
                                                 <input id="brand" name="brand" type="text" class="form-control" 
-                                                       value="<?php echo htmlspecialchars($product['brand'] ?? ''); ?>"
+                                                       value="<?php 
+                                                       $brandValue = '';
+                                                       if (isset($product['brand'])) {
+                                                           if (is_array($product['brand'])) {
+                                                               $brandValue = $product['brand']['name'] ?? '';
+                                                           } else {
+                                                               $brandValue = $product['brand'];
+                                                           }
+                                                       }
+                                                       echo htmlspecialchars($brandValue); 
+                                                       ?>"
                                                        maxlength="50"
                                                        pattern="[a-zA-Z0-9\s\-\.\&]+"
                                                        title="Brand name should contain only letters, numbers, spaces, hyphens, dots, and ampersands">
@@ -1140,6 +1150,39 @@ if ($action === 'edit' && $productId) {
                                             </div>
                                             <div class="card-body">
                                                 <style>
+                                                /* Make form scrollable */
+                                                .page-content {
+                                                    max-height: calc(100vh - 100px);
+                                                    overflow-y: auto;
+                                                    overflow-x: hidden;
+                                                }
+                                                
+                                                #productForm {
+                                                    max-height: calc(100vh - 200px);
+                                                    overflow-y: auto;
+                                                    overflow-x: hidden;
+                                                    padding-right: 15px;
+                                                }
+                                                
+                                                /* Custom scrollbar */
+                                                #productForm::-webkit-scrollbar {
+                                                    width: 8px;
+                                                }
+                                                
+                                                #productForm::-webkit-scrollbar-track {
+                                                    background: #f1f1f1;
+                                                    border-radius: 10px;
+                                                }
+                                                
+                                                #productForm::-webkit-scrollbar-thumb {
+                                                    background: #888;
+                                                    border-radius: 10px;
+                                                }
+                                                
+                                                #productForm::-webkit-scrollbar-thumb:hover {
+                                                    background: #555;
+                                                }
+                                                
                                                 .image-file {
                                                     cursor: pointer;
                                                     background-color: #fff !important;
@@ -1351,6 +1394,31 @@ if ($action === 'edit' && $productId) {
 <script>
 // Product management JavaScript
 document.addEventListener('DOMContentLoaded', function() {
+    // Add floating submit button ONLY for EDIT form (not create)
+    const productForm = document.getElementById('productForm');
+    const isEditMode = window.location.href.includes('action=edit');
+    
+    if (productForm && isEditMode) {
+        // Create floating button only for edit mode
+        const floatingBtn = document.createElement('button');
+        floatingBtn.type = 'submit';
+        floatingBtn.className = 'btn btn-success btn-lg waves-effect waves-light';
+        floatingBtn.style.cssText = 'position: fixed; bottom: 30px; right: 30px; z-index: 9999; border-radius: 50px; padding: 15px 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-weight: bold;';
+        floatingBtn.innerHTML = '<i class="mdi mdi-content-save me-2"></i>Update Product';
+        floatingBtn.form = 'productForm'; // Associate with form
+        
+        // Add to body (not inside form to avoid any container restrictions)
+        document.body.appendChild(floatingBtn);
+        
+        // Make sure it submits the form
+        floatingBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            productForm.requestSubmit(); // Use requestSubmit to trigger validation
+        });
+        
+        console.log('Floating "Update Product" button added for EDIT mode!');
+    }
+    
     // Show loading state initially if no products are visible
     const tableBody = document.querySelector('tbody');
     const hasProducts = tableBody && tableBody.children.length > 0;

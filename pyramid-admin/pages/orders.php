@@ -693,11 +693,54 @@ function exportOrders() {
     const endDate = document.getElementById('endDate').value;
     
     const params = new URLSearchParams();
-    params.append('format', 'csv');
+    params.append('format', 'pdf'); // Changed from 'csv' to 'pdf'
     if (status) params.append('status', status);
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
     
-    window.open(`/api/admin/orders/export?${params.toString()}`, '_blank');
+    // Get auth token from session
+    const token = '<?php echo $_SESSION['admin_token'] ?? ''; ?>';
+    
+    // Show loading state
+    const exportBtn = event.target;
+    const originalText = exportBtn.innerHTML;
+    exportBtn.disabled = true;
+    exportBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin me-1"></i> Generating PDF...';
+    
+    // Fetch PDF with proper authentication
+    fetch(`http://localhost:5001/api/admin/orders/export?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/pdf'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Export failed');
+        }
+        return response.blob();
+    })
+    .then(blob => {
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `orders_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        // Reset button
+        exportBtn.disabled = false;
+        exportBtn.innerHTML = originalText;
+    })
+    .catch(error => {
+        console.error('Export error:', error);
+        alert('Failed to export orders. Please try again.');
+        exportBtn.disabled = false;
+        exportBtn.innerHTML = originalText;
+    });
 }
 </script>
