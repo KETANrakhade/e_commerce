@@ -177,21 +177,22 @@ function displayMensProducts(products) {
         
         const price = product.price ? `₹${product.price.toLocaleString()}` : 'Price not available';
         
-        // Determine category filter
-        let categoryFilter = 'all';
-        if (product.subcategory?.slug) {
-            categoryFilter = product.subcategory.slug.toLowerCase();
-        } else if (product.subcategory?.name) {
-            categoryFilter = product.subcategory.name.toLowerCase().replace(/\s+/g, '-');
-        }
+        // Determine category filter using the helper function
+        const categoryFilter = getProductCategory(product);
+        
+        // Check if product is out of stock
+        const isOutOfStock = product.stock !== undefined && product.stock === 0;
+        const outOfStockClass = isOutOfStock ? 'out-of-stock' : '';
+        const outOfStockBadge = isOutOfStock ? '<div class="out-of-stock-badge">OUT OF STOCK</div>' : '';
         
         const productCard = `
-            <div class="product-card" data-category="${categoryFilter}" onclick="goToDetail('${product._id}')">
+            <div class="product-card ${outOfStockClass}" data-category="${categoryFilter}" onclick="goToDetail('${product._id}')">
                 <div class="product-image-container">
                     <img src="${imageUrl}" 
                          class="product-image" 
                          alt="${product.name}"
                          onerror="this.src='https://via.placeholder.com/400x500/ff6b6b/ffffff?text=Image+Error'">
+                    ${outOfStockBadge}
                     <div class="product-overlay">
                         <div class="overlay-content">
                             <button class="quick-view-btn" onclick="event.stopPropagation(); viewProductDetails('${product._id}')">Quick View</button>
@@ -371,9 +372,179 @@ function changePage(page) {
     loadMensProducts(page, currentFilter);
 }
 
-// Update filter functionality to work with pagination
+// Update filter functionality to work with pagination and API filtering
 function applyFilter(filterValue) {
     console.log(`🔍 Applying filter: ${filterValue}`);
     currentFilter = filterValue;
-    loadMensProducts(1, filterValue); // Reset to page 1 when filtering
+    
+    if (filterValue === 'all') {
+        // Load all men's products
+        loadMensProducts(1, 'all');
+    } else {
+        // For specific filters, we need to filter client-side since API doesn't support subcategory filtering
+        // First load all products, then filter them
+        loadMensProductsWithFilter(1, filterValue);
+    }
+}
+
+// Load men's products and apply client-side filtering
+async function loadMensProductsWithFilter(page = 1, filter = 'all') {
+    console.log(`📦 Loading men's products with filter: ${filter}, page: ${page}`);
+    
+    const productGrid = document.getElementById('productGrid');
+    if (!productGrid) {
+        console.error('❌ Product grid element not found!');
+        return;
+    }
+
+    // Update global state
+    currentPage = page;
+    currentFilter = filter;
+
+    // Show loading state
+    productGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
+            <div style="width: 50px; height: 50px; border: 3px solid #f3f3f3; border-top: 3px solid #65AAC3; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+            <p style="color: #999;">Filtering men's products...</p>
+        </div>
+    `;
+
+    try {
+        // Load all men's products first
+        const apiUrl = `${window.API_BASE_URL}/products/category/men`;
+        console.log('🔗 Fetching from:', apiUrl);
+        
+        const response = await fetch(apiUrl, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success || !data.data || !data.data.products) {
+            throw new Error('Invalid API response structure');
+        }
+        
+        let products = data.data.products;
+        console.log(`📦 Loaded ${products.length} total men's products`);
+        
+        // Apply client-side filtering
+        if (filter !== 'all') {
+            products = products.filter(product => {
+                const productCategory = getProductCategory(product);
+                const normalizedProductCategory = productCategory.toLowerCase().replace(/\s+/g, '-');
+                const normalizedFilter = filter.toLowerCase().replace(/\s+/g, '-');
+                
+                console.log(`🔍 Product: "${product.name}" | Category: "${productCategory}" | Normalized: "${normalizedProductCategory}" | Filter: "${normalizedFilter}"`);
+                
+                return normalizedProductCategory === normalizedFilter;
+            });
+            
+            console.log(`✅ After filtering: ${products.length} products match "${filter}"`);
+        }
+        
+        // Apply pagination to filtered results
+        const itemsPerPage = 12;
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const paginatedProducts = products.slice(startIndex, endIndex);
+        
+        // Create pagination info
+        const pagination = {
+            page: page,
+            pages: Math.ceil(products.length / itemsPerPage),
+            total: products.length
+        };
+        
+        console.log(`📄 Pagination: Page ${page} of ${pagination.pages}, showing ${paginatedProducts.length} products`);
+        
+        // Update global pagination state
+        totalPages = pagination.pages;
+        
+        if (paginatedProducts.length === 0) {
+            productGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
+                    <i class="fas fa-search" style="font-size: 64px; color: #ccc; margin-bottom: 20px;"></i>
+                    <h3 style="color: #666; margin-bottom: 10px;">No Products Found</h3>
+                    <p style="color: #999;">No men's products match the "${filter}" filter.</p>
+                    <button onclick="applyFilter('all')" style="margin-top: 15px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Show All Products</button>
+                </div>
+            `;
+            hidePagination();
+            return;
+        }
+        
+        displayMensProducts(paginatedProducts);
+        updatePagination(pagination);
+        
+    } catch (error) {
+        console.error('❌ Error loading filtered men\'s products:', error);
+        productGrid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 64px; color: #ff6b6b; margin-bottom: 20px;"></i>
+                <h3 style="color: #666; margin-bottom: 10px;">Error Loading Products</h3>
+                <p style="color: #999;">${error.message}</p>
+                <button onclick="loadMensProductsWithFilter(${page}, '${filter}')" style="margin-top: 15px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Try Again</button>
+            </div>
+        `;
+        hidePagination();
+    }
+}
+
+// Helper function to determine product category for filtering
+function getProductCategory(product) {
+    // Priority-based category detection
+    
+    // 1. Check subcategory slug (most reliable)
+    if (product.subcategory?.slug) {
+        const slug = product.subcategory.slug.toLowerCase();
+        if (slug === 'shirts' || slug === 'shirt') return 'shirts';
+        if (slug === 't-shirts' || slug === 't-shirt' || slug === 'tshirts' || slug === 'tshirt') return 't-shirts';
+        if (slug === 'jackets' || slug === 'jacket') return 'jackets';
+        if (slug === 'jeans' || slug === 'jean') return 'jeans';
+        if (slug === 'accessories' || slug === 'accessory') return 'accessories';
+    }
+    
+    // 2. Check subcategory name
+    if (product.subcategory?.name) {
+        const name = product.subcategory.name.toLowerCase();
+        if (name.includes('shirt') && !name.includes('t-shirt') && !name.includes('tshirt')) return 'shirts';
+        if (name.includes('t-shirt') || name.includes('tshirt')) return 't-shirts';
+        if (name.includes('jacket')) return 'jackets';
+        if (name.includes('jean')) return 'jeans';
+        if (name.includes('accessor')) return 'accessories';
+    }
+    
+    // 3. Check product name (fallback)
+    if (product.name) {
+        const name = product.name.toLowerCase();
+        if (name.includes('shirt') && !name.includes('t-shirt') && !name.includes('tshirt')) return 'shirts';
+        if (name.includes('t-shirt') || name.includes('tshirt')) return 't-shirts';
+        if (name.includes('jacket')) return 'jackets';
+        if (name.includes('jean')) return 'jeans';
+        if (name.includes('accessor')) return 'accessories';
+    }
+    
+    // Default fallback
+    return 'all';
+}
+
+// Update the changePage function to work with filters
+function changePage(page) {
+    if (page < 1 || page > totalPages || page === currentPage) {
+        return;
+    }
+    
+    console.log(`📄 Changing to page ${page} with filter: ${currentFilter}`);
+    
+    if (currentFilter === 'all') {
+        loadMensProducts(page, currentFilter);
+    } else {
+        loadMensProductsWithFilter(page, currentFilter);
+    }
 }

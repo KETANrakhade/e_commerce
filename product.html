@@ -630,6 +630,67 @@
       font-weight: bold;
     }
 
+    /* Out of Stock Styles */
+    .out-of-stock-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      color: white;
+      padding: 8px 20px;
+      border-radius: 25px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+      animation: pulse 2s infinite;
+    }
+
+    .product-images.out-of-stock img {
+      opacity: 0.5;
+      filter: grayscale(60%);
+    }
+
+    .splide.out-of-stock img {
+      opacity: 0.5;
+      filter: grayscale(60%);
+    }
+
+    .add-to-bag.disabled,
+    .add-to-bag:disabled {
+      background: #95a5a6;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .add-to-bag.disabled:hover,
+    .add-to-bag:disabled:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    .stock-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 15px;
+      background: rgba(231, 76, 60, 0.1);
+      border-radius: 8px;
+      border-left: 4px solid #e74c3c;
+    }
+
+    .stock-info i {
+      color: #e74c3c;
+      font-size: 1.2rem;
+    }
+
+    .stock-info p {
+      margin: 0;
+      color: #e74c3c;
+      font-weight: 600;
+    }
+
     /* Responsive Enhancements */
     @media (max-width: 768px) {
       .product-page {
@@ -822,6 +883,11 @@
     <!-- <div class="col-md-6 product-images" id="productImages"></div> -->
 
     <div class="col-md-6 product-details px-5">
+      <div id="outOfStockBadge" style="display: none;">
+        <span class="out-of-stock-badge">
+          <i class="bi bi-exclamation-triangle"></i> Out of Stock
+        </span>
+      </div>
       <h2 id="productName"></h2>
       <div class="d-flex align-items-center mt-3">
         <span class="price" id="productPrice"></span>
@@ -830,6 +896,11 @@
       </div>
 
       <p class="mt-3">inclusive of all taxes</p>
+      
+      <div id="stockInfo" class="stock-info" style="display: none;">
+        <i class="bi bi-x-circle-fill"></i>
+        <p>This product is currently unavailable</p>
+      </div>
 
       <h6 class="mt-4">SELECT SIZE</h6>
       <div class="size-options">
@@ -1211,7 +1282,8 @@
               mrp: product.price * 1.2, // Estimate MRP
               discount: '20% OFF',
               images: product.images?.map(img => img.url) || product.imageUrls || [],
-              description: product.description || ''
+              description: product.description || '',
+              stock: product.stock !== undefined ? product.stock : null // Include stock information
             };
           }
         } catch (error) {
@@ -1240,6 +1312,27 @@
         document.getElementById("productPrice").textContent = "₹" + product.price;
         document.getElementById("productMrp").textContent = "₹" + product.mrp;
         document.getElementById("productDiscount").textContent = "(" + product.discount + ")";
+
+        // Check stock status
+        const isOutOfStock = product.stock !== undefined && product.stock === 0;
+        
+        if (isOutOfStock) {
+          // Show out of stock badge
+          document.getElementById("outOfStockBadge").style.display = "block";
+          document.getElementById("stockInfo").style.display = "flex";
+          
+          // Disable add to cart button
+          const addToBagBtn = document.getElementById("addToBagBtn");
+          addToBagBtn.disabled = true;
+          addToBagBtn.classList.add("disabled");
+          addToBagBtn.innerHTML = '<i class="bi bi-x-circle"></i> OUT OF STOCK';
+          
+          // Grey out images - will be applied after sliders initialize
+          setTimeout(() => {
+            document.getElementById("primary_slider").classList.add("out-of-stock");
+            document.getElementById("thumbnail_slider").classList.add("out-of-stock");
+          }, 100);
+        }
 
         // Clear lists first
         document.getElementById("primaryList").innerHTML = "";
@@ -1363,6 +1456,13 @@
 
     // Enhanced Add to Cart Function
     function addToCartWithAnimation(id, name, price, image) {
+      // Check if product is out of stock
+      const product = window.product;
+      if (product && product.stock !== undefined && product.stock === 0) {
+        showErrorMessage('This product is out of stock');
+        return;
+      }
+
       // Check if user is logged in first
       const token = localStorage.getItem('token');
       

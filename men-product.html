@@ -341,6 +341,43 @@
             opacity: 1;
         }
 
+        /* Out of Stock Styles for Product Cards */
+        .product-card.out-of-stock .product-image {
+            opacity: 0.5;
+            filter: grayscale(60%);
+        }
+
+        .product-card.out-of-stock {
+            cursor: not-allowed;
+        }
+
+        .product-card.out-of-stock:hover {
+            transform: translateY(-5px);
+        }
+
+        .out-of-stock-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 10;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
         .overlay-content {
             color: white;
             text-align: center;
@@ -815,13 +852,14 @@
                     const filterValue = this.getAttribute('data-filter');
                     console.log(`🔍 Filter clicked: "${filterValue}"`);
                     
-                    // Use the new pagination-aware filter function
+                    // Always use fallback filter for immediate response
+                    // This ensures filtering works even if pagination isn't fully loaded
+                    fallbackFilter(filterValue);
+                    
+                    // Also try the pagination-aware filter if available
                     if (typeof applyFilter === 'function') {
-                        applyFilter(filterValue);
-                    } else {
-                        // Fallback to old method if pagination not loaded yet
-                        console.warn('Pagination not loaded, using fallback filter');
-                        fallbackFilter(filterValue);
+                        console.log('📄 Also applying pagination-aware filter');
+                        setTimeout(() => applyFilter(filterValue), 100);
                     }
                 });
             });
@@ -829,10 +867,15 @@
 
         // Fallback filter function for when pagination isn't loaded
         function fallbackFilter(filterValue) {
+            console.log(`🔄 Using fallback filter for: ${filterValue}`);
             const productCards = document.querySelectorAll('.product-card');
+            console.log(`📦 Found ${productCards.length} product cards to filter`);
 
             productCards.forEach(card => {
                 const cardCategory = card.getAttribute('data-category');
+                console.log(`🔍 Product card category: "${cardCategory}"`);
+                
+                // Normalize category comparison (handle case-insensitive and slug variations)
                 const normalizedCardCategory = cardCategory ? cardCategory.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : '';
                 const normalizedFilterValue = filterValue.toLowerCase().replace(/\s+/g, '-');
                 
@@ -848,6 +891,12 @@
                     card.style.display = 'none';
                 }
             });
+
+            // Hide pagination when using fallback filter
+            const paginationContainer = document.getElementById('paginationContainer');
+            if (paginationContainer) {
+                paginationContainer.style.display = 'none';
+            }
         }
 
 

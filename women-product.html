@@ -341,6 +341,43 @@
             opacity: 1;
         }
 
+        /* Out of Stock Styles for Product Cards */
+        .product-card.out-of-stock .product-image {
+            opacity: 0.5;
+            filter: grayscale(60%);
+        }
+
+        .product-card.out-of-stock {
+            cursor: not-allowed;
+        }
+
+        .product-card.out-of-stock:hover {
+            transform: translateY(-5px);
+        }
+
+        .out-of-stock-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 10;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
         .overlay-content {
             color: white;
             text-align: center;

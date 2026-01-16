@@ -208,13 +208,19 @@ function displayWomensProducts(products) {
         // Debug logging
         console.log(`🔍 Product: "${product.name}" | Subcategory: "${product.subcategory?.name || 'N/A'}" | Slug: "${product.subcategory?.slug || 'N/A'}" | Assigned Filter: "${categoryFilter}"`);
         
+        // Check if product is out of stock
+        const isOutOfStock = product.stock !== undefined && product.stock === 0;
+        const outOfStockClass = isOutOfStock ? 'out-of-stock' : '';
+        const outOfStockBadge = isOutOfStock ? '<div class="out-of-stock-badge">OUT OF STOCK</div>' : '';
+        
         const productCard = `
-            <div class="product-card" data-category="${categoryFilter}" onclick="goToDetail('${product._id}')">
+            <div class="product-card ${outOfStockClass}" data-category="${categoryFilter}" onclick="goToDetail('${product._id}')">
                 <div class="product-image-container">
                     <img src="${imageUrl}" 
                          class="product-image" 
                          alt="${product.name}"
                          onerror="this.src='https://via.placeholder.com/400x500/FF69B4/FFFFFF?text=No+Image'">
+                    ${outOfStockBadge}
                     <div class="product-overlay">
                         <div class="overlay-content">
                             <button class="quick-view-btn" onclick="event.stopPropagation(); viewProductDetails('${product._id}')">Quick View</button>
