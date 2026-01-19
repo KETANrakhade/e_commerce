@@ -20,16 +20,43 @@ if (isset($_SESSION['product_success'])) {
     unset($_SESSION['product_success_type']);
 }
 
-// Debug: Log the current action and request method
-error_log('Current action: ' . $action);
-error_log('Request method: ' . $_SERVER['REQUEST_METHOD']);
-error_log('POST data: ' . json_encode($_POST));
-
 // Get products data from Node.js backend API only
 $currentPage = $_GET['p'] ?? 1; // Use 'p' parameter for pagination to avoid conflict with main 'page' parameter
 $search = $_GET['search'] ?? '';
 $category = $_GET['category'] ?? '';
 $status = $_GET['status'] ?? '';
+
+// Debug: Log the current action and request method
+error_log('Current action: ' . $action);
+error_log('Request method: ' . $_SERVER['REQUEST_METHOD']);
+error_log('POST data: ' . json_encode($_POST));
+error_log('Category filter: ' . $category);
+error_log('Status filter: ' . $status);
+error_log('Search filter: ' . $search);
+
+// Enhanced debugging for category filter
+if (!empty($category)) {
+    error_log('Category filter is set: ' . $category);
+    error_log('Category filter length: ' . strlen($category));
+    error_log('Category filter is valid ObjectId: ' . (preg_match('/^[a-f0-9]{24}$/i', $category) ? 'YES' : 'NO'));
+    
+    // Additional debugging: check if this category exists in our categories list
+    if (isset($productsData['data']['categories'])) {
+        $categoryExists = false;
+        foreach ($productsData['data']['categories'] as $cat) {
+            if (($cat['_id'] ?? '') === $category) {
+                $categoryExists = true;
+                error_log('Category filter matches existing category: ' . ($cat['name'] ?? 'Unknown'));
+                break;
+            }
+        }
+        if (!$categoryExists) {
+            error_log('Category filter does NOT match any existing category');
+        }
+    }
+} else {
+    error_log('Category filter is empty or not set');
+}
 
 $queryParams = http_build_query([
     'page' => $currentPage,
@@ -48,15 +75,30 @@ $productsData = null;
 $maxRetries = 3;
 $retryCount = 0;
 
+// Debug: Log the API parameters being sent
+$apiParams = [
+    'page' => $currentPage,
+    'limit' => 10,
+    'search' => $search,
+    'category' => $category,
+    'status' => $status,
+    '_t' => time() // Cache busting parameter
+];
+error_log('API Parameters being sent: ' . json_encode($apiParams));
+
 while ($retryCount < $maxRetries && (!$productsData || !$productsData['success'])) {
-    $productsData = $apiClient->getAdminProducts([
-        'page' => $currentPage,
-        'limit' => 10,
-        'search' => $search,
-        'category' => $category,
-        'status' => $status,
-        '_t' => time() // Cache busting parameter
-    ]);
+    $productsData = $apiClient->getAdminProducts($apiParams);
+    
+    // Debug: Log the API response
+    if ($productsData) {
+        error_log('API Response success: ' . ($productsData['success'] ? 'true' : 'false'));
+        if (!$productsData['success'] && isset($productsData['error'])) {
+            error_log('API Response error: ' . $productsData['error']);
+        }
+        if (isset($productsData['data']['products'])) {
+            error_log('API Response products count: ' . count($productsData['data']['products']));
+        }
+    }
     
     if (!$productsData || !$productsData['success']) {
         $retryCount++;
@@ -72,6 +114,24 @@ error_log('Pagination debug - Current page: ' . $currentPage);
 error_log('Pagination debug - API success: ' . ($productsData['success'] ? 'true' : 'false'));
 if (isset($productsData['data']['pagination'])) {
     error_log('Pagination debug - Pagination info: ' . json_encode($productsData['data']['pagination']));
+}
+
+// Debug categories data
+if (isset($productsData['data']['categories'])) {
+    error_log('Categories debug - Categories count: ' . count($productsData['data']['categories']));
+    error_log('Categories debug - Categories: ' . json_encode(array_map(function($cat) {
+        return ['id' => $cat['_id'] ?? 'no-id', 'name' => $cat['name'] ?? 'no-name'];
+    }, $productsData['data']['categories'])));
+} else {
+    error_log('Categories debug - No categories in API response');
+}
+
+// Debug products data structure
+if (isset($productsData['data']['products']) && !empty($productsData['data']['products'])) {
+    $firstProduct = $productsData['data']['products'][0];
+    error_log('First product debug - Name: ' . ($firstProduct['name'] ?? 'no-name'));
+    error_log('First product debug - Images: ' . json_encode($firstProduct['images'] ?? []));
+    error_log('First product debug - Image URLs: ' . json_encode($firstProduct['imageUrls'] ?? []));
 }
 
 // Extract products from response
@@ -747,6 +807,23 @@ if ($action === 'edit' && $productId) {
                         </div>
                     </div>
                 </div>
+                
+                <!-- CSS for product images -->
+                <style>
+                .product-thumbnail {
+                    transition: opacity 0.3s ease;
+                    opacity: 0.8;
+                }
+                .product-thumbnail:hover {
+                    opacity: 1;
+                    transform: scale(1.05);
+                    transition: all 0.2s ease;
+                }
+                .avatar-sm {
+                    min-width: 40px;
+                    min-height: 40px;
+                }
+                </style>
             <?php endif; ?>
 
             <?php if ($action === 'list'): ?>
@@ -767,6 +844,11 @@ if ($action === 'edit' && $productId) {
                                     </div>
                                     <div class="col-sm-8">
                                         <div class="text-sm-end">
+                                            <?php if (!empty($category) || !empty($search) || !empty($status)): ?>
+                                                <span class="badge bg-info me-2">
+                                                    <i class="mdi mdi-filter"></i> Filters Active
+                                                </span>
+                                            <?php endif; ?>
                                             <button type="button" class="btn btn-success btn-rounded waves-effect waves-light mb-2 me-2" onclick="window.location.href='index.php?page=products&action=create'">
                                                 <i class="mdi mdi-plus me-1"></i> Add Product
                                             </button>
@@ -777,28 +859,77 @@ if ($action === 'edit' && $productId) {
                                 <!-- Filters -->
                                 <div class="row mb-3">
                                     <div class="col-md-3">
+                                        <label for="categoryFilter" class="form-label">Filter by Category</label>
                                         <select class="form-select" id="categoryFilter">
                                             <option value="">All Categories</option>
                                             <?php if (!empty($products['categories'])): ?>
                                                 <?php foreach ($products['categories'] as $cat): ?>
                                                     <?php 
                                                     $catName = is_array($cat) ? ($cat['name'] ?? 'Unknown') : $cat;
-                                                    $catValue = is_array($cat) ? ($cat['name'] ?? '') : $cat;
+                                                    $catId = is_array($cat) ? ($cat['_id'] ?? '') : $cat;
+                                                    // Check both ID and name for selection
+                                                    $isSelected = ($category === $catId) || ($category === $catName);
                                                     ?>
-                                                    <option value="<?php echo htmlspecialchars($catValue); ?>" 
-                                                            <?php echo $category === $catValue ? 'selected' : ''; ?>>
+                                                    <option value="<?php echo htmlspecialchars($catId); ?>" 
+                                                            <?php echo $isSelected ? 'selected' : ''; ?>>
                                                         <?php echo htmlspecialchars($catName); ?>
                                                     </option>
                                                 <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <option value="" disabled>No categories available</option>
                                             <?php endif; ?>
                                         </select>
+                                        <?php if (!empty($products['categories'])): ?>
+                                            <small class="text-muted">
+                                                <?php echo count($products['categories']); ?> categories loaded
+                                            </small>
+                                        <?php else: ?>
+                                            <small class="text-warning">
+                                                <i class="mdi mdi-alert"></i> No categories found
+                                            </small>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="col-md-3">
+                                        <label for="statusFilter" class="form-label">Filter by Status</label>
                                         <select class="form-select" id="statusFilter">
                                             <option value="">All Status</option>
                                             <option value="active" <?php echo $status === 'active' ? 'selected' : ''; ?>>Active</option>
                                             <option value="inactive" <?php echo $status === 'inactive' ? 'selected' : ''; ?>>Inactive</option>
                                         </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">&nbsp;</label>
+                                        <div>
+                                            <button type="button" class="btn btn-primary" onclick="applyFilters()">
+                                                <i class="mdi mdi-filter me-1"></i> Apply Filters
+                                            </button>
+                                            <button type="button" class="btn btn-secondary" onclick="clearFilters()">
+                                                <i class="mdi mdi-filter-remove me-1"></i> Clear
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Debug Info</label>
+                                        <div>
+                                            <small class="text-muted">
+                                                Current filter: <?php echo $category ? htmlspecialchars($category) : 'None'; ?>
+                                            </small>
+                                            <?php if (!empty($category)): ?>
+                                                <br><small class="text-info">
+                                                    <i class="mdi mdi-information-outline"></i> Filter active
+                                                </small>
+                                            <?php endif; ?>
+                                            <?php if (!empty($search)): ?>
+                                                <br><small class="text-info">
+                                                    Search: "<?php echo htmlspecialchars($search); ?>"
+                                                </small>
+                                            <?php endif; ?>
+                                            <?php if (!empty($status)): ?>
+                                                <br><small class="text-info">
+                                                    Status: <?php echo htmlspecialchars($status); ?>
+                                                </small>
+                                            <?php endif; ?>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -833,16 +964,79 @@ if ($action === 'edit' && $productId) {
                                                         <td>
                                                             <div class="d-flex align-items-center">
                                                                 <div class="avatar-sm bg-light rounded p-1 me-2">
-                                                                    <?php if (!empty($prod['images'][0])): ?>
+                                                                    <?php if (!empty($prod['images']) && is_array($prod['images']) && !empty($prod['images'][0])): ?>
                                                                         <?php 
-                                                                        $imageUrl = is_array($prod['images'][0]) ? ($prod['images'][0]['url'] ?? '') : $prod['images'][0];
+                                                                        $imageData = $prod['images'][0];
+                                                                        $imageUrl = '';
+                                                                        
+                                                                        // Handle different image data formats
+                                                                        if (is_array($imageData)) {
+                                                                            $imageUrl = $imageData['url'] ?? '';
+                                                                        } else {
+                                                                            $imageUrl = $imageData;
+                                                                        }
+                                                                        
+                                                                        // Debug: Log the image URL
+                                                                        error_log('Product image URL for ' . $prod['name'] . ': ' . $imageUrl);
+                                                                        
+                                                                        if (!empty($imageUrl)) {
+                                                                            // Fix the image path - ensure it points to the correct location
+                                                                            $imagePath = $imageUrl;
+                                                                            
+                                                                            // If the URL doesn't start with http/https, it's a local file
+                                                                            if (!preg_match('/^https?:\/\//', $imageUrl)) {
+                                                                                // Remove leading slash if present
+                                                                                $cleanUrl = ltrim($imageUrl, '/');
+                                                                                
+                                                                                // Use the symlinked uploads directory
+                                                                                $imagePath = 'uploads-root/' . str_replace('uploads/', '', $cleanUrl);
+                                                                            }
+                                                                            
+                                                                            error_log('Resolved image path: ' . $imagePath);
                                                                         ?>
-                                                                        <img src="../../<?php echo htmlspecialchars($imageUrl); ?>" 
-                                                                             alt="" class="img-fluid d-block">
+                                                                            <img src="<?php echo htmlspecialchars($imagePath); ?>" 
+                                                                                 alt="<?php echo htmlspecialchars($prod['name']); ?>" 
+                                                                                 class="img-fluid d-block"
+                                                                                 style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;"
+                                                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                                            <!-- <div class="avatar-sm bg-light d-flex align-items-center justify-content-center" style="display: none; width: 40px; height: 40px; border-radius: 4px;">
+                                                                                <i class="bx bx-package font-size-16 text-muted"></i>
+                                                                            </div> -->
+                                                                        <?php } else { ?>
+                                                                            <!-- <div class="avatar-sm bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 4px;">
+                                                                                <i class="bx bx-package font-size-16 text-muted"></i>
+                                                                            </div> -->
+                                                                        <?php } ?>
+                                                                    <?php elseif (!empty($prod['imageUrls']) && is_array($prod['imageUrls']) && !empty($prod['imageUrls'][0])): ?>
+                                                                        <?php 
+                                                                        // Fallback to imageUrls if images array is not available
+                                                                        $imageUrl = $prod['imageUrls'][0];
+                                                                        error_log('Product imageUrl (fallback) for ' . $prod['name'] . ': ' . $imageUrl);
+                                                                        
+                                                                        if (!empty($imageUrl)) {
+                                                                            $imagePath = $imageUrl;
+                                                                            if (!preg_match('/^https?:\/\//', $imageUrl)) {
+                                                                                $cleanUrl = ltrim($imageUrl, '/');
+                                                                                $imagePath = 'uploads-root/' . str_replace('uploads/', '', $cleanUrl);
+                                                                            }
+                                                                        ?>
+                                                                            <img src="<?php echo htmlspecialchars($imagePath); ?>" 
+                                                                                 alt="<?php echo htmlspecialchars($prod['name']); ?>" 
+                                                                                 class="img-fluid d-block"
+                                                                                 style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;"
+                                                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                                            <!-- <div class="avatar-sm bg-light d-flex align-items-center justify-content-center" style="display: none; width: 40px; height: 40px; border-radius: 4px;">
+                                                                                <i class="bx bx-package font-size-16 text-muted"></i>
+                                                                            </div> -->
+                                                                        <?php } else { ?>
+                                                                            <!-- <div class="avatar-sm bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 4px;">
+                                                                                <i class="bx bx-package font-size-16 text-muted"></i>
+                                                                            </div> -->
+                                                                        <?php } ?>
                                                                     <?php else: ?>
-                                                                        <div class="avatar-sm bg-light d-flex align-items-center justify-content-center">
-                                                                            <i class="bx bx-package font-size-16"></i>
-                                                                        </div>
+                                                                        <!-- <div class="avatar-sm bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 4px;">
+                                                                            <i class="bx bx-package font-size-16 text-muted"></i>
+                                                                        </div> -->
                                                                     <?php endif; ?>
                                                                 </div>
                                                                 <div>
@@ -1803,13 +1997,37 @@ function applyFilters() {
     const category = document.getElementById('categoryFilter').value;
     const status = document.getElementById('statusFilter').value;
     
+    // Debug: Log the filter values
+    console.log('Applying filters:', { search, category, status });
+    
+    // Additional debugging
+    if (category) {
+        console.log('Category selected:', category);
+        console.log('Category length:', category.length);
+        console.log('Category is valid ObjectId:', /^[a-f0-9]{24}$/i.test(category));
+        
+        // Get the selected option text for debugging
+        const categorySelect = document.getElementById('categoryFilter');
+        const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+        console.log('Selected category name:', selectedOption.text);
+    } else {
+        console.log('No category selected');
+    }
+    
     const params = new URLSearchParams();
     params.append('page', 'products');
     if (search) params.append('search', search);
     if (category) params.append('category', category);
     if (status) params.append('status', status);
     
-    window.location.href = '?' + params.toString();
+    const url = '?' + params.toString();
+    console.log('Redirecting to:', url);
+    
+    window.location.href = url;
+}
+
+function clearFilters() {
+    window.location.href = '?page=products';
 }
 
 function loadSubcategories(categoryId, selectedSubcategoryId = '') {
