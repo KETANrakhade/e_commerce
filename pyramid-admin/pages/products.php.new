@@ -1,0 +1,814 @@
+<?php
+// Products Management Page - Complete Working Version
+// This file is included by index.php which handles authentication and layout
+
+// Handle product actions
+$action = $_GET['action'] ?? 'list';
+$productId = $_GET['id'] ?? '';
+
+// Include API client if not already included
+if (!function_exists('getApiClient')) {
+    require_once __DIR__ . '/../config/api_client.php';
+}
+
+$apiClient = getApiClient();
+if (isset($_SESSION['admin_token'])) {
+    $apiClient->setToken($_SESSION['admin_token']);
+}
+
+// Handle form submissions
+if ($_POST && isset($_POST['action'])) {
+    $postAction = $_POST['action'];
+    
+    if ($postAction === 'create') {
+        // Check if this is a multipart form with images
+        if (!empty($_FILES['productImages']['name'][0])) {
+            // Handle product creation with image upload via the with-upload endpoint
+            $uploadUrl = 'http://localhost:5001/api/admin/products/with-upload';
+            
+            $ch = curl_init();
+            
+            // Prepare multipart form data
+            $postFields = [
+                'name' => trim($_POST['name'] ?? ''),
+                'description' => trim($_POST['description'] ?? ''),
+                'price' => max(0, floatval($_POST['price'] ?? 0)),
+                'category' => trim($_POST['category'] ?? ''),
+                'subcategory' => !empty($_POST['subcategory']) ? trim($_POST['subcategory']) : '',
+                'stock' => max(0, intval($_POST['stock'] ?? 0)),
+                'brand' => trim($_POST['brand'] ?? ''),
+                'featured' => isset($_POST['featured']) ? 'true' : 'false',
+                'isActive' => isset($_POST['isActive']) ? 'true' : 'false'
+            ];
+            
+            // Add image files
+            $files = $_FILES['productImages'];
+            for ($i = 0; $i < count($files['name']); $i++) {
+                if ($files['error'][$i] === UPLOAD_ERR_OK) {
+                    $postFields["productImages[$i]"] = new CURLFile(
+                        $files['tmp_name'][$i],
+                        $files['type'][$i],
+                        $files['name'][$i]
+                    );
+                }
+            }
+            
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $uploadUrl,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $postFields,
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer ' . $_SESSION['admin_token']
+                ],
+                CURLOPT_TIMEOUT => 60
+            ]);
+            
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            
+            $result = json_decode($response, true);
+            
+            if ($httpCode >= 200 && $httpCode < 300 && isset($result['success']) && $result['success']) {
+                $_SESSION['product_success'] = 'Product created successfully with images!';
+                echo '<script>window.location.href = "index.php?page=products";</script>';
+                exit();
+            } else {
+                $error = $result['error'] ?? $result['message'] ?? 'Failed to create product with images';
+            }
+        } else {
+            // Create product without images using regular API
+            $productData = [
+                'name' => trim($_POST['name'] ?? ''),
+                'description' => trim($_POST['description'] ?? ''),
+                'price' => max(0, floatval($_POST['price'] ?? 0)),
+                'category' => trim($_POST['category'] ?? ''),
+                'subcategory' => !empty($_POST['subcategory']) ? trim($_POST['subcategory']) : null,
+                'stock' => max(0, intval($_POST['stock'] ?? 0)),
+                'brand' => trim($_POST['brand'] ?? ''),
+                'featured' => isset($_POST['featured']),
+                'isActive' => isset($_POST['isActive'])
+            ];
+            
+            $result = $apiClient->createProduct($productData);
+            
+            if ($result['success']) {
+                $_SESSION['product_success'] = 'Product created successfully!';
+                echo '<script>window.location.href = "index.php?page=products";</script>';
+                exit();
+            } else {
+                $error = $result['error'] ?? 'Failed to create product';
+            }
+        }
+    }
+    
+    if ($postAction === 'delete' && isset($_POST['product_id'])) {
+        $deleteId = $_POST['product_id'];
+        $result = $apiClient->deleteProduct($deleteId);
+        
+        if ($result['success']) {
+            $_SESSION['product_success'] = 'Product deleted successfully!';
+        } else {
+            $_SESSION['product_error'] = $result['error'] ?? 'Failed to delete product';
+        }
+        
+        echo '<script>window.location.href = "index.php?page=products";</script>';
+        exit();
+    }
+    
+    if ($postAction === 'update' && $productId) {
+        // Check if new images are being uploaded
+        if (!empty($_FILES['image_files']['name'][0])) {
+            // Handle product update with image upload via the with-upload endpoint
+            $uploadUrl = "http://localhost:5001/api/admin/products/{$productId}/with-upload";
+            
+            $ch = curl_init();
+            
+            // Prepare multipart form data
+            $postFields = [
+                'name' => trim($_POST['name'] ?? ''),
+                'description' => trim($_POST['description'] ?? ''),
+                'price' => max(0, floatval($_POST['price'] ?? 0)),
+                'category' => trim($_POST['category'] ?? ''),
+                'subcategory' => !empty($_POST['subcategory']) ? trim($_POST['subcategory']) : '',
+                'stock' => max(0, intval($_POST['stock'] ?? 0)),
+                'brand' => trim($_POST['brand'] ?? ''),
+                'featured' => isset($_POST['featured']) ? 'true' : 'false',
+                'isActive' => isset($_POST['isActive']) ? 'true' : 'false',
+                'keepExistingImages' => 'true' // Keep existing images and add new ones
+            ];
+            
+            // Add new image files
+            $files = $_FILES['image_files'];
+            for ($i = 0; $i < count($files['name']); $i++) {
+                if ($files['error'][$i] === UPLOAD_ERR_OK) {
+                    $postFields["productImages[$i]"] = new CURLFile(
+                        $files['tmp_name'][$i],
+                        $files['type'][$i],
+                        $files['name'][$i]
+                    );
+                }
+            }
+            
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $uploadUrl,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CUSTOMREQUEST => 'PUT',
+                CURLOPT_POSTFIELDS => $postFields,
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer ' . $_SESSION['admin_token']
+                ],
+                CURLOPT_TIMEOUT => 60
+            ]);
+            
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            
+            $result = json_decode($response, true);
+            
+            if ($httpCode >= 200 && $httpCode < 300 && isset($result['success']) && $result['success']) {
+                $_SESSION['product_success'] = 'Product updated successfully with new images!';
+                echo '<script>window.location.href = "index.php?page=products";</script>';
+                exit();
+            } else {
+                $error = $result['error'] ?? $result['message'] ?? 'Failed to update product with images';
+            }
+        } else {
+            // Update product without new images using regular API
+            $productData = [
+                'name' => trim($_POST['name'] ?? ''),
+                'description' => trim($_POST['description'] ?? ''),
+                'price' => max(0, floatval($_POST['price'] ?? 0)),
+                'category' => trim($_POST['category'] ?? ''),
+                'subcategory' => !empty($_POST['subcategory']) ? trim($_POST['subcategory']) : null,
+                'stock' => max(0, intval($_POST['stock'] ?? 0)),
+                'brand' => trim($_POST['brand'] ?? ''),
+                'featured' => isset($_POST['featured']),
+                'isActive' => isset($_POST['isActive'])
+            ];
+            
+            // Handle existing images
+            $existingImages = $_POST['existing_images'] ?? [];
+            $existingImages = array_filter($existingImages);
+            
+            if (!empty($existingImages)) {
+                $productData['images'] = $existingImages;
+            }
+            
+            $result = $apiClient->updateProduct($productId, $productData);
+            
+            if ($result['success']) {
+                $_SESSION['product_success'] = 'Product updated successfully!';
+                echo '<script>window.location.href = "index.php?page=products";</script>';
+                exit();
+            } else {
+                $error = $result['error'] ?? 'Failed to update product';
+            }
+        }
+    }
+}
+
+// Get single product for edit
+$product = null;
+if ($action === 'edit' && $productId) {
+    $productResult = $apiClient->getProductById($productId);
+    if ($productResult['success']) {
+        $product = $productResult['data'] ?? null;
+    }
+}
+
+// Get products for list
+$products = [];
+if ($action === 'list') {
+    $productsResult = $apiClient->getAdminProducts(['limit' => 50]);
+    if ($productsResult['success']) {
+        $products = $productsResult['data']['products'] ?? [];
+    }
+}
+?>
+
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            
+            <!-- Page Title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                        <h4 class="mb-sm-0 font-size-18">Products</h4>
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="index.php">Admin</a></li>
+                                <li class="breadcrumb-item active">Products</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Success Message -->
+            <?php if (isset($_SESSION['product_success'])): ?>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <?php echo htmlspecialchars($_SESSION['product_success']); ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <?php unset($_SESSION['product_success']); ?>
+            <?php endif; ?>
+            
+            <!-- Error Message -->
+            <?php if (isset($_SESSION['product_error'])): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <?php echo htmlspecialchars($_SESSION['product_error']); ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <?php unset($_SESSION['product_error']); ?>
+            <?php endif; ?>
+            
+            <?php if (isset($error)): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <?php echo htmlspecialchars($error); ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+            
+            <?php if ($action === 'list'): ?>
+                <!-- Products List -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row mb-2">
+                                    <div class="col-sm-4">
+                                        <div class="search-box me-2 mb-2 d-inline-block">
+                                            <div class="position-relative">
+                                                <input type="text" class="form-control" placeholder="Search products...">
+                                                <i class="bx bx-search-alt search-icon"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        <div class="text-sm-end">
+                                            <button type="button" class="btn btn-success btn-rounded waves-effect waves-light mb-2 me-2" 
+                                                    onclick="window.location.href='index.php?page=products&action=create'">
+                                                <i class="mdi mdi-plus me-1"></i> Add Product
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <?php if (empty($products)): ?>
+                                    <div class="text-center py-5">
+                                        <i class="bx bx-package" style="font-size: 64px; color: #ccc;"></i>
+                                        <h4 class="mt-3">No Products Found</h4>
+                                        <p class="text-muted">Start by adding your first product.</p>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="table-responsive">
+                                        <table class="table align-middle table-nowrap table-hover">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Product</th>
+                                                    <th>Category</th>
+                                                    <th>Stock</th>
+                                                    <th>Price</th>
+                                                    <th>Status</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($products as $prod): ?>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <?php if (!empty($prod['images'][0])): ?>
+                                                                    <div class="avatar-sm bg-light rounded p-1 me-2">
+                                                                        <img src="/<?php echo htmlspecialchars($prod['images'][0]['url'] ?? $prod['images'][0]); ?>" 
+                                                                             alt="" class="img-fluid d-block" style="max-height: 40px;">
+                                                                    </div>
+                                                                <?php endif; ?>
+                                                                <div>
+                                                                    <h5 class="text-truncate font-size-14 mb-1">
+                                                                        <?php echo htmlspecialchars($prod['name']); ?>
+                                                                    </h5>
+                                                                    <p class="text-muted mb-0">
+                                                                        <?php 
+                                                                        $brandName = 'No Brand';
+                                                                        if (isset($prod['brand'])) {
+                                                                            if (is_array($prod['brand'])) {
+                                                                                $brandName = $prod['brand']['name'] ?? 'No Brand';
+                                                                            } else {
+                                                                                $brandName = $prod['brand'];
+                                                                            }
+                                                                        }
+                                                                        echo htmlspecialchars($brandName);
+                                                                        ?>
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <?php 
+                                                            $categoryName = 'No Category';
+                                                            if (isset($prod['category'])) {
+                                                                if (is_array($prod['category'])) {
+                                                                    $categoryName = $prod['category']['name'] ?? 'No Category';
+                                                                } else {
+                                                                    $categoryName = $prod['category'];
+                                                                }
+                                                            }
+                                                            echo htmlspecialchars($categoryName);
+                                                            ?>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge badge-pill badge-soft-<?php echo $prod['stock'] > 0 ? 'success' : 'danger'; ?> font-size-12">
+                                                                <?php echo $prod['stock']; ?>
+                                                            </span>
+                                                        </td>
+                                                        <td>₹ <?php echo number_format($prod['price'], 2); ?></td>
+                                                        <td>
+                                                            <span class="badge badge-pill badge-soft-<?php echo $prod['isActive'] ? 'success' : 'danger'; ?> font-size-11">
+                                                                <?php echo $prod['isActive'] ? 'Active' : 'Inactive'; ?>
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <div class="d-flex gap-3">
+                                                                <a href="index.php?page=products&action=edit&id=<?php echo $prod['_id']; ?>" 
+                                                                   class="text-success" title="Edit">
+                                                                    <i class="mdi mdi-pencil font-size-18"></i>
+                                                                </a>
+                                                                <a href="javascript:void(0);" 
+                                                                   onclick="deleteProduct('<?php echo $prod['_id']; ?>', '<?php echo htmlspecialchars(addslashes($prod['name'])); ?>')"
+                                                                   class="text-danger" title="Delete">
+                                                                    <i class="mdi mdi-delete font-size-18"></i>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            <?php elseif ($action === 'edit'): ?>
+                <!-- Edit Product Form -->
+                <?php if (!$product): ?>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="alert alert-danger" role="alert">
+                                <h4 class="alert-heading">Product Not Found</h4>
+                                <p>Could not load product with ID: <?php echo htmlspecialchars($productId); ?></p>
+                                <hr>
+                                <div class="mt-3">
+                                    <a href="index.php?page=products" class="btn btn-secondary">
+                                        <i class="bx bx-arrow-back me-1"></i> Back to Products
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">Edit Product</h4>
+                                    <p class="card-title-desc">Update product information below</p>
+
+                                    <form method="POST" action="" enctype="multipart/form-data" id="productForm">
+                                        <input type="hidden" name="action" value="update">
+                                        <input type="hidden" name="product_id" value="<?php echo htmlspecialchars($productId); ?>">
+                                        
+                                        <!-- Basic Information -->
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <div class="mb-3">
+                                                    <label for="name" class="form-label">Product Name <span class="text-danger">*</span></label>
+                                                    <input id="name" name="name" type="text" class="form-control" 
+                                                           value="<?php echo htmlspecialchars($product['name']); ?>" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="price" class="form-label">Price (₹) <span class="text-danger">*</span></label>
+                                                    <input id="price" name="price" type="number" step="0.01" min="1" class="form-control" 
+                                                           value="<?php echo $product['price']; ?>" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="brand" class="form-label">Brand</label>
+                                                    <input id="brand" name="brand" type="text" class="form-control" 
+                                                           value="<?php echo htmlspecialchars($product['brand'] ?? ''); ?>">
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-6">
+                                                <div class="mb-3">
+                                                    <label for="stock" class="form-label">Stock Quantity <span class="text-danger">*</span></label>
+                                                    <input id="stock" name="stock" type="number" min="0" class="form-control" 
+                                                           value="<?php echo $product['stock']; ?>" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="category" class="form-label">Category <span class="text-danger">*</span></label>
+                                                    <input id="category" name="category" type="text" class="form-control" 
+                                                           value="<?php echo htmlspecialchars($product['category']['name'] ?? (is_string($product['category']) ? $product['category'] : '')); ?>" 
+                                                           placeholder="e.g., Men, Women" required>
+                                                    <small class="text-muted">Current: <?php echo htmlspecialchars($product['category']['name'] ?? (is_string($product['category']) ? $product['category'] : 'None')); ?></small>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="subcategory" class="form-label">Sub-Category</label>
+                                                    <input id="subcategory" name="subcategory" type="text" class="form-control" 
+                                                           value="<?php echo htmlspecialchars($product['subcategory']['name'] ?? (is_string($product['subcategory']) ? $product['subcategory'] : '')); ?>" 
+                                                           placeholder="e.g., Shirts, T-Shirts">
+                                                    <small class="text-muted">Current: <?php echo htmlspecialchars($product['subcategory']['name'] ?? (is_string($product['subcategory']) ? $product['subcategory'] : 'None')); ?></small>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Images Section -->
+                                        <div class="mb-4">
+                                            <h5 class="font-size-14 mb-3"><i class="mdi mdi-image-multiple me-2"></i>Product Images</h5>
+                                            
+                                            <?php if (!empty($product['images'])): ?>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Current Images</label>
+                                                    <div class="row">
+                                                        <?php foreach ($product['images'] as $index => $image): ?>
+                                                            <div class="col-md-2 mb-2">
+                                                                <div class="card">
+                                                                    <img src="/<?php echo htmlspecialchars($image['url'] ?? $image); ?>" 
+                                                                         class="card-img-top" style="height: 120px; object-fit: cover;">
+                                                                    <div class="card-body p-2">
+                                                                        <small>Image <?php echo $index + 1; ?></small>
+                                                                        <input type="hidden" name="existing_images[]" 
+                                                                               value="<?php echo htmlspecialchars($image['url'] ?? $image); ?>">
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                </div>
+                                            <?php endif; ?>
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label">Add New Images</label>
+                                                <input type="file" name="image_files[]" id="editProductImages" class="form-control" 
+                                                       multiple accept="image/*" onchange="previewImages(event)">
+                                                <small class="text-muted">Select multiple images to add (max 10 images, 2MB each). New images will be added to existing ones.</small>
+                                            </div>
+                                            
+                                            <!-- Image Preview for new uploads -->
+                                            <div id="imagePreview" class="row mt-3" style="display: none;">
+                                                <div class="col-12 mb-2">
+                                                    <strong>New Images Preview:</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Description Section -->
+                                        <div class="mb-4">
+                                            <h5 class="font-size-14 mb-3"><i class="mdi mdi-text-box-outline me-2"></i>Product Description</h5>
+                                            <div class="mb-3">
+                                                <label for="description" class="form-label">Detailed Description <span class="text-danger">*</span></label>
+                                                <textarea class="form-control" id="description" name="description" rows="6" 
+                                                          placeholder="Enter detailed product description" required><?php echo htmlspecialchars($product['description']); ?></textarea>
+                                            </div>
+                                        </div>
+
+                                        <!-- Settings -->
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <div class="form-check mb-3">
+                                                    <input class="form-check-input" type="checkbox" id="featured" name="featured" 
+                                                           <?php echo !empty($product['featured']) ? 'checked' : ''; ?>>
+                                                    <label class="form-check-label" for="featured">Featured Product</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <div class="form-check mb-3">
+                                                    <input class="form-check-input" type="checkbox" id="isActive" name="isActive" 
+                                                           <?php echo !empty($product['isActive']) ? 'checked' : ''; ?>>
+                                                    <label class="form-check-label" for="isActive">Active</label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Action Buttons - Always Visible -->
+                                        <div class="mt-4 pt-4 border-top" style="background-color: #f8f9fa; padding: 20px; margin: 20px -20px -20px -20px; border-radius: 0 0 8px 8px;">
+                                            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                                                <button type="submit" class="btn btn-primary waves-effect waves-light" 
+                                                        style="min-width: 180px; padding: 12px 24px; font-size: 16px; font-weight: 600;">
+                                                    <i class="mdi mdi-content-save me-1"></i> Update Product
+                                                </button>
+                                                <button type="button" class="btn btn-secondary waves-effect waves-light" 
+                                                        onclick="window.location.href='index.php?page=products'"
+                                                        style="min-width: 120px; padding: 12px 24px; font-size: 16px;">
+                                                    <i class="mdi mdi-arrow-left me-1"></i> Cancel
+                                                </button>
+                                                <button type="reset" class="btn btn-outline-warning waves-effect waves-light"
+                                                        style="min-width: 140px; padding: 12px 24px; font-size: 16px;">
+                                                    <i class="mdi mdi-refresh me-1"></i> Reset Form
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+                
+            <?php elseif ($action === 'create'): ?>
+                <!-- Create Product Form -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">Add New Product</h4>
+                                <p class="card-title-desc">Fill in the product information below</p>
+
+                                <form method="POST" action="" enctype="multipart/form-data" id="productForm">
+                                    <input type="hidden" name="action" value="create">
+                                    
+                                    <!-- Basic Information -->
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <div class="mb-3">
+                                                <label for="name" class="form-label">Product Name <span class="text-danger">*</span></label>
+                                                <input id="name" name="name" type="text" class="form-control" 
+                                                       placeholder="Enter product name" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="price" class="form-label">Price (₹) <span class="text-danger">*</span></label>
+                                                <input id="price" name="price" type="number" step="0.01" min="1" class="form-control" 
+                                                       placeholder="Enter price" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="brand" class="form-label">Brand</label>
+                                                <input id="brand" name="brand" type="text" class="form-control" 
+                                                       placeholder="Enter brand name">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-sm-6">
+                                            <div class="mb-3">
+                                                <label for="stock" class="form-label">Stock Quantity <span class="text-danger">*</span></label>
+                                                <input id="stock" name="stock" type="number" min="0" class="form-control" 
+                                                       placeholder="Enter stock quantity" value="0" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="category" class="form-label">Category <span class="text-danger">*</span></label>
+                                                <select id="category" name="category" class="form-control" required>
+                                                    <option value="">Select Category</option>
+                                                    <option value="Men">Men</option>
+                                                    <option value="Women">Women</option>
+                                                    <option value="Kids">Kids</option>
+                                                    <option value="Accessories">Accessories</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="subcategory" class="form-label">Sub-Category</label>
+                                                <input id="subcategory" name="subcategory" type="text" class="form-control" 
+                                                       placeholder="e.g., Shirts, T-Shirts, Jeans">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Description Section -->
+                                    <div class="mb-4">
+                                        <h5 class="font-size-14 mb-3"><i class="mdi mdi-text-box-outline me-2"></i>Product Description</h5>
+                                        <div class="mb-3">
+                                            <label for="description" class="form-label">Detailed Description <span class="text-danger">*</span></label>
+                                            <textarea class="form-control" id="description" name="description" rows="6" 
+                                                      placeholder="Enter detailed product description" required></textarea>
+                                        </div>
+                                    </div>
+
+                                    <!-- Images Section -->
+                                    <div class="mb-4">
+                                        <h5 class="font-size-14 mb-3"><i class="mdi mdi-image-multiple me-2"></i>Product Images</h5>
+                                        <div class="mb-3">
+                                            <label for="productImages" class="form-label">Upload Images</label>
+                                            <input type="file" name="productImages[]" id="productImages" class="form-control" 
+                                                   multiple accept="image/*" onchange="previewImages(event)">
+                                            <small class="text-muted">Select multiple images (max 10 images, 2MB each). First image will be the primary image.</small>
+                                        </div>
+                                        
+                                        <!-- Image Preview -->
+                                        <div id="imagePreview" class="row mt-3" style="display: none;">
+                                            <div class="col-12 mb-2">
+                                                <strong>Image Preview:</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Settings -->
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" id="featured" name="featured">
+                                                <label class="form-check-label" for="featured">Featured Product</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" id="isActive" name="isActive" checked>
+                                                <label class="form-check-label" for="isActive">Active</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button type="submit" class="btn btn-primary waves-effect waves-light">
+                                            <i class="mdi mdi-plus-circle me-1"></i> Create Product
+                                        </button>
+                                        <button type="button" class="btn btn-secondary waves-effect waves-light" 
+                                                onclick="window.location.href='index.php?page=products'">
+                                            <i class="mdi mdi-arrow-left me-1"></i> Cancel
+                                        </button>
+                                        <button type="reset" class="btn btn-outline-warning waves-effect waves-light">
+                                            <i class="mdi mdi-refresh me-1"></i> Reset Form
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('productForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('Please fill in all required fields.');
+                return false;
+            }
+            
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin me-1"></i> Updating...';
+            }
+        });
+    }
+});
+
+// Delete product function
+function deleteProduct(productId, productName) {
+    if (confirm(`Are you sure you want to delete "${productName}"?\n\nThis action cannot be undone.`)) {
+        // Create and submit form
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'index.php?page=products';
+        
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'delete';
+        
+        const idInput = document.createElement('input');
+        idInput.type = 'hidden';
+        idInput.name = 'product_id';
+        idInput.value = productId;
+        
+        form.appendChild(actionInput);
+        form.appendChild(idInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Image preview function
+function previewImages(event) {
+    const files = event.target.files;
+    const previewContainer = document.getElementById('imagePreview');
+    
+    if (files.length === 0) {
+        previewContainer.style.display = 'none';
+        return;
+    }
+    
+    // Clear previous previews
+    const existingPreviews = previewContainer.querySelectorAll('.preview-item');
+    existingPreviews.forEach(item => item.remove());
+    
+    // Validate file count
+    if (files.length > 10) {
+        alert('Maximum 10 images allowed. Only first 10 will be uploaded.');
+    }
+    
+    // Show preview container
+    previewContainer.style.display = 'flex';
+    
+    // Create previews
+    Array.from(files).slice(0, 10).forEach((file, index) => {
+        // Validate file size (2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert(`${file.name} is too large. Maximum size is 2MB.`);
+            return;
+        }
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert(`${file.name} is not an image file.`);
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const col = document.createElement('div');
+            col.className = 'col-md-2 mb-2 preview-item';
+            
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.style.position = 'relative';
+            
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'card-img-top';
+            img.style.height = '120px';
+            img.style.objectFit = 'cover';
+            
+            const cardBody = document.createElement('div');
+            cardBody.className = 'card-body p-2';
+            
+            const badge = document.createElement('small');
+            badge.className = index === 0 ? 'badge bg-primary' : 'badge bg-secondary';
+            badge.textContent = index === 0 ? 'Primary' : `Image ${index + 1}`;
+            
+            cardBody.appendChild(badge);
+            card.appendChild(img);
+            card.appendChild(cardBody);
+            col.appendChild(card);
+            previewContainer.appendChild(col);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+</script>
