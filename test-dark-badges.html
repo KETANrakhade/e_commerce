@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Badge Test</title>
+    <!-- Bootstrap CSS -->
+    <link href="pyramid-admin/assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom App CSS with dark badges -->
+    <link href="pyramid-admin/assets/css/app.min.css" rel="stylesheet">
+</head>
+<body class="p-4">
+    <h2>Dark Badge Test - Orders Page Style</h2>
+    <p>Testing the new dark badge styles for payment and status badges:</p>
+    
+    <div class="mb-4">
+        <h4>Payment Status Badges:</h4>
+        <span class="badge badge-pill badge-soft-success font-size-11 me-2">Paid</span>
+        <span class="badge badge-pill badge-soft-warning font-size-11 me-2">Unpaid</span>
+    </div>
+    
+    <div class="mb-4">
+        <h4>Order Status Badges:</h4>
+        <span class="badge badge-pill badge-soft-success font-size-11 me-2">Delivered</span>
+        <span class="badge badge-pill badge-soft-info font-size-11 me-2">Shipped</span>
+        <span class="badge badge-pill badge-soft-warning font-size-11 me-2">Processing</span>
+        <span class="badge badge-pill badge-soft-danger font-size-11 me-2">Cancelled</span>
+        <span class="badge badge-pill badge-soft-secondary font-size-11 me-2">Pending</span>
+        <span class="badge badge-pill badge-soft-primary font-size-11 me-2">Confirmed</span>
+    </div>
+    
+    <div class="mb-4">
+        <h4>Sample Orders Table:</h4>
+        <table class="table align-middle table-nowrap table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Amount</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>#ORD001</strong></td>
+                    <td>John Doe</td>
+                    <td>₹ 1,250.00</td>
+                    <td><span class="badge badge-pill badge-soft-success font-size-11">Paid</span></td>
+                    <td><span class="badge badge-pill badge-soft-success font-size-11">Delivered</span></td>
+                </tr>
+                <tr>
+                    <td><strong>#ORD002</strong></td>
+                    <td>Jane Smith</td>
+                    <td>₹ 850.00</td>
+                    <td><span class="badge badge-pill badge-soft-warning font-size-11">Unpaid</span></td>
+                    <td><span class="badge badge-pill badge-soft-warning font-size-11">Processing</span></td>
+                </tr>
+                <tr>
+                    <td><strong>#ORD003</strong></td>
+                    <td>Mike Johnson</td>
+                    <td>₹ 2,100.00</td>
+                    <td><span class="badge badge-pill badge-soft-success font-size-11">Paid</span></td>
+                    <td><span class="badge badge-pill badge-soft-info font-size-11">Shipped</span></td>
+                </tr>
+                <tr>
+                    <td><strong>#ORD004</strong></td>
+                    <td>Sarah Wilson</td>
+                    <td>₹ 675.00</td>
+                    <td><span class="badge badge-pill badge-soft-warning font-size-11">Unpaid</span></td>
+                    <td><span class="badge badge-pill badge-soft-danger font-size-11">Cancelled</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="alert alert-info">
+        <strong>Note:</strong> The badges now have dark backgrounds with white text for better visibility and contrast.
+    </div>
+</body>
+</html>

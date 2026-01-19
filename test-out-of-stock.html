@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Out of Stock Feature</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container mt-5">
+    <h1>Test Out of Stock Feature</h1>
+    <p>This page helps you test the out-of-stock visibility feature.</p>
+    
+    <div class="card mt-4">
+      <div class="card-body">
+        <h5 class="card-title">Instructions:</h5>
+        <ol>
+          <li>Make sure your backend server is running on port 5001</li>
+          <li>Click the button below to fetch all products</li>
+          <li>Find a product and set its stock to 0</li>
+          <li>Then view that product on the product detail page</li>
+        </ol>
+        
+        <button class="btn btn-primary" onclick="fetchProducts()">Fetch All Products</button>
+        <button class="btn btn-success ms-2" onclick="createTestProduct()">Create Test Out-of-Stock Product</button>
+      </div>
+    </div>
+    
+    <div id="productsContainer" class="mt-4"></div>
+    <div id="result" class="mt-4"></div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:5001/api';
+
+    async function fetchProducts() {
+      try {
+        const response = await fetch(`${API_URL}/products`);
+        const data = await response.json();
+        
+        const container = document.getElementById('productsContainer');
+        container.innerHTML = '<h3>All Products:</h3>';
+        
+        if (data.data && data.data.length > 0) {
+          const table = document.createElement('table');
+          table.className = 'table table-striped';
+          table.innerHTML = `
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.data.map(product => `
+                <tr>
+                  <td>${product.name}</td>
+                  <td>₹${product.price}</td>
+                  <td>${product.stock !== undefined ? product.stock : 'N/A'}</td>
+                  <td>
+                    <button class="btn btn-sm btn-warning" onclick="setStockToZero('${product._id}')">Set Stock to 0</button>
+                    <a href="product.html?id=${product._id}" class="btn btn-sm btn-info" target="_blank">View Product</a>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          `;
+          container.appendChild(table);
+        } else {
+          container.innerHTML += '<p>No products found.</p>';
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        document.getElementById('result').innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+      }
+    }
+
+    async function setStockToZero(productId) {
+      try {
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+        
+        if (!token) {
+          alert('Please login as admin first');
+          return;
+        }
+
+        const response = await fetch(`${API_URL}/products/${productId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ stock: 0 })
+        });
+
+        if (response.ok) {
+          document.getElementById('result').innerHTML = '<div class="alert alert-success">Stock set to 0 successfully!</div>';
+          fetchProducts(); // Refresh the list
+        } else {
+          const error = await response.json();
+          document.getElementById('result').innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+        }
+      } catch (error) {
+        console.error('Error updating stock:', error);
+        document.getElementById('result').innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+      }
+    }
+
+    async function createTestProduct() {
+      try {
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+        
+        if (!token) {
+          alert('Please login as admin first');
+          return;
+        }
+
+        const testProduct = {
+          name: 'Test Out of Stock Product',
+          description: 'This is a test product with stock = 0',
+          price: 999,
+          stock: 0,
+          category: '6777e0e5e1c8e5e5e5e5e5e5', // You may need to adjust this
+          images: [{
+            url: 'https://via.placeholder.com/400',
+            publicId: 'test',
+            alt: 'Test product'
+          }]
+        };
+
+        const response = await fetch(`${API_URL}/products`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(testProduct)
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          document.getElementById('result').innerHTML = `
+            <div class="alert alert-success">
+              Test product created successfully! 
+              <a href="product.html?id=${data.data._id}" class="btn btn-sm btn-primary ms-2" target="_blank">View Product</a>
+            </div>
+          `;
+          fetchProducts(); // Refresh the list
+        } else {
+          const error = await response.json();
+          document.getElementById('result').innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+        }
+      } catch (error) {
+        console.error('Error creating product:', error);
+        document.getElementById('result').innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>
