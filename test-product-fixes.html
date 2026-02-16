@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Page Fix Test</title>
+    <script src="config.js"></script>
+</head>
+<body>
+    <h1>Product Page Fix Test</h1>
+    <div id="test-results"></div>
+
+    <script>
+        function runTests() {
+            const results = [];
+            
+            // Test 1: CONFIG is defined
+            try {
+                if (typeof CONFIG !== 'undefined' && CONFIG.API_BASE_URL) {
+                    results.push('✅ CONFIG is properly loaded: ' + CONFIG.API_BASE_URL);
+                } else {
+                    results.push('❌ CONFIG is not defined or missing API_BASE_URL');
+                }
+            } catch (error) {
+                results.push('❌ CONFIG error: ' + error.message);
+            }
+            
+            // Test 2: Check if we can simulate loadProduct function
+            try {
+                const testProductId = '123';
+                const testUrl = `${CONFIG.API_BASE_URL}/products/${testProductId}`;
+                results.push('✅ API URL construction works: ' + testUrl);
+            } catch (error) {
+                results.push('❌ API URL construction failed: ' + error.message);
+            }
+            
+            // Display results
+            document.getElementById('test-results').innerHTML = 
+                '<h2>Test Results:</h2>' + 
+                results.map(result => '<p>' + result + '</p>').join('');
+        }
+        
+        // Run tests when page loads
+        document.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>

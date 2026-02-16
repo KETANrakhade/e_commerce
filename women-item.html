@@ -686,7 +686,6 @@
           <li class="nav-item" id="viewMen"><a class="nav-link" href="#">Men</a></li>
           <li class="nav-item" id="viewWomen"><a class="nav-link" href="#">Women</a></li>
           <!-- <li class="nav-item"><a class="nav-link" href="#">Kids</a></li> -->
-          <li class="nav-item" id="discountSale"><a class="nav-link" href="#">Sale</a></li>
         </ul>
         <div class="d-flex align-items-center">
           <span class="icon-btn"><i class="fa-regular fa-user"></i></span>
@@ -1062,9 +1061,17 @@
     // Enhanced Add to Cart Function
     function addToCartWithAnimation(id, name, price, image) {
       const cart = getCart();
-      const found = cart.find(i => i.productId === id);
+      const found = cart.find(i => (i.productId === id || i._id === id || i.id === id));
       if (found) found.quantity += 1;
-      else cart.push({ productId: id, name, price, image: image, quantity: 1 });
+      else cart.push({ 
+        _id: id, 
+        id: id, 
+        productId: id, 
+        name, 
+        price, 
+        image: image, 
+        quantity: 1 
+      });
       saveCart(cart);
 
       // Show success popup

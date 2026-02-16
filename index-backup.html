@@ -636,46 +636,224 @@
             color: white;
         }
 
-        /* Enhanced Footer */
+        /* Enhanced Modern Footer */
         footer {
-            background: var(--gradient-dark);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #e0e0e0;
+            padding: 80px 0 0;
+            margin-top: 100px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), #ff6b6b, #4ecdc4, var(--primary-color));
+            background-size: 200% 100%;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .footer-content {
+            padding-bottom: 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-section {
+            margin-bottom: 30px;
+        }
+
+        .footer-section h4 {
             color: white;
-            padding: 60px 0 30px;
-            margin-top: 80px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-section h4::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 2px;
         }
 
         footer ul {
             list-style: none;
             padding: 0;
+            margin: 0;
         }
 
         footer li {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             transition: all 0.3s ease;
             cursor: pointer;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+
+        footer li::before {
+            content: '›';
+            margin-right: 8px;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
         }
 
         footer li:hover {
-            color: var(--primary-color);
+            color: white;
             transform: translateX(5px);
+        }
+
+        footer li:hover::before {
+            margin-right: 12px;
+        }
+
+        .footer-brand {
+            margin-bottom: 20px;
+        }
+
+        .footer-logo {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-logo::before {
+            content: '▲';
+            color: var(--primary-color);
+            font-size: 2.5rem;
+        }
+
+        .footer-description {
+            color: #b0b0b0;
+            line-height: 1.6;
+            margin-bottom: 20px;
         }
 
         .social-icons {
             display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-icons a {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
             justify-content: center;
-            gap: 20px;
-            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .social-icons a:hover {
+            background: var(--primary-color);
+            transform: translateY(-5px) rotate(360deg);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
         }
 
         .social-icons i {
-            font-size: 2rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
+            font-size: 1.3rem;
         }
 
-        .social-icons i:hover {
+        .footer-bottom {
+            padding: 25px 0;
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .footer-bottom p {
+            margin: 0;
+        }
+
+        .footer-bottom a {
             color: var(--primary-color);
-            transform: translateY(-3px);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-bottom a:hover {
+            color: white;
+        }
+
+        .newsletter-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .newsletter-box h4 {
+            margin-bottom: 15px;
+        }
+
+        .newsletter-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .newsletter-form input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 5px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .newsletter-form input::placeholder {
+            color: #999;
+        }
+
+        .newsletter-form input:focus {
+            border-color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .newsletter-form button {
+            padding: 12px 25px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .newsletter-form button:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
         }
 
         /* Responsive Design */
@@ -748,7 +926,7 @@
                     <li class="nav-item"><a class="nav-link" href="#" id="viewHome2">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="#" id="viewMen">Men</a></li>
                     <li class="nav-item"><a class="nav-link" href="#" id="viewWomen">Women</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#" id="discountSale">Sale</a></li>
+                    <li class="nav-item"><a class="nav-link" href="customer-care.html">Support</a></li>
                 </ul>
                 <div class="d-flex align-items-center">
                     <span class="icon-btn" id="userProfile"><i class="fa-regular fa-user"></i></span>
@@ -790,59 +968,19 @@
             </a>
         </div>
     </section>
+     <section class="video-section animate-on-scroll">
+        <video class="video-bg" autoplay loop muted playsinline preload="metadata" loading="lazy">
+            <source src="file.mp4" type="video/mp4">
+        </video>
+        <div class="video-overlay"></div>
+        <div class="video-content">
+            <h1>30% TO 70% Off Selected Styles</h1>
+            <button id="saleBtn">Shop Sale</button>
+        </div>
+    </section>
 
     <!-- Enhanced Carousel -->
-    <div id="carouselExampleIndicators" class="carousel slide animate-on-scroll" data-bs-ride="carousel">
-        <div class="carousel-indicators">
-            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"
-                aria-current="true" aria-label="Slide 1"></button>
-            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"
-                aria-label="Slide 2"></button>
-            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2"
-                aria-label="Slide 3"></button>
-        </div>
-        <div class="carousel-inner">
-            <div class="carousel-item active">
-                <img src="img/women/ricky-2127760710.jpg" class="d-block w-100" height="650px" alt="Spring Collection" loading="lazy">
-                <div class="overlay-box">
-                    <h1>NEW SPRING COLLECTION</h1>
-                    <p>Introducing our new spring fashion collection, perfect for effortless casual chic. From flowy
-                        dresses to floral tops, mix and match with ease. Lightweight fabrics and cheerful colors to
-                        awaken the Spring in you.</p>
-                    <button class="btn btn-primary">Shop Now</button>
-                </div>
-            </div>
-            <div class="carousel-item">
-                <img src="img/full-shot-cool-people-wearing-chain-necklace.jpg" class="d-block w-100" height="650px" alt="Summer Collection" loading="lazy">
-                <div class="overlay-box">
-                    <h1>SUMMER COLLECTION</h1>
-                    <p>Fresh looks for summer with cool fabrics and stylish fits. Perfect balance of comfort and
-                        elegance for the season.</p>
-                    <button class="btn btn-primary">Explore</button>
-                </div>
-            </div>
-            <div class="carousel-item">
-                <img src="img/clark-street-mercantile-P3pI6xzovu0-unsplash 2.jpg" height="650px" class="d-block w-100"
-                    alt="Fashion Collection" loading="lazy">
-                <div class="overlay-box">
-                    <h1>EXPLORE FASHION COLLECTION</h1>
-                    <p>Discover premium styles crafted with detail, designed to fit your lifestyle and enhance your
-                        wardrobe.</p>                   
-                    <button class="btn btn-primary">Discover</button>
-                </div>
-            </div>                                      
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
-            data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
-            data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </button>
-    </div>
+   
 
     <!-- Featured Section -->
     <section class="container-fluid p-0 hero-wrap animate-on-scroll">
@@ -975,67 +1113,124 @@
             <div class="arrow right">&#10095;</div>
         </div>
     </section>
-
-    <!-- Enhanced Video Section -->
-    <section class="video-section animate-on-scroll">
-        <video class="video-bg" autoplay loop muted playsinline preload="metadata" loading="lazy">
-            <source src="file.mp4" type="video/mp4">
-        </video>
-        <div class="video-overlay"></div>
-        <div class="video-content">
-            <h1>30% TO 70% Off Selected Styles</h1>
-            <button id="saleBtn">Shop Sale</button>
+ <div id="carouselExampleIndicators" class="carousel slide animate-on-scroll" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"
+                aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"
+                aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2"
+                aria-label="Slide 3"></button>
         </div>
-    </section>
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="img/women/ricky-2127760710.jpg" class="d-block w-100" height="650px" alt="Spring Collection" loading="lazy">
+                <div class="overlay-box">
+                    <h1>NEW SPRING COLLECTION</h1>
+                    <p>Introducing our new spring fashion collection, perfect for effortless casual chic. From flowy
+                        dresses to floral tops, mix and match with ease. Lightweight fabrics and cheerful colors to
+                        awaken the Spring in you.</p>
+                    <button class="btn btn-primary">Shop Now</button>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <img src="img/full-shot-cool-people-wearing-chain-necklace.jpg" class="d-block w-100" height="650px" alt="Summer Collection" loading="lazy">
+                <div class="overlay-box">
+                    <h1>SUMMER COLLECTION</h1>
+                    <p>Fresh looks for summer with cool fabrics and stylish fits. Perfect balance of comfort and
+                        elegance for the season.</p>
+                    <button class="btn btn-primary">Explore</button>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <img src="img/clark-street-mercantile-P3pI6xzovu0-unsplash 2.jpg" height="650px" class="d-block w-100"
+                    alt="Fashion Collection" loading="lazy">
+                <div class="overlay-box">
+                    <h1>EXPLORE FASHION COLLECTION</h1>
+                    <p>Discover premium styles crafted with detail, designed to fit your lifestyle and enhance your
+                        wardrobe.</p>                   
+                    <button class="btn btn-primary">Discover</button>
+                </div>
+            </div>                                      
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
+            data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
+            data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+    <!-- Enhanced Video Section -->
+   
 
-    <!-- Enhanced Footer -->
+    <!-- Enhanced Modern Footer -->
     <footer class="animate-on-scroll">
         <div class="container">
-            <div class="row">
-                <div class="col-md-3">
-                    <ul>
-                        <li>Contact us</li>
-                        <li>Promotions & Sale</li>
-                        <li>Track Order</li>
-                        <li>Shoe Care</li>
-                        <li>Tech Glossary</li>
-                        <li>Initiate Return / Exchange</li>
-                        <li>Cookie Settings</li>
-                        <li>Nitro</li>
-                    </ul>
-                </div>
-                <div class="col-md-3">
-                    <ul>
-                        <li>FAQs</li>
-                        <li>My Account</li>
-                        <li>Exchange & Return Policy</li>
-                        <li>Privacy Policy</li>
-                        <li>Terms & Conditions</li>
-                        <li>Brands</li>
-                        <li>Sitemap</li>
-                        <li>Discounts</li>
-                    </ul>
-                </div>
-                <div class="col-md-3">
-                    <ul>
-                        <li>Go Wild</li>
-                        <li>Company</li>
-                        <li>Corporate News</li>
-                        <li>Press Centers</li>
-                        <li>Investors</li>
-                        <li>Sustainability</li>
-                        <li>Careers</li>
-                        <li>Store Locator</li>
-                    </ul>
-                </div>
-                <div class="col-md-3">
-                    <div class="social-icons">
-                        <i class="fa-brands fa-youtube"></i>
-                        <i class="fa-brands fa-square-twitter"></i>
-                        <i class="fa-brands fa-instagram"></i>
-                        <i class="fa-brands fa-facebook"></i>
+            <div class="footer-content">
+                <div class="row">
+                    <!-- Brand Section -->
+                    <div class="col-lg-4 col-md-6 footer-section">
+                        <div class="footer-brand">
+                            <div class="footer-logo">PYRAMID</div>
+                            <p class="footer-description">
+                                Your ultimate destination for premium fashion. Discover the latest trends and timeless classics that define your style.
+                            </p>
+                        </div>
+                        <div class="social-icons">
+                            <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                            <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                            <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+                            <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                        </div>
+                    </div>
+
+                    <!-- Quick Links -->
+                    <div class="col-lg-2 col-md-6 footer-section">
+                        <h4>Quick Links</h4>
+                        <ul>
+                            <li>About Us</li>
+                            <li>Contact Us</li>
+                            <li>Track Order</li>
+                            <li>Store Locator</li>
+                            <li>Careers</li>
+                        </ul>
+                    </div>
+
+                    <!-- Customer Service -->
+                    <div class="col-lg-2 col-md-6 footer-section">
+                        <h4>Help & Support</h4>
+                        <ul>
+                            <li>FAQs</li>
+                            <li>Shipping Info</li>
+                            <li>Returns & Exchange</li>
+                            <li>Size Guide</li>
+                            <li>Privacy Policy</li>
+                        </ul>
+                    </div>
+
+                    <!-- Newsletter -->
+                    <div class="col-lg-4 col-md-6 footer-section">
+                        <div class="newsletter-box">
+                            <h4>Stay Updated</h4>
+                            <p style="color: #b0b0b0; font-size: 0.9rem; margin-bottom: 15px;">
+                                Subscribe to get special offers, free giveaways, and exclusive deals.
+                            </p>
+                            <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Thank you for subscribing!');">
+                                <input type="email" placeholder="Enter your email" required>
+                                <button type="submit">Subscribe</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Footer Bottom -->
+            <div class="footer-bottom">
+                <p>&copy; 2026 PYRAMID E-Commerce. All rights reserved. | <a href="#">Terms & Conditions</a> | <a href="#">Privacy Policy</a></p>
             </div>
         </div>
     </footer>

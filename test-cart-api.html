@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Cart API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .result {
+            background: #f5f5f5;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #65AAC3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🛒 Cart API Test</h1>
+    
+    <div>
+        <h3>User Info:</h3>
+        <div class="result" id="userInfo"></div>
+    </div>
+    
+    <div>
+        <button onclick="testGetCart()">Test Get Cart</button>
+        <button onclick="clearLocalStorage()">Clear LocalStorage</button>
+    </div>
+    
+    <div>
+        <h3>Results:</h3>
+        <div class="result" id="results"></div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // Display user info
+        function displayUserInfo() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            const cartLocal = localStorage.getItem('cart_v1');
+            
+            document.getElementById('userInfo').innerHTML = `
+Token: ${token ? '✅ EXISTS' : '❌ MISSING'}
+User: ${user || '❌ MISSING'}
+LocalStorage Cart: ${cartLocal || '❌ EMPTY'}
+            `;
+        }
+        
+        async function testGetCart() {
+            const results = document.getElementById('results');
+            results.innerHTML = 'Testing...';
+            
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                results.innerHTML = '❌ No token found. Please login first.';
+                results.className = 'result error';
+                return;
+            }
+            
+            try {
+                const url = `${CONFIG.API_BASE_URL}/cart`;
+                console.log('Fetching:', url);
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok) {
+                    results.className = 'result success';
+                    results.innerHTML = `✅ SUCCESS!\n\nStatus: ${response.status}\n\nData:\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    results.className = 'result error';
+                    results.innerHTML = `❌ ERROR!\n\nStatus: ${response.status}\n\nData:\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                results.className = 'result error';
+                results.innerHTML = `❌ EXCEPTION!\n\n${error.message}\n\n${error.stack}`;
+            }
+        }
+        
+        function clearLocalStorage() {
+            if (confirm('Clear all localStorage data?')) {
+                localStorage.clear();
+                alert('LocalStorage cleared!');
+                displayUserInfo();
+            }
+        }
+        
+        // Display user info on load
+        displayUserInfo();
+    </script>
+</body>
+</html>

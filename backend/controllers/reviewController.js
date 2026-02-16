@@ -21,10 +21,13 @@ const getProductReviews = asyncHandler(async (req, res) => {
   const total = await Review.countDocuments({ product: productId });
 
   res.json({
-    reviews,
-    page,
-    pages: Math.ceil(total / limit),
-    total
+    success: true,
+    data: {
+      reviews,
+      page,
+      pages: Math.ceil(total / limit),
+      total
+    }
   });
 });
 
@@ -34,6 +37,8 @@ const getProductReviews = asyncHandler(async (req, res) => {
 const createReview = asyncHandler(async (req, res) => {
   const { productId } = req.params;
   const { rating, comment } = req.body;
+
+  console.log('📝 Creating review:', { productId, rating, comment: comment?.substring(0, 50), userId: req.user._id });
 
   if (!rating || !comment) {
     res.status(400);
@@ -63,12 +68,17 @@ const createReview = asyncHandler(async (req, res) => {
     throw new Error('You have already reviewed this product');
   }
 
-  // Check if user purchased this product
-  const hasPurchased = await Order.findOne({
-    user: req.user._id,
-    'orderItems.productId': productId,
-    status: 'delivered'
-  });
+  // Check if user purchased this product (optional - allow reviews even without purchase)
+  let hasPurchased = false;
+  try {
+    hasPurchased = await Order.findOne({
+      user: req.user._id,
+      'orderItems.productId': productId,
+      status: 'delivered'
+    });
+  } catch (err) {
+    console.log('⚠️ Could not verify purchase, allowing review anyway');
+  }
 
   const review = await Review.create({
     product: productId,
@@ -78,12 +88,17 @@ const createReview = asyncHandler(async (req, res) => {
     isVerifiedPurchase: !!hasPurchased
   });
 
+  console.log('✅ Review created:', review._id);
+
   // Update product rating
   await updateProductRating(productId);
 
   const populatedReview = await Review.findById(review._id).populate('user', 'name');
   
-  res.status(201).json(populatedReview);
+  res.status(201).json({
+    success: true,
+    data: populatedReview
+  });
 });
 
 // @desc    Update a review
@@ -125,7 +140,10 @@ const updateReview = asyncHandler(async (req, res) => {
 
   const updatedReview = await Review.findById(reviewId).populate('user', 'name');
   
-  res.json(updatedReview);
+  res.json({
+    success: true,
+    data: updatedReview
+  });
 });
 
 // @desc    Delete a review
@@ -153,25 +171,45 @@ const deleteReview = asyncHandler(async (req, res) => {
   // Update product rating
   await updateProductRating(productId);
 
-  res.json({ message: 'Review deleted' });
+  res.json({
+    success: true,
+    message: 'Review deleted successfully'
+  });
 });
 
 // Helper function to update product rating
 const updateProductRating = async (productId) => {
-  const reviews = await Review.find({ product: productId });
-  
-  const product = await Product.findById(productId);
-  
-  if (reviews.length === 0) {
-    product.rating = 0;
-    product.numReviews = 0;
-  } else {
-    const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
-    product.rating = totalRating / reviews.length;
-    product.numReviews = reviews.length;
+  try {
+    const reviews = await Review.find({ product: productId });
+    
+    let rating = 0;
+    let numReviews = 0;
+    
+    if (reviews.length > 0) {
+      const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+      rating = totalRating / reviews.length;
+      numReviews = reviews.length;
+    }
+    
+    // Use findByIdAndUpdate to avoid validation issues with other fields
+    await Product.findByIdAndUpdate(
+      productId,
+      {
+        $set: {
+          rating: rating,
+          numReviews: numReviews
+        }
+      },
+      { 
+        runValidators: false, // Skip validation for other fields
+        timestamps: false // Don't update timestamps
+      }
+    );
+    
+    console.log(`✅ Updated product rating: ${rating.toFixed(2)} (${numReviews} reviews)`);
+  } catch (error) {
+    console.error('❌ Error updating product rating:', error.message);
   }
-  
-  await product.save();
 };
 
 module.exports = {

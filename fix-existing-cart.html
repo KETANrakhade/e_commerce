@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Existing Cart</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 15px 25px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover { background: #0056b3; }
+        .success { background: #28a745; }
+        .danger { background: #dc3545; }
+        .warning { background: #ffc107; color: #000; }
+        .result {
+            margin-top: 10px;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .result.success { background: #d4edda; color: #155724; }
+        .result.error { background: #f8d7da; color: #721c24; }
+        .result.info { background: #d1ecf1; color: #0c5460; }
+        .result.warning { background: #fff3cd; color: #856404; }
+        pre {
+            background: #f1f1f1;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 11px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix Existing Cart</h1>
+        <p>This tool will fix any existing cart data to work with the checkout process.</p>
+        
+        <button onclick="fixExistingCart()" class="success">🔧 Fix My Cart</button>
+        <button onclick="showCurrentCart()" class="warning">👀 Show Current Cart</button>
+        <button onclick="clearCart()" class="danger">🗑️ Clear Cart</button>
+        
+        <div id="results"></div>
+        
+        <hr style="margin: 20px 0;">
+        
+        <button onclick="goToCheckout()">💳 Go to Checkout</button>
+        <button onclick="goToProducts()">🛍️ Browse Products</button>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5001/api';
+        const CART_KEY = 'cart_v1';
+        
+        function addResult(message, type = 'info') {
+            const div = document.getElementById('results');
+            const result = document.createElement('div');
+            result.className = `result ${type}`;
+            result.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`;
+            div.appendChild(result);
+            div.scrollTop = div.scrollHeight;
+        }
+        
+        async function fixExistingCart() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h4>🔧 Fixing Existing Cart...</h4>';
+            
+            try {
+                // Get current cart
+                const cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+                
+                if (cart.length === 0) {
+                    addResult('ℹ️ Cart is empty - nothing to fix', 'info');
+                    return;
+                }
+                
+                addResult(`📊 Found ${cart.length} items in cart`, 'info');
+                
+                // Get available products to validate against
+                const response = await fetch(`${API_BASE_URL}/products`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    addResult('❌ Failed to load products for validation', 'error');
+                    return;
+                }
+                
+                const availableProducts = data.data.products;
+                const availableProductIds = availableProducts.map(p => p._id);
+                
+                addResult(`📦 Loaded ${availableProducts.length} available products`, 'info');
+                
+                // Fix each cart item
+                const fixedCart = [];
+                let fixedCount = 0;
+                let removedCount = 0;
+                
+                for (const item of cart) {
+                    // Try to find the product ID in various fields
+                    const possibleIds = [
+                        item._id,
+                        item.id, 
+                        item.productId,
+                        item.product
+                    ].filter(id => id); // Remove undefined/null values
+                    
+                    let validProductId = null;
+                    
+                    // Check if any of the possible IDs match available products
+                    for (const id of possibleIds) {
+                        if (availableProductIds.includes(id)) {
+                            validProductId = id;
+                            break;
+                        }
+                    }
+                    
+                    if (validProductId) {
+                        // Fix the item structure to include all ID fields
+                        const fixedItem = {
+                            _id: validProductId,
+                            id: validProductId,
+                            productId: validProductId,
+                            name: item.name,
+                            price: item.price,
+                            image: item.image || item.images || 'placeholder.jpg',
+                            quantity: item.quantity || 1
+                        };
+                        
+                        fixedCart.push(fixedItem);
+                        
+                        // Check if we actually fixed something
+                        if (!item._id || !item.id || !item.productId) {
+                            fixedCount++;
+                            addResult(`🔧 Fixed: ${item.name}`, 'success');
+                        } else {
+                            addResult(`✅ Already valid: ${item.name}`, 'info');
+                        }
+                    } else {
+                        removedCount++;
+                        addResult(`❌ Removed invalid item: ${item.name} (no valid product ID found)`, 'warning');
+                    }
+                }
+                
+                // Save the fixed cart
+                localStorage.setItem(CART_KEY, JSON.stringify(fixedCart));
+                
+                // Summary
+                addResult(`🎉 Cart fix complete!`, 'success');
+                addResult(`✅ Fixed ${fixedCount} items`, 'success');
+                addResult(`❌ Removed ${removedCount} invalid items`, removedCount > 0 ? 'warning' : 'info');
+                addResult(`📊 Final cart: ${fixedCart.length} items`, 'info');
+                
+                if (fixedCart.length > 0) {
+                    addResult('🚀 Your cart is now ready for checkout!', 'success');
+                } else {
+                    addResult('⚠️ Cart is empty after cleanup - please add new products', 'warning');
+                }
+                
+            } catch (error) {
+                addResult(`❌ Fix failed: ${error.message}`, 'error');
+                console.error('Cart fix error:', error);
+            }
+        }
+        
+        function showCurrentCart() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h4>👀 Current Cart Contents</h4>';
+            
+            try {
+                const cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+                
+                if (cart.length === 0) {
+                    addResult('📊 Cart is empty', 'info');
+                    return;
+                }
+                
+                addResult(`📊 Cart has ${cart.length} items:`, 'info');
+                
+                cart.forEach((item, index) => {
+                    const ids = {
+                        _id: item._id || '❌',
+                        id: item.id || '❌', 
+                        productId: item.productId || '❌',
+                        product: item.product || '❌'
+                    };
+                    
+                    addResult(`${index + 1}. ${item.name || 'Unknown'}`, 'info');
+                    addResult(`   IDs: _id=${ids._id}, id=${ids.id}, productId=${ids.productId}`, 'info');
+                    addResult(`   Price: ₹${item.price}, Qty: ${item.quantity}`, 'info');
+                });
+                
+                // Show raw data
+                const pre = document.createElement('pre');
+                pre.textContent = JSON.stringify(cart, null, 2);
+                document.getElementById('results').appendChild(pre);
+                
+            } catch (error) {
+                addResult(`❌ Error reading cart: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearCart() {
+            localStorage.removeItem(CART_KEY);
+            addResult('✅ Cart cleared completely', 'success');
+        }
+        
+        function goToCheckout() {
+            window.location.href = 'checkout.html';
+        }
+        
+        function goToProducts() {
+            window.location.href = 'index.html';
+        }
+        
+        // Show current status on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const cart = localStorage.getItem(CART_KEY);
+            
+            if (cart) {
+                try {
+                    const cartData = JSON.parse(cart);
+                    addResult(`📊 Current cart: ${cartData.length} items`, 'info');
+                    
+                    // Quick analysis
+                    let needsFix = false;
+                    cartData.forEach(item => {
+                        if (!item._id || !item.id || !item.productId) {
+                            needsFix = true;
+                        }
+                    });
+                    
+                    if (needsFix) {
+                        addResult('⚠️ Cart needs fixing - some items missing proper IDs', 'warning');
+                    } else {
+                        addResult('✅ Cart structure looks good', 'success');
+                    }
+                } catch (e) {
+                    addResult('⚠️ Invalid cart data found', 'warning');
+                }
+            } else {
+                addResult('📊 No cart found', 'info');
+            }
+        });
+    </script>
+</body>
+</html>

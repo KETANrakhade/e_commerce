@@ -20,6 +20,21 @@
         <link href="assets/css/app.min.css" id="app-style" rel="stylesheet" type="text/css" />
         <!-- App js -->
         <script src="assets/js/plugin.js"></script>
+        
+        <!-- Custom CSS to hide unwanted header icons -->
+        <style>
+            /* Hide search, language, apps, fullscreen - keep notifications visible */
+            .dropdown.d-inline-block.d-lg-none.ms-2,
+            .dropdown.d-none.d-lg-inline-block.ms-1,
+            button[data-bs-toggle="fullscreen"] {
+                display: none !important;
+            }
+            
+            /* Hide language selector */
+            .dropdown.d-inline-block:has(img[alt="Header Language"]) {
+                display: none !important;
+            }
+        </style>
 
     </head>
 
@@ -314,91 +329,117 @@
                         </div>
 
                         <div class="dropdown d-inline-block">
+                            <?php
+                            // Fetch recent orders for notifications
+                            $notificationCount = 0;
+                            $recentOrders = [];
+                            try {
+                                $apiUrl = 'http://localhost:5001/api/orders';
+                                $ch = curl_init($apiUrl);
+                                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                                    'Authorization: Bearer ' . ($_SESSION['admin_token'] ?? '')
+                                ]);
+                                $response = curl_exec($ch);
+                                curl_close($ch);
+                                
+                                if ($response) {
+                                    $data = json_decode($response, true);
+                                    if (isset($data['success']) && $data['success'] && isset($data['data'])) {
+                                        // Get last 5 orders
+                                        $recentOrders = array_slice($data['data'], 0, 5);
+                                        $notificationCount = count($recentOrders);
+                                    }
+                                }
+                            } catch (Exception $e) {
+                                // Silently fail
+                            }
+                            ?>
                             <button type="button" class="btn header-item noti-icon waves-effect" id="page-header-notifications-dropdown"
                             data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="bx bx-bell bx-tada"></i>
-                                <span class="badge bg-danger rounded-pill">3</span>
+                                <?php if ($notificationCount > 0): ?>
+                                <span class="badge bg-danger rounded-pill"><?php echo $notificationCount; ?></span>
+                                <?php endif; ?>
                             </button>
                             <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0"
                                 aria-labelledby="page-header-notifications-dropdown">
                                 <div class="p-3">
                                     <div class="row align-items-center">
                                         <div class="col">
-                                            <h6 class="m-0" key="t-notifications"> Notifications </h6>
+                                            <h6 class="m-0">Recent Orders</h6>
                                         </div>
                                         <div class="col-auto">
-                                            <a href="#!" class="small" key="t-view-all"> View All</a>
+                                            <a href="index.php?page=orders" class="small">View All</a>
                                         </div>
                                     </div>
                                 </div>
-                                <div data-simplebar style="max-height: 230px;">
-                                    <a href="javascript: void(0);" class="text-reset notification-item">
-                                        <div class="d-flex">
-                                            <div class="avatar-xs me-3">
-                                                <span class="avatar-title bg-primary rounded-circle font-size-16">
-                                                    <i class="bx bx-cart"></i>
-                                                </span>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-1" key="t-your-order">Your order is placed</h6>
-                                                <div class="font-size-12 text-muted">
-                                                    <p class="mb-1" key="t-grammer">If several languages coalesce the grammar</p>
-                                                    <p class="mb-0"><i class="mdi mdi-clock-outline"></i> <span key="t-min-ago">3 min ago</span></p>
+                                <div data-simplebar style="max-height: 300px;">
+                                    <?php if (empty($recentOrders)): ?>
+                                        <div class="text-center p-4">
+                                            <i class="bx bx-bell-off font-size-24 text-muted"></i>
+                                            <p class="text-muted mt-2">No recent orders</p>
+                                        </div>
+                                    <?php else: ?>
+                                        <?php foreach ($recentOrders as $order): 
+                                            $orderTime = strtotime($order['createdAt'] ?? $order['paidAt'] ?? 'now');
+                                            $timeAgo = human_time_diff($orderTime, time());
+                                            $statusColor = [
+                                                'pending' => 'warning',
+                                                'confirmed' => 'info',
+                                                'processing' => 'primary',
+                                                'shipped' => 'success',
+                                                'delivered' => 'success',
+                                                'cancelled' => 'danger'
+                                            ][$order['orderStatus'] ?? 'pending'] ?? 'secondary';
+                                        ?>
+                                        <a href="index.php?page=orders&action=view&id=<?php echo $order['_id']; ?>" class="text-reset notification-item">
+                                            <div class="d-flex">
+                                                <div class="avatar-xs me-3">
+                                                    <span class="avatar-title bg-<?php echo $statusColor; ?> rounded-circle font-size-16">
+                                                        <i class="bx bx-cart"></i>
+                                                    </span>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-1">Order #<?php echo substr($order['orderNumber'] ?? $order['_id'], -8); ?></h6>
+                                                    <div class="font-size-12 text-muted">
+                                                        <p class="mb-1">
+                                                            <?php echo ucfirst($order['orderStatus'] ?? 'pending'); ?> - 
+                                                            ₹<?php echo number_format($order['totalPrice'] ?? 0, 2); ?>
+                                                        </p>
+                                                        <p class="mb-0">
+                                                            <i class="mdi mdi-clock-outline"></i> 
+                                                            <span><?php echo $timeAgo; ?> ago</span>
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </a>
-                                    <a href="javascript: void(0);" class="text-reset notification-item">
-                                        <div class="d-flex">
-                                            <img src="assets/images/users/avatar-3.jpg"
-                                                class="me-3 rounded-circle avatar-xs" alt="user-pic">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-1">James Lemire</h6>
-                                                <div class="font-size-12 text-muted">
-                                                    <p class="mb-1" key="t-simplified">It will seem like simplified English.</p>
-                                                    <p class="mb-0"><i class="mdi mdi-clock-outline"></i> <span key="t-hours-ago">1 hours ago</span></p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                    <a href="javascript: void(0);" class="text-reset notification-item">
-                                        <div class="d-flex">
-                                            <div class="avatar-xs me-3">
-                                                <span class="avatar-title bg-success rounded-circle font-size-16">
-                                                    <i class="bx bx-badge-check"></i>
-                                                </span>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-1" key="t-shipped">Your item is shipped</h6>
-                                                <div class="font-size-12 text-muted">
-                                                    <p class="mb-1" key="t-grammer">If several languages coalesce the grammar</p>
-                                                    <p class="mb-0"><i class="mdi mdi-clock-outline"></i> <span key="t-min-ago">3 min ago</span></p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </a>
-
-                                    <a href="javascript: void(0);" class="text-reset notification-item">
-                                        <div class="d-flex">
-                                            <img src="assets/images/users/avatar-4.jpg"
-                                                class="me-3 rounded-circle avatar-xs" alt="user-pic">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-1">Salena Layfield</h6>
-                                                <div class="font-size-12 text-muted">
-                                                    <p class="mb-1" key="t-occidental">As a skeptical Cambridge friend of mine occidental.</p>
-                                                    <p class="mb-0"><i class="mdi mdi-clock-outline"></i> <span key="t-hours-ago">1 hours ago</span></p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </a>
+                                        </a>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
                                 </div>
                                 <div class="p-2 border-top d-grid">
-                                    <a class="btn btn-sm btn-link font-size-14 text-center" href="javascript:void(0)">
-                                        <i class="mdi mdi-arrow-right-circle me-1"></i> <span key="t-view-more">View More..</span> 
+                                    <a class="btn btn-sm btn-link font-size-14 text-center" href="index.php?page=orders">
+                                        <i class="mdi mdi-arrow-right-circle me-1"></i> <span>View All Orders</span> 
                                     </a>
                                 </div>
                             </div>
                         </div>
+
+                        <?php
+                        // Helper function for time ago
+                        if (!function_exists('human_time_diff')) {
+                            function human_time_diff($from, $to = 0) {
+                                if (empty($to)) $to = time();
+                                $diff = (int) abs($to - $from);
+                                if ($diff < 60) return $diff . ' sec';
+                                if ($diff < 3600) return round($diff / 60) . ' min';
+                                if ($diff < 86400) return round($diff / 3600) . ' hour' . (round($diff / 3600) > 1 ? 's' : '');
+                                if ($diff < 604800) return round($diff / 86400) . ' day' . (round($diff / 86400) > 1 ? 's' : '');
+                                return round($diff / 604800) . ' week' . (round($diff / 604800) > 1 ? 's' : '');
+                            }
+                        }
+                        ?>
 
                         <div class="dropdown d-inline-block">
                             <button type="button" class="btn header-item waves-effect" id="page-header-user-dropdown"

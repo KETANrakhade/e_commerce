@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <title>PYRAMID MEN"S | Online Fassion Brand</title>
+  <link rel="icon" type="image/x-icon" href="/img/bars.png">
+  <link rel="stylesheet" href="css/product.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap"
+    rel="stylesheet">
+
+  <!-- Splide CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
+
+  <!-- Splide JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+
+  <style>
+    /* Copy the same styles from the original product.html */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .product-page {
+      animation: fadeInUp 0.8s ease-out;
+      margin-top: 40px;
+      display: flex;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .product-images {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin: auto;
+    }
+
+    .product-images img {
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .product-images img:hover {
+      transform: scale(1.05);
+    }
+
+    .color-variant-swatch {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      border: 3px solid #e1e5e9;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      margin: 5px;
+    }
+
+    .color-variant-swatch:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .color-variant-swatch.active {
+      border-color: #65AAC3;
+      box-shadow: 0 0 0 2px rgba(101, 170, 195, 0.3);
+      transform: scale(1.05);
+    }
+
+    .debug-panel {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: white;
+      border: 1px solid #ccc;
+      padding: 10px;
+      max-width: 300px;
+      font-size: 12px;
+      z-index: 9999;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+  </style>
+  <script src="config.js"></script>
+</head>
+
+<body>
+  <!-- Debug Panel -->
+  <div class="debug-panel" id="debugPanel">
+    <h6>Debug Info:</h6>
+    <div id="debugContent">Starting...</div>
+  </div>
+
+  <nav class="navbar navbar-expand-lg shadow-sm sticky-top top-line">
+    <div class="container">
+      <img class="mx-2" src="img/pyramidal.png" width="40px" height="40px">
+      <a class="navbar-brand text-uppercase fs-2" href="#">Pyramid</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mx-auto">
+          <li class="nav-item" id="viewHome"><a class="nav-link" href="#">Home</a></li>
+          <li class="nav-item" id="viewMen"><a class="nav-link" href="#">Men</a></li>
+          <li class="nav-item" id="viewWomen"><a class="nav-link" href="#">Women</a></li>
+        </ul>
+        <div class="d-flex align-items-center">
+          <span class="icon-btn"><i class="fa-regular fa-user"></i></span>
+          <span class="icon-btn position-relative" id="viewWishlist">
+            <i class="fa-regular fa-heart"></i>
+            <span class="badge" id=""></span>
+          </span>
+          <span class="icon-btns position-relative" id="viewCart">
+            <i class="bi bi-cart"></i>
+            <span class="badge"></span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container product-page">
+    <div class="row slider-show">
+      <div class="col-md-6" style="max-height: 750px;">
+        <div id="primary_slider" class="splide">
+          <div class="splide__track">
+            <ul class="splide__list" id="primaryList"></ul>
+          </div>
+        </div>
+
+        <div id="thumbnail_slider" class="splide">
+          <div class="splide__track">
+            <ul class="splide__list" id="thumbnailList"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 product-details px-5">
+        <div id="outOfStockBadge" style="display: none;">
+          <span class="out-of-stock-badge">
+            <i class="bi bi-exclamation-triangle"></i> Out of Stock
+          </span>
+        </div>
+        <h2 id="productName">Loading Product...</h2>
+        <div class="d-flex align-items-center mt-3">
+          <span class="price" id="productPrice">Rs. 0</span>
+          <span class="mrp" id="productMrp" style="display: none;"></span>
+          <span class="discount" id="productDiscount" style="display: none;"></span>
+        </div>
+
+        <p class="mt-3">inclusive of all taxes</p>
+
+        <!-- Color Variants Section -->
+        <div id="colorVariantsSection" style="display: none;">
+          <h6 class="mt-4">SELECT COLOR</h6>
+          <div class="color-variants-container" id="colorVariantsContainer">
+            <!-- Color swatches will be populated here -->
+          </div>
+          <div class="selected-color-info mt-2" id="selectedColorInfo">
+            <small class="text-muted">Selected: <span id="selectedColorName">-</span></small>
+          </div>
+        </div>
+
+        <div id="stockInfo" class="stock-info" style="display: none;">
+          <i class="bi bi-x-circle-fill"></i>
+          <p>This product is currently unavailable</p>
+        </div>
+
+        <h6 class="mt-4">SELECT SIZE</h6>
+        <div class="size-options">
+          <button>39</button><button>40</button><button>42</button><button>44</button>
+        </div>
+
+        <div class="action-buttons mt-4">
+          <button class="add-to-bag" id="addToBagBtn">
+            <i class="bi bi-bag-fill"></i> ADD TO BAG
+          </button>
+
+          <button class="wishlist-btn" id="wishlistBtn"><i class="bi bi-heart"></i> WISHLIST</button>
+        </div>
+
+        <div class="delivery mt-4">
+          <p><b>Delivery Options</b></p>
+          <input type="text" class="form-control w-50 mb-2" placeholder="Enter Pincode">
+          <div class="delivary-date d-flex">
+            <p><i class="bi bi-truck"></i> Get it by
+            <div id="futureDate" class="date px-2 fw-bold mt-1">—</div>
+            </p>
+          </div>
+          <p><i class="bi bi-cash"></i> Pay on delivery available</p>
+          <p><i class="bi bi-arrow-repeat"></i> Easy 7 days return & exchange</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Use the working logic from the simplified version
+    let currentProduct = null;
+    let selectedColorVariant = null;
+
+    function debugLog(message) {
+      const debugContent = document.getElementById('debugContent');
+      if (debugContent) {
+        debugContent.innerHTML += '<p>' + message + '</p>';
+      }
+      console.log(message);
+    }
+
+    async function loadProduct() {
+      try {
+        debugLog('🚀 Starting product load...');
+        
+        // Check CONFIG
+        if (typeof CONFIG === 'undefined') {
+          debugLog('❌ CONFIG is undefined!');
+          return;
+        }
+        debugLog('✅ CONFIG loaded: ' + CONFIG.API_BASE_URL);
+        
+        // Get product ID from URL or use default
+        const urlParams = new URLSearchParams(window.location.search);
+        let productId = urlParams.get('id') || '697349c4988fce88e4b5bb91';
+        debugLog('🔍 Product ID: ' + productId);
+        
+        const url = `${CONFIG.API_BASE_URL}/products/${productId}`;
+        debugLog('📡 Fetching: ' + url);
+        
+        const response = await fetch(url);
+        debugLog('📡 Response status: ' + response.status);
+        
+        if (response.ok) {
+          const data = await response.json();
+          debugLog('✅ Data received');
+          
+          if (data.success && data.data) {
+            currentProduct = data.data;
+            debugLog('✅ Product: ' + currentProduct.name);
+            displayProduct(currentProduct);
+          } else {
+            debugLog('❌ Invalid data structure');
+          }
+        } else {
+          debugLog('❌ API Error: ' + response.status);
+          await loadFirstProduct();
+        }
+      } catch (error) {
+        debugLog('❌ Exception: ' + error.message);
+        await loadFirstProduct();
+      }
+    }
+
+    async function loadFirstProduct() {
+      try {
+        debugLog('🔄 Loading first product as fallback...');
+        const response = await fetch(`${CONFIG.API_BASE_URL}/products`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data && data.data.products && data.data.products.length > 0) {
+            currentProduct = data.data.products[0];
+            debugLog('✅ Using first product: ' + currentProduct.name);
+            displayProduct(currentProduct);
+          }
+        }
+      } catch (error) {
+        debugLog('❌ Fallback failed: ' + error.message);
+      }
+    }
+
+    function displayProduct(product) {
+      debugLog('🎨 Displaying product: ' + product.name);
+      
+      // Update basic info
+      document.getElementById('productName').textContent = product.name;
+      
+      // Handle pricing with discount
+      let displayPrice = product.price;
+      let originalPrice = product.price;
+      
+      if (product.discount && product.discount.isOnSale && product.discount.salePrice) {
+        displayPrice = product.discount.salePrice;
+        originalPrice = product.price;
+        
+        document.getElementById('productPrice').textContent = 'Rs. ' + displayPrice.toLocaleString();
+        document.getElementById('productMrp').textContent = 'Rs. ' + originalPrice.toLocaleString();
+        document.getElementById('productMrp').style.display = 'inline';
+        document.getElementById('productDiscount').textContent = product.discount.percentage + '% OFF';
+        document.getElementById('productDiscount').style.display = 'inline';
+        
+        debugLog('💰 Discount applied: Rs. ' + originalPrice + ' → Rs. ' + displayPrice);
+      } else {
+        document.getElementById('productPrice').textContent = 'Rs. ' + displayPrice.toLocaleString();
+        debugLog('💰 Regular price: Rs. ' + displayPrice);
+      }
+      
+      // Handle color variants
+      if (product.hasColorVariants && product.colorVariants && product.colorVariants.length > 0) {
+        debugLog('🎨 Setting up ' + product.colorVariants.length + ' color variants');
+        document.getElementById('colorVariantsSection').style.display = 'block';
+        setupColorVariants(product);
+        
+        // Select default variant
+        const defaultVariant = product.colorVariants.find(v => v.isDefault) || product.colorVariants[0];
+        selectColorVariant(defaultVariant);
+      } else {
+        debugLog('📦 No color variants, showing base images');
+        displayImages(product);
+      }
+    }
+
+    function setupColorVariants(product) {
+      const container = document.getElementById('colorVariantsContainer');
+      container.innerHTML = '';
+      
+      product.colorVariants.forEach(variant => {
+        const swatch = document.createElement('div');
+        swatch.className = 'color-variant-swatch';
+        swatch.setAttribute('data-variant-id', variant._id);
+        swatch.setAttribute('title', variant.colorName);
+        
+        if (variant.thumbnailImage) {
+          swatch.style.backgroundImage = `url(${variant.thumbnailImage})`;
+        } else {
+          swatch.style.backgroundColor = variant.colorCode || '#ccc';
+        }
+        
+        swatch.addEventListener('click', () => selectColorVariant(variant));
+        container.appendChild(swatch);
+      });
+    }
+
+    function selectColorVariant(variant) {
+      selectedColorVariant = variant;
+      debugLog('🎨 Selected variant: ' + variant.colorName);
+      
+      // Update active swatch
+      document.querySelectorAll('.color-variant-swatch').forEach(swatch => {
+        swatch.classList.remove('active');
+      });
+      const activeSwatch = document.querySelector(`[data-variant-id="${variant._id}"]`);
+      if (activeSwatch) {
+        activeSwatch.classList.add('active');
+      }
+      
+      // Update selected color info
+      document.getElementById('selectedColorName').textContent = variant.colorName;
+      
+      // Update price if variant has different price
+      if (variant.finalPrice && variant.finalPrice !== currentProduct.price) {
+        document.getElementById('productPrice').textContent = 'Rs. ' + variant.finalPrice.toLocaleString();
+        debugLog('💰 Variant price: Rs. ' + variant.finalPrice);
+      }
+      
+      // Display variant images
+      displayImages(currentProduct, variant);
+    }
+
+    function displayImages(product, variant = null) {
+      const primaryList = document.getElementById('primaryList');
+      const thumbnailList = document.getElementById('thumbnailList');
+      
+      if (!primaryList || !thumbnailList) {
+        debugLog('❌ Slider elements not found');
+        return;
+      }
+      
+      primaryList.innerHTML = '';
+      thumbnailList.innerHTML = '';
+      
+      let imagesToShow = [];
+      
+      if (variant && variant.images && variant.images.length > 0) {
+        imagesToShow = variant.images;
+        debugLog('🖼️ Showing ' + imagesToShow.length + ' variant images');
+      } else if (product.images && product.images.length > 0) {
+        imagesToShow = product.images;
+        debugLog('🖼️ Showing ' + imagesToShow.length + ' product images');
+      }
+      
+      if (imagesToShow.length > 0) {
+        imagesToShow.slice(0, 4).forEach(image => {
+          const imgUrl = image.url || image;
+          primaryList.innerHTML += `<li class="splide__slide"><img src="${imgUrl}" alt="${product.name}"></li>`;
+          thumbnailList.innerHTML += `<li class="splide__slide"><img src="${imgUrl}" alt="${product.name}"></li>`;
+        });
+        
+        // Initialize sliders
+        initializeSliders();
+      } else {
+        debugLog('⚠️ No images found');
+      }
+    }
+
+    function initializeSliders() {
+      try {
+        // Destroy existing sliders if they exist
+        if (window.primarySlider) {
+          window.primarySlider.destroy();
+        }
+        if (window.thumbnailSlider) {
+          window.thumbnailSlider.destroy();
+        }
+
+        // Initialize Splide sliders
+        window.primarySlider = new Splide('#primary_slider', {
+          type: 'fade',
+          pagination: false,
+          arrows: false,
+          cover: true,
+          height: '600px',
+        });
+
+        window.thumbnailSlider = new Splide('#thumbnail_slider', {
+          rewind: true,
+          fixedWidth: 100,
+          fixedHeight: 80,
+          isNavigation: true,
+          gap: 10,
+          focus: 'center',
+          pagination: false,
+          cover: true,
+          breakpoints: {
+            600: {
+              fixedWidth: 60,
+              fixedHeight: 60,
+            }
+          }
+        });
+
+        window.primarySlider.sync(window.thumbnailSlider);
+        window.primarySlider.mount();
+        window.thumbnailSlider.mount();
+        
+        debugLog('✅ Sliders initialized');
+      } catch (error) {
+        debugLog('❌ Slider error: ' + error.message);
+      }
+    }
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      debugLog('🚀 DOM loaded, starting...');
+      loadProduct();
+    });
+  </script>
+</body>
+
+</html>

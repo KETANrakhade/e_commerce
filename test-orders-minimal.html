@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Orders - Minimal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Orders API Test</h1>
+    
+    <div id="status"></div>
+    
+    <button onclick="testAPI()">Test Orders API</button>
+    <button onclick="checkLogin()">Check Login</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        // Inline API config
+        window.API_BASE_URL = 'http://localhost:5001/api';
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+            console.log(message);
+        }
+        
+        function showResult(data) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<h3>Result:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        }
+        
+        function checkLogin() {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (!token) {
+                showStatus('❌ Not logged in! Please login first.', 'error');
+                return false;
+            }
+            
+            showStatus(`✅ Logged in as: ${user.name || user.email || 'Unknown'}`, 'success');
+            return true;
+        }
+        
+        async function testAPI() {
+            if (!checkLogin()) return;
+            
+            const token = localStorage.getItem('token');
+            const url = `${window.API_BASE_URL}/orders/myorders`;
+            
+            showStatus(`🔄 Fetching from: ${url}`, 'info');
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok) {
+                    showStatus(`✅ Success! Found ${data.data?.length || 0} orders`, 'success');
+                    showResult(data);
+                } else {
+                    showStatus(`❌ Error: ${response.status} - ${data.message || 'Unknown error'}`, 'error');
+                    showResult(data);
+                }
+                
+            } catch (error) {
+                console.error('Fetch error:', error);
+                showStatus(`❌ Network Error: ${error.message}`, 'error');
+                showResult({ error: error.message, stack: error.stack });
+            }
+        }
+        
+        // Auto-check on load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('Page loaded');
+            console.log('API URL:', window.API_BASE_URL);
+            checkLogin();
+        });
+    </script>
+</body>
+</html>

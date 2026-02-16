@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Discount Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { border: 1px solid #ccc; margin: 20px 0; padding: 15px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        .product { border: 1px solid #ddd; margin: 10px 0; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Comprehensive Discount System Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: API Products Endpoint</h2>
+        <button onclick="testProductsAPI()">Test Products API</button>
+        <div id="api-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Discount Filtering Logic</h2>
+        <button onclick="testDiscountFiltering()">Test Discount Filtering</button>
+        <div id="filter-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Individual Product Discount</h2>
+        <button onclick="testIndividualProduct()">Test Individual Product</button>
+        <div id="individual-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 4: Discount Page Simulation</h2>
+        <button onclick="simulateDiscountPage()">Simulate Discount Page</button>
+        <div id="simulation-results"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5001/api';
+
+        async function testProductsAPI() {
+            const resultsDiv = document.getElementById('api-results');
+            resultsDiv.innerHTML = '<p class="info">Testing API...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/products?limit=100`);
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.products) {
+                    resultsDiv.innerHTML = `
+                        <p class="success">✅ API Working</p>
+                        <p>Total products: ${data.data.products.length}</p>
+                        <p>Sample product: ${data.data.products[0]?.name || 'None'}</p>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = '<p class="error">❌ API returned invalid data</p>';
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">❌ API Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testDiscountFiltering() {
+            const resultsDiv = document.getElementById('filter-results');
+            resultsDiv.innerHTML = '<p class="info">Testing discount filtering...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/products?limit=100`);
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.products) {
+                    const allProducts = data.data.products;
+                    
+                    // Apply the exact same filtering logic as discount.html
+                    const discountedProducts = allProducts.filter(product => {
+                        const hasDiscount = product.discount && 
+                                          product.discount.isOnSale === true && 
+                                          product.discount.percentage > 0 &&
+                                          product.isActive !== false;
+                        return hasDiscount;
+                    });
+                    
+                    resultsDiv.innerHTML = `
+                        <p class="success">✅ Filtering Working</p>
+                        <p>Total products: ${allProducts.length}</p>
+                        <p>Products with discounts: ${discountedProducts.length}</p>
+                        <h4>Discounted Products:</h4>
+                        ${discountedProducts.slice(0, 3).map(product => `
+                            <div class="product">
+                                <strong>${product.name}</strong><br>
+                                Price: ₹${product.price} | 
+                                Discount: ${product.discount.percentage}% | 
+                                Sale Price: ₹${product.discount.salePrice}
+                            </div>
+                        `).join('')}
+                        ${discountedProducts.length > 3 ? `<p>... and ${discountedProducts.length - 3} more</p>` : ''}
+                    `;
+                } else {
+                    resultsDiv.innerHTML = '<p class="error">❌ Invalid API response</p>';
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testIndividualProduct() {
+            const resultsDiv = document.getElementById('individual-results');
+            resultsDiv.innerHTML = '<p class="info">Testing individual product...</p>';
+            
+            try {
+                // First get a product with discount
+                const response = await fetch(`${API_BASE_URL}/products?limit=100`);
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.products) {
+                    const discountedProduct = data.data.products.find(product => 
+                        product.discount && product.discount.isOnSale && product.discount.percentage > 0
+                    );
+                    
+                    if (discountedProduct) {
+                        // Test individual product fetch
+                        const individualResponse = await fetch(`${API_BASE_URL}/products/${discountedProduct._id}`);
+                        const individualData = await individualResponse.json();
+                        
+                        if (individualData.success && individualData.data) {
+                            const product = individualData.data;
+                            resultsDiv.innerHTML = `
+                                <p class="success">✅ Individual Product Fetch Working</p>
+                                <div class="product">
+                                    <strong>${product.name}</strong><br>
+                                    ID: ${product._id}<br>
+                                    Price: ₹${product.price}<br>
+                                    Discount: ${product.discount.percentage}% OFF<br>
+                                    Sale Price: ₹${product.discount.salePrice}<br>
+                                    Sale Label: ${product.discount.saleLabel}<br>
+                                    <a href="product.html?id=${product._id}" target="_blank">View in product.html</a>
+                                </div>
+                            `;
+                        } else {
+                            resultsDiv.innerHTML = '<p class="error">❌ Failed to fetch individual product</p>';
+                        }
+                    } else {
+                        resultsDiv.innerHTML = '<p class="error">❌ No discounted products found</p>';
+                    }
+                } else {
+                    resultsDiv.innerHTML = '<p class="error">❌ Failed to get products list</p>';
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function simulateDiscountPage() {
+            const resultsDiv = document.getElementById('simulation-results');
+            resultsDiv.innerHTML = '<p class="info">Simulating discount page logic...</p>';
+            
+            try {
+                // Simulate the exact logic from discount.html
+                const response = await fetch(`${API_BASE_URL}/products?limit=100`);
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.products) {
+                    const allProducts = data.data.products;
+                    
+                    // Filter products that have real discount data from backend
+                    const realSaleProducts = allProducts.filter(product => {
+                        const hasDiscount = product.discount && 
+                                          product.discount.isOnSale === true && 
+                                          product.discount.percentage > 0 &&
+                                          product.isActive !== false;
+                        return hasDiscount;
+                    });
+                    
+                    if (realSaleProducts.length > 0) {
+                        // Use real discount data
+                        const saleProducts = realSaleProducts.map(product => ({
+                            ...product,
+                            originalPrice: product.price,
+                            salePrice: product.discount.salePrice || Math.round(product.price * (1 - product.discount.percentage / 100)),
+                            discount: product.discount.percentage,
+                            savings: product.price - (product.discount.salePrice || Math.round(product.price * (1 - product.discount.percentage / 100))),
+                            onSale: true,
+                            saleLabel: product.discount.saleLabel || 'SALE'
+                        }));
+                        
+                        resultsDiv.innerHTML = `
+                            <p class="success">✅ Discount Page Logic Working</p>
+                            <p>Products with real discounts: ${saleProducts.length}</p>
+                            <p><a href="discount.html" target="_blank">Open discount.html</a></p>
+                            <h4>Sample Products:</h4>
+                            ${saleProducts.slice(0, 3).map(product => `
+                                <div class="product">
+                                    <strong>${product.name}</strong><br>
+                                    Original: ₹${product.originalPrice} | 
+                                    Sale: ₹${product.salePrice} | 
+                                    Discount: ${product.discount}% | 
+                                    Savings: ₹${product.savings}
+                                </div>
+                            `).join('')}
+                        `;
+                    } else {
+                        resultsDiv.innerHTML = '<p class="error">❌ No products with real discounts found</p>';
+                    }
+                } else {
+                    resultsDiv.innerHTML = '<p class="error">❌ Invalid API response</p>';
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

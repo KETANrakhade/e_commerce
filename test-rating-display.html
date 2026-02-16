@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rating Display</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .product-card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .product-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+        .product-price {
+            font-size: 18px;
+            color: #27ae60;
+            font-weight: 700;
+            margin: 5px 0;
+        }
+        .product-rating {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+        .product-rating .star {
+            color: #f39c12;
+            font-size: 14px;
+        }
+        .product-rating .rating-count {
+            color: #666;
+            font-size: 13px;
+            margin-left: 3px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rating Display Test</h1>
+    
+    <div id="status"></div>
+    
+    <button onclick="loadProducts()">Load Products</button>
+    <button onclick="checkReviews()">Check Reviews in DB</button>
+    
+    <div id="productGrid" class="product-grid"></div>
+    
+    <script>
+        window.API_BASE_URL = 'http://localhost:5001/api';
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+            console.log(message);
+        }
+        
+        function generateStars(rating) {
+            const fullStars = Math.floor(rating);
+            let starsHTML = '';
+            
+            for (let i = 0; i < 5; i++) {
+                if (i < fullStars) {
+                    starsHTML += '<i class="fas fa-star star"></i>';
+                } else {
+                    starsHTML += '<i class="far fa-star star"></i>';
+                }
+            }
+            
+            return starsHTML;
+        }
+        
+        async function loadProducts() {
+            showStatus('🔄 Loading products...', 'info');
+            
+            try {
+                const response = await fetch(`${window.API_BASE_URL}/products`);
+                const data = await response.json();
+                
+                if (!data.success || !data.data.products) {
+                    showStatus('❌ Failed to load products', 'error');
+                    return;
+                }
+                
+                const products = data.data.products;
+                showStatus(`✅ Loaded ${products.length} products`, 'success');
+                
+                const productGrid = document.getElementById('productGrid');
+                let html = '';
+                
+                products.forEach(product => {
+                    const imageUrl = product.images?.[0]?.url || product.images?.[0] || 'https://via.placeholder.com/200';
+                    const rating = product.rating || 0;
+                    const numReviews = product.numReviews || 0;
+                    
+                    console.log(`Product: ${product.name}`);
+                    console.log(`  Rating: ${rating}`);
+                    console.log(`  Num Reviews: ${numReviews}`);
+                    
+                    html += `
+                        <div class="product-card">
+                            <img src="${imageUrl}" class="product-image" alt="${product.name}">
+                            <div class="product-name">${product.name}</div>
+                            <div class="product-price">₹${product.price}</div>
+                            <div class="product-rating">
+                                ${generateStars(rating)}
+                                <span class="rating-count">(${numReviews})</span>
+                            </div>
+                            <div style="margin-top: 10px; font-size: 12px; color: #999;">
+                                Rating: ${rating.toFixed(1)} | Reviews: ${numReviews}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                productGrid.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkReviews() {
+            showStatus('🔄 Checking reviews...', 'info');
+            
+            try {
+                // Get all products
+                const response = await fetch(`${window.API_BASE_URL}/products`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    showStatus('❌ Failed to load products', 'error');
+                    return;
+                }
+                
+                const products = data.data.products;
+                let productsWithReviews = 0;
+                let totalReviews = 0;
+                
+                for (const product of products) {
+                    if (product.numReviews > 0) {
+                        productsWithReviews++;
+                        totalReviews += product.numReviews;
+                        console.log(`✅ ${product.name}: ${product.rating.toFixed(1)}★ (${product.numReviews} reviews)`);
+                    }
+                }
+                
+                showStatus(`✅ Found ${productsWithReviews} products with ${totalReviews} total reviews`, 'success');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-load on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
+        });
+    </script>
+</body>
+</html>

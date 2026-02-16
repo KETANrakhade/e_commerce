@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Backend Issue</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 12px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        button:hover { background: #0056b3; }
+        .success { background: #28a745; }
+        .danger { background: #dc3545; }
+        .warning { background: #ffc107; color: #000; }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .result.success { background: #d4edda; color: #155724; }
+        .result.error { background: #f8d7da; color: #721c24; }
+        .result.info { background: #d1ecf1; color: #0c5460; }
+        .result.warning { background: #fff3cd; color: #856404; }
+        pre {
+            background: #f1f1f1;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 11px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .comparison-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Backend Issue</h1>
+        <p>Let's see exactly what's being sent to the backend vs what's available</p>
+        
+        <button onclick="debugBackendIssue()" class="success">🔍 Debug Backend Issue</button>
+        <button onclick="testOrderCreation()" class="warning">🧪 Test Order Creation</button>
+        <button onclick="fixCartAndTest()" class="success">🔧 Fix Cart & Test</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5001/api';
+        const CART_KEY = 'cart_v1';
+        
+        function addResult(message, type = 'info') {
+            const div = document.getElementById('results');
+            const result = document.createElement('div');
+            result.className = `result ${type}`;
+            result.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`;
+            div.appendChild(result);
+            div.scrollTop = div.scrollHeight;
+        }
+        
+        async function debugBackendIssue() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h3>🔍 Debugging Backend Issue...</h3>';
+            
+            try {
+                // Step 1: Get cart
+                const cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+                
+                if (cart.length === 0) {
+                    addResult('❌ Cart is empty', 'error');
+                    return;
+                }
+                
+                addResult(`📦 Cart has ${cart.length} items`, 'info');
+                
+                // Step 2: Show what will be sent to backend
+                const orderItems = cart.map(item => ({
+                    productId: item._id || item.id || item.productId,
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                    image: item.image
+                }));
+                
+                addResult('📤 Order items that will be sent to backend:', 'info');
+                orderItems.forEach((item, index) => {
+                    addResult(`${index + 1}. ${item.name} - ID: ${item.productId}`, 'info');
+                });
+                
+                // Step 3: Get available products from backend
+                addResult('📦 Getting available products from backend...', 'info');
+                const response = await fetch(`${API_BASE_URL}/products`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    addResult('❌ Failed to get products from backend', 'error');
+                    return;
+                }
+                
+                const products = data.data.products;
+                addResult(`✅ Backend has ${products.length} products`, 'success');
+                
+                // Step 4: Check each order item against backend products
+                addResult('🔍 Checking each cart item against backend products...', 'info');
+                
+                let validCount = 0;
+                let invalidCount = 0;
+                
+                for (const orderItem of orderItems) {
+                    const productId = orderItem.productId;
+                    const backendProduct = products.find(p => p._id === productId);
+                    
+                    if (backendProduct) {
+                        validCount++;
+                        addResult(`✅ ${orderItem.name} - FOUND in backend (ID: ${productId})`, 'success');
+                        addResult(`   Backend product: ${backendProduct.name}, Active: ${backendProduct.isActive}, Stock: ${backendProduct.stock}`, 'info');
+                    } else {
+                        invalidCount++;
+                        addResult(`❌ ${orderItem.name} - NOT FOUND in backend (ID: ${productId})`, 'error');
+                        
+                        // Try to find similar products
+                        const similarProducts = products.filter(p => 
+                            p.name.toLowerCase().includes(orderItem.name.toLowerCase().substring(0, 10))
+                        );
+                        
+                        if (similarProducts.length > 0) {
+                            addResult(`   🔍 Similar products in backend:`, 'warning');
+                            similarProducts.slice(0, 3).forEach(p => {
+                                addResult(`     • ${p.name} (ID: ${p._id})`, 'warning');
+                            });
+                        } else {
+                            addResult(`   🔍 No similar products found in backend`, 'warning');
+                        }
+                    }
+                }
+                
+                // Summary
+                addResult(`📊 Backend Validation Summary:`, 'info');
+                addResult(`✅ Valid items: ${validCount}`, validCount > 0 ? 'success' : 'error');
+                addResult(`❌ Invalid items: ${invalidCount}`, invalidCount > 0 ? 'error' : 'success');
+                
+                if (invalidCount > 0) {
+                    addResult('🚨 This is why the backend is throwing "Product not found" errors!', 'error');
+                    addResult('💡 The cart contains product IDs that don\'t exist in the backend database', 'warning');
+                } else {
+                    addResult('✅ All cart items should be valid for backend - issue might be elsewhere', 'success');
+                }
+                
+                // Show raw data for debugging
+                addResult('📋 Raw Data for Debugging:', 'info');
+                const debugDiv = document.createElement('div');
+                debugDiv.innerHTML = `
+                    <div class="comparison">
+                        <div class="comparison-item">
+                            <h4>Cart Items (Frontend)</h4>
+                            <pre>${JSON.stringify(cart, null, 2)}</pre>
+                        </div>
+                        <div class="comparison-item">
+                            <h4>Order Items (Sent to Backend)</h4>
+                            <pre>${JSON.stringify(orderItems, null, 2)}</pre>
+                        </div>
+                    </div>
+                    <div class="comparison-item">
+                        <h4>Available Product IDs (Backend)</h4>
+                        <pre>${JSON.stringify(products.map(p => ({ id: p._id, name: p.name, active: p.isActive })), null, 2)}</pre>
+                    </div>
+                `;
+                document.getElementById('results').appendChild(debugDiv);
+                
+            } catch (error) {
+                addResult(`❌ Debug failed: ${error.message}`, 'error');
+                console.error('Debug error:', error);
+            }
+        }
+        
+        async function testOrderCreation() {
+            addResult('🧪 Testing actual order creation with current cart...', 'info');
+            
+            try {
+                const cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    addResult('❌ Not logged in', 'error');
+                    return;
+                }
+                
+                if (cart.length === 0) {
+                    addResult('❌ Cart is empty', 'error');
+                    return;
+                }
+                
+                // Prepare order data exactly like checkout.html does
+                const orderData = {
+                    orderItems: cart.map(item => ({
+                        productId: item._id || item.id || item.productId,
+                        name: item.name,
+                        price: item.price,
+                        quantity: item.quantity,
+                        image: item.image
+                    })),
+                    shippingAddress: {
+                        address: '123 Test Street',
+                        city: 'Test City',
+                        postalCode: '12345',
+                        country: 'India'
+                    },
+                    paymentMethod: 'COD',
+                    itemsPrice: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                    shippingPrice: 0,
+                    taxPrice: 0,
+                    totalPrice: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+                };
+                
+                addResult('📤 Sending order to backend...', 'info');
+                console.log('Order data being sent:', orderData);
+                
+                const response = await fetch(`${API_BASE_URL}/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                
+                const result = await response.json();
+                
+                console.log('Backend response:', result);
+                
+                if (response.ok && result.success) {
+                    addResult('✅ Order creation successful!', 'success');
+                    addResult(`Order ID: ${result.data._id}`, 'success');
+                } else {
+                    addResult(`❌ Order creation failed: ${result.error || result.message}`, 'error');
+                    addResult(`HTTP Status: ${response.status}`, 'error');
+                    
+                    // Show the exact backend error
+                    if (result.error) {
+                        addResult(`Backend Error: ${result.error}`, 'error');
+                        
+                        if (result.error.includes('not found')) {
+                            addResult('🔍 This is the "Product not found" error from backend!', 'warning');
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                addResult(`❌ Test failed: ${error.message}`, 'error');
+                console.error('Test error:', error);
+            }
+        }
+        
+        async function fixCartAndTest() {
+            addResult('🔧 Fixing cart with valid product IDs and testing...', 'info');
+            
+            try {
+                // Get available products
+                const response = await fetch(`${API_BASE_URL}/products?limit=2`);
+                const data = await response.json();
+                
+                if (!data.success || data.data.products.length === 0) {
+                    addResult('❌ No products available', 'error');
+                    return;
+                }
+                
+                const products = data.data.products;
+                
+                // Create a fresh cart with valid products
+                const freshCart = products.map(product => ({
+                    _id: product._id,
+                    id: product._id,
+                    productId: product._id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.images?.[0]?.url || product.imageUrls?.[0] || 'placeholder.jpg',
+                    quantity: 1
+                }));
+                
+                localStorage.setItem(CART_KEY, JSON.stringify(freshCart));
+                
+                addResult(`✅ Created fresh cart with ${freshCart.length} valid products`, 'success');
+                freshCart.forEach(item => {
+                    addResult(`  • ${item.name} (ID: ${item._id})`, 'success');
+                });
+                
+                // Now test order creation
+                addResult('🧪 Testing order creation with fresh cart...', 'info');
+                await testOrderCreation();
+                
+            } catch (error) {
+                addResult(`❌ Fix and test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-run debug on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(debugBackendIssue, 500);
+        });
+    </script>
+</body>
+</html>

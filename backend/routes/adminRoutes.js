@@ -17,7 +17,8 @@ const {
   createProduct,
   updateProduct,
   deleteProduct,
-  bulkProductAction
+  bulkProductAction,
+  checkSkuAvailability
 } = require('../controllers/productController');
 const {
   createProductWithUpload,
@@ -79,7 +80,14 @@ router.get('/sales-analytics', adminProtect, getSalesAnalytics);
 // Product management routes
 router.get('/products', adminProtect, getAdminProducts);
 router.get('/products/:id', adminProtect, getProductById);
-router.post('/products', adminProtect, createProduct);
+router.post('/products', adminProtect, (req, res, next) => {
+  console.log('🚨 ADMIN PRODUCTS ROUTE HIT - /api/admin/products');
+  console.log('🚨 This SHOULD be called for admin requests');
+  const fs = require('fs');
+  fs.appendFileSync('/tmp/admin-routes-debug.log', `[${new Date().toISOString()}] Admin products route hit\n`);
+  createProduct(req, res, next);
+});
+router.post('/products/check-sku', adminProtect, checkSkuAvailability);
 router.put('/products/:id', adminProtect, updateProduct);
 router.delete('/products/:id', adminProtect, deleteProduct);
 router.post('/products/bulk-action', adminProtect, bulkProductAction);

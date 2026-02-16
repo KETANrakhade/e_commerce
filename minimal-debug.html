@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Minimal Debug</title>
+    <script src="config.js"></script>
+</head>
+<body>
+    <h1>Minimal Debug Test</h1>
+    <div id="test">Testing...</div>
+
+    <script>
+        // Test 1: Basic JavaScript
+        console.log('1. JavaScript is running');
+        document.getElementById('test').innerHTML = '1. JavaScript is running<br>';
+        
+        // Test 2: CONFIG
+        console.log('2. CONFIG check:', typeof CONFIG);
+        document.getElementById('test').innerHTML += '2. CONFIG: ' + (typeof CONFIG !== 'undefined' ? 'LOADED' : 'NOT LOADED') + '<br>';
+        
+        // Test 3: DOM Ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('3. DOM is ready');
+            document.getElementById('test').innerHTML += '3. DOM is ready<br>';
+            
+            // Test 4: Simple API call
+            if (typeof CONFIG !== 'undefined') {
+                console.log('4. Making API call...');
+                document.getElementById('test').innerHTML += '4. Making API call...<br>';
+                
+                fetch(CONFIG.API_BASE_URL + '/products/697349c4988fce88e4b5bb91')
+                    .then(response => {
+                        console.log('5. API Response:', response.status);
+                        document.getElementById('test').innerHTML += '5. API Response: ' + response.status + '<br>';
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('6. Data received:', data.success);
+                        document.getElementById('test').innerHTML += '6. Data received: ' + data.success + '<br>';
+                        if (data.success && data.data) {
+                            document.getElementById('test').innerHTML += '7. Product: ' + data.data.name + '<br>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('API Error:', error);
+                        document.getElementById('test').innerHTML += 'API Error: ' + error.message + '<br>';
+                    });
+            } else {
+                document.getElementById('test').innerHTML += '4. CONFIG not loaded - cannot make API call<br>';
+            }
+        });
+    </script>
+</body>
+</html>

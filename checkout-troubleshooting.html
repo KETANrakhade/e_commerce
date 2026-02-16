@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout Troubleshooting Guide</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .issue-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+        .issue-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .solution {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .error-example {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        .steps {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .steps ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛒 Checkout Troubleshooting Guide</h1>
+        <p>Having trouble placing an order? This guide will help you resolve common checkout issues.</p>
+        
+        <div class="issue-section">
+            <h3>❌ Error: "Failed to place order: Resource not found"</h3>
+            <div class="error-example">Failed to place order: Resource not found</div>
+            
+            <h4>🔍 Possible Causes:</h4>
+            <ul>
+                <li>You're not logged in</li>
+                <li>Your email is not verified</li>
+                <li>Products in your cart no longer exist</li>
+                <li>Invalid product IDs in cart</li>
+            </ul>
+            
+            <div class="solution">
+                <h4>✅ Solution Steps:</h4>
+                <div class="steps">
+                    <ol>
+                        <li><strong>Login First:</strong> Make sure you're logged in to your account</li>
+                        <li><strong>Check Email:</strong> Verify your email if you haven't already</li>
+                        <li><strong>Clear Cart:</strong> Remove all items and add them again</li>
+                        <li><strong>Try Again:</strong> Attempt to place the order</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <button onclick="checkLoginStatus()">🔍 Check Login Status</button>
+            <button onclick="clearCart()">🗑️ Clear Cart</button>
+        </div>
+        
+        <div class="issue-section">
+            <h3>❌ Error: "Not authorized, token failed"</h3>
+            <div class="error-example">Unable to start online payment: Not authorized, token failed</div>
+            
+            <div class="solution">
+                <h4>✅ Solution:</h4>
+                <div class="steps">
+                    <ol>
+                        <li>Your session has expired</li>
+                        <li>Click "Logout" and login again</li>
+                        <li>Try placing the order again</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <button onclick="logout()">🚪 Logout & Login Again</button>
+        </div>
+        
+        <div class="issue-section">
+            <h3>❌ Error: "Please verify your email"</h3>
+            <div class="error-example">Please verify your email before placing orders</div>
+            
+            <div class="solution">
+                <h4>✅ Solution:</h4>
+                <div class="steps">
+                    <ol>
+                        <li>Check your email inbox for verification link</li>
+                        <li>Click the verification link</li>
+                        <li>If no email found, contact support</li>
+                        <li>For testing: All users are now auto-verified</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <div class="issue-section">
+            <h3>✅ Test Your Setup</h3>
+            <p>Use these tools to test if everything is working:</p>
+            
+            <button onclick="testAuth()">🔐 Test Authentication</button>
+            <button onclick="testCart()">🛒 Test Cart</button>
+            <button onclick="testOrder()">📦 Test Order</button>
+            
+            <div id="testResults" style="margin-top: 15px;"></div>
+        </div>
+        
+        <div class="issue-section">
+            <h3>🚀 Quick Actions</h3>
+            <button onclick="goToLogin()">➡️ Go to Login</button>
+            <button onclick="goToCart()">🛒 Go to Cart</button>
+            <button onclick="goToCheckout()">💳 Go to Checkout</button>
+            <button onclick="goToProducts()">🛍️ Browse Products</button>
+        </div>
+    </div>
+
+    <script>
+        function checkLoginStatus() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (!token) {
+                alert('❌ You are not logged in. Please login first.');
+                goToLogin();
+            } else {
+                const userData = user ? JSON.parse(user) : {};
+                alert(`✅ You are logged in as: ${userData.name || 'Unknown'} (${userData.email || 'No email'})`);
+            }
+        }
+        
+        function clearCart() {
+            localStorage.removeItem('cart_v1');
+            alert('✅ Cart cleared! Please add products again.');
+        }
+        
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            alert('✅ Logged out! Redirecting to login page...');
+            setTimeout(() => goToLogin(), 1000);
+        }
+        
+        async function testAuth() {
+            const resultsDiv = document.getElementById('testResults');
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                resultsDiv.innerHTML = '<div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px;">❌ No authentication token found</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/auth/verify', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    resultsDiv.innerHTML = '<div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 5px;">✅ Authentication is working</div>';
+                } else {
+                    resultsDiv.innerHTML = '<div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px;">❌ Authentication failed - please login again</div>';
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = '<div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px;">❌ Error testing auth: ' + error.message + '</div>';
+            }
+        }
+        
+        function testCart() {
+            const cart = localStorage.getItem('cart_v1');
+            const resultsDiv = document.getElementById('testResults');
+            
+            if (!cart) {
+                resultsDiv.innerHTML = '<div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 5px;">⚠️ Cart is empty</div>';
+            } else {
+                const cartData = JSON.parse(cart);
+                resultsDiv.innerHTML = `<div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 5px;">✅ Cart has ${cartData.length} items</div>`;
+            }
+        }
+        
+        async function testOrder() {
+            const resultsDiv = document.getElementById('testResults');
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                resultsDiv.innerHTML = '<div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px;">❌ Please login first</div>';
+                return;
+            }
+            
+            resultsDiv.innerHTML = '<div style="background: #d1ecf1; color: #0c5460; padding: 10px; border-radius: 5px;">🧪 Testing order API...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        orderItems: [{
+                            name: 'Test Product',
+                            qty: 1,
+                            image: 'test.jpg',
+                            price: 100,
+                            product: '507f1f77bcf86cd799439011'
+                        }],
+                        shippingAddress: {
+                            address: 'Test Address',
+                            city: 'Test City',
+                            postalCode: '12345',
+                            country: 'India'
+                        },
+                        paymentMethod: 'COD',
+                        totalPrice: 100
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultsDiv.innerHTML = '<div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 5px;">✅ Order API is working</div>';
+                } else if (response.status === 401) {
+                    resultsDiv.innerHTML = '<div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px;">❌ Authentication failed - please login again</div>';
+                } else {
+                    resultsDiv.innerHTML = `<div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px;">❌ Order test failed: ${result.error}</div>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = '<div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px;">❌ Error: ' + error.message + '</div>';
+            }
+        }
+        
+        function goToLogin() {
+            window.location.href = 'login.html';
+        }
+        
+        function goToCart() {
+            window.location.href = 'cart.html';
+        }
+        
+        function goToCheckout() {
+            window.location.href = 'checkout.html';
+        }
+        
+        function goToProducts() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Frontend Test</title>
+    <script src="config.js"></script>
+</head>
+<body>
+    <h1>Simple Frontend Test</h1>
+    <div id="productName">Loading...</div>
+    <div id="productPrice">Loading...</div>
+    <div id="debug"></div>
+
+    <script>
+        async function testFrontend() {
+            const debug = document.getElementById('debug');
+            const nameEl = document.getElementById('productName');
+            const priceEl = document.getElementById('productPrice');
+            
+            debug.innerHTML += '<p>Starting test...</p>';
+            
+            try {
+                // Check CONFIG
+                if (typeof CONFIG === 'undefined') {
+                    debug.innerHTML += '<p>❌ CONFIG is undefined!</p>';
+                    return;
+                }
+                debug.innerHTML += '<p>✅ CONFIG loaded: ' + CONFIG.API_BASE_URL + '</p>';
+                
+                // Test API call
+                const productId = '697349c4988fce88e4b5bb91';
+                const url = `${CONFIG.API_BASE_URL}/products/${productId}`;
+                debug.innerHTML += '<p>🔍 Fetching: ' + url + '</p>';
+                
+                const response = await fetch(url);
+                debug.innerHTML += '<p>📡 Response status: ' + response.status + '</p>';
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    debug.innerHTML += '<p>✅ Data received</p>';
+                    
+                    if (data.data) {
+                        nameEl.textContent = data.data.name;
+                        priceEl.textContent = 'Rs. ' + data.data.price;
+                        debug.innerHTML += '<p>✅ Product displayed: ' + data.data.name + '</p>';
+                    } else {
+                        debug.innerHTML += '<p>❌ No data.data in response</p>';
+                    }
+                } else {
+                    const errorText = await response.text();
+                    debug.innerHTML += '<p>❌ API Error: ' + errorText + '</p>';
+                }
+            } catch (error) {
+                debug.innerHTML += '<p>❌ Exception: ' + error.message + '</p>';
+                debug.innerHTML += '<p>Stack: ' + error.stack + '</p>';
+            }
+        }
+        
+        // Test immediately when page loads
+        document.addEventListener('DOMContentLoaded', testFrontend);
+    </script>
+</body>
+</html>

@@ -26,10 +26,32 @@ class OrderService {
     }
 
     // Verify products exist and have sufficient stock
+    const validatedItems = [];
+    
     for (const item of orderItems) {
-      const product = await Product.findById(item.productId || item.id);
+      // Try multiple possible ID fields for better compatibility
+      let product = null;
+      let validProductId = null;
+      const possibleIds = [
+        item.productId,
+        item.id,
+        item._id,
+        item.product
+      ].filter(id => id); // Remove undefined/null values
+      
+      // Try to find the product with any of the possible IDs
+      for (const id of possibleIds) {
+        product = await Product.findById(id);
+        if (product) {
+          validProductId = id;
+          console.log(`✅ Found product ${item.name} with ID: ${id}`);
+          break;
+        }
+      }
       
       if (!product) {
+        console.error(`❌ Product not found for item: ${item.name}`);
+        console.error(`   Tried IDs: [${possibleIds.join(', ')}]`);
         throw new Error(`Product ${item.name} not found`);
       }
 
@@ -40,13 +62,19 @@ class OrderService {
       if (product.stock < item.quantity) {
         throw new Error(`Insufficient stock for ${item.name}. Available: ${product.stock}`);
       }
+      
+      // Store the validated item with correct product ID
+      validatedItems.push({
+        ...item,
+        productId: validProductId
+      });
     }
 
     // Create order
     const order = new Order({
       user: userId,
-      orderItems: orderItems.map(item => ({
-        productId: item.productId || item.id,
+      orderItems: validatedItems.map(item => ({
+        productId: item.productId,
         name: item.name,
         quantity: item.quantity,
         price: item.price,
@@ -63,9 +91,9 @@ class OrderService {
     const createdOrder = await order.save();
 
     // Update product stock
-    for (const item of orderItems) {
+    for (const item of validatedItems) {
       await Product.findByIdAndUpdate(
-        item.productId || item.id,
+        item.productId,
         { $inc: { stock: -item.quantity } }
       );
     }

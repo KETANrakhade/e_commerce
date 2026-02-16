@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart Issue Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        button {
+            padding: 12px 25px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        button:hover { background: #0056b3; }
+        .success { background: #28a745; }
+        .warning { background: #ffc107; color: #000; }
+        .info { background: #17a2b8; }
+        .center { text-align: center; }
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+        .alert.warning {
+            background: #fff3cd;
+            color: #856404;
+            border-color: #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛒 Cart Issue Fix Guide</h1>
+        
+        <div class="alert warning">
+            <strong>Issue:</strong> Getting "All items in your cart are no longer available" error when trying to checkout, even though products exist.
+        </div>
+        
+        <div class="alert success">
+            <strong>Solution:</strong> This has been fixed! The cart data structure has been standardized across all pages.
+        </div>
+        
+        <div class="step">
+            <h3>🔧 Option 1: Fix Your Existing Cart (Recommended)</h3>
+            <p>If you have items in your cart that you want to keep, use this tool to fix the cart data structure:</p>
+            <div class="center">
+                <button onclick="window.location.href='fix-existing-cart.html'" class="success">
+                    🔧 Fix My Cart
+                </button>
+            </div>
+        </div>
+        
+        <div class="step">
+            <h3>🗑️ Option 2: Clear Cart and Start Fresh</h3>
+            <p>If you don't mind losing your current cart items, you can clear the cart and add products again:</p>
+            <div class="center">
+                <button onclick="clearCart()" class="warning">
+                    🗑️ Clear Cart
+                </button>
+                <button onclick="window.location.href='index.html'" class="info">
+                    🛍️ Browse Products
+                </button>
+            </div>
+        </div>
+        
+        <div class="step">
+            <h3>🧪 Option 3: Test the Fix</h3>
+            <p>Want to test if the issue is resolved? Use this tool to create a test cart and try checkout:</p>
+            <div class="center">
+                <button onclick="window.location.href='test-direct-checkout.html'" class="info">
+                    🧪 Test Checkout
+                </button>
+            </div>
+        </div>
+        
+        <div class="step">
+            <h3>💳 Ready to Checkout?</h3>
+            <p>Once you've fixed your cart, you can proceed to checkout:</p>
+            <div class="center">
+                <button onclick="window.location.href='cart.html'">
+                    🛒 View Cart
+                </button>
+                <button onclick="window.location.href='checkout.html'" class="success">
+                    💳 Go to Checkout
+                </button>
+            </div>
+        </div>
+        
+        <div class="alert">
+            <strong>What was the problem?</strong><br>
+            Different pages were creating cart items with different data structures:
+            <ul>
+                <li>Product page used: <code>{ _id, id, name, price, image }</code></li>
+                <li>Women's page used: <code>{ productId, name, price, image }</code></li>
+                <li>Wishlist used: <code>{ productId, name, price, image }</code></li>
+            </ul>
+            The checkout validation couldn't find the product ID because it was stored in different fields. This has now been standardized.
+        </div>
+        
+        <div class="alert success">
+            <strong>Fixed!</strong> All pages now create cart items with consistent structure: <code>{ _id, id, productId, name, price, image }</code>
+        </div>
+    </div>
+
+    <script>
+        function clearCart() {
+            if (confirm('Are you sure you want to clear your cart? This cannot be undone.')) {
+                localStorage.removeItem('cart_v1');
+                alert('Cart cleared successfully! You can now add products again.');
+            }
+        }
+    </script>
+</body>
+</html>

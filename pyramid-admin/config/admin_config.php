@@ -1,9 +1,9 @@
 <?php
 // Admin Configuration
-define('ADMIN_EMAIL', 'admin@admin.com');
+define('ADMIN_EMAIL', 'admin@pyramid.com'); // Updated to match database
 define('ADMIN_PASSWORD', 'admin123'); // Change this to your desired password
 define('ADMIN_NAME', 'Admin User');
-define('DEBUG_MODE', true); // Set to false in production
+define('DEBUG_MODE', false); // Set to false in production
 
 // Node.js Backend Configuration
 define('NODEJS_BACKEND_URL', 'http://localhost:5001/api');

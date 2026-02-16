@@ -35,8 +35,8 @@ async function loadMensProducts(page = 1, filter = 'all') {
             throw new Error('API_BASE_URL not defined. Make sure api-config.js is loaded.');
         }
 
-        const apiUrl = `${window.API_BASE_URL}/products/category/men?page=${page}&limit=12`;
-        console.log('� Fetchning from:', apiUrl);
+        const apiUrl = `${window.API_BASE_URL}/products/category/men?limit=1000`;
+        console.log('🔗 Fetching from:', apiUrl);
         
         const response = await fetch(apiUrl, {
             headers: {
@@ -62,18 +62,9 @@ async function loadMensProducts(page = 1, filter = 'all') {
             throw new Error('Invalid API response structure');
         }
         
-        const products = data.data.products;
-        const pagination = {
-            page: data.data.page || 1,
-            pages: data.data.pages || 1,
-            total: data.data.total || products.length
-        };
+        let products = data.data.products;
         
         console.log(`✅ Successfully loaded ${products.length} products:`, products);
-        console.log('📄 Pagination info:', pagination);
-        
-        // Update global pagination state
-        totalPages = pagination.pages;
         
         if (products.length === 0) {
             productGrid.innerHTML = `
@@ -87,7 +78,25 @@ async function loadMensProducts(page = 1, filter = 'all') {
             return;
         }
         
-        displayMensProducts(products);
+        // Apply pagination to all products
+        const itemsPerPage = 12;
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const paginatedProducts = products.slice(startIndex, endIndex);
+        
+        // Create pagination info
+        const pagination = {
+            page: page,
+            pages: Math.ceil(products.length / itemsPerPage),
+            total: products.length
+        };
+        
+        console.log(`📄 Pagination: Page ${page} of ${pagination.pages}, showing ${paginatedProducts.length} products`);
+        
+        // Update global pagination state
+        totalPages = pagination.pages;
+        
+        displayMensProducts(paginatedProducts);
         updatePagination(pagination);
         
     } catch (error) {
@@ -104,9 +113,28 @@ async function loadMensProducts(page = 1, filter = 'all') {
     }
 }
 
-// Display products in the grid
+// Display products in the grid - ORIGINAL FUNCTION (not wrapped)
 function displayMensProducts(products) {
     console.log('🎯 displayMensProducts called with:', products.length, 'products');
+    
+    // Store products for sorting
+    currentPageProducts = products;
+    
+    // Update products count
+    const productsCountEl = document.getElementById('productsCount');
+    if (productsCountEl) {
+        productsCountEl.textContent = `${products.length} Products Found`;
+    }
+    
+    // Apply sort and render
+    const sortedProducts = applySortToProducts(products);
+    renderMensProducts(sortedProducts);
+}
+
+// Render products to grid
+function renderMensProducts(products) {
+    console.log('🎨 renderMensProducts called with', products.length, 'products');
+    console.log('📋 Products to render:', products.map(p => ({ name: p.name, subcategory: p.subcategory?.name || 'NONE' })));
     
     const productGrid = document.getElementById('productGrid');
     if (!productGrid) {
@@ -114,68 +142,138 @@ function displayMensProducts(products) {
         return;
     }
     
+    // Update products count
+    const productsCountEl = document.getElementById('productsCount');
+    if (productsCountEl) {
+        productsCountEl.textContent = `${products.length} Products Found`;
+    }
+    
     let allProductsHTML = '';
     
     products.forEach((product, index) => {
         console.log(`🔄 Processing product ${index + 1}: ${product.name}`);
         
-        // Handle image URL - improved logic with better debugging
+        // Handle image URL - improved logic with color variant fallback
         let imageUrl = 'https://via.placeholder.com/400x500/65AAC3/FFFFFF?text=No+Image';
         
         console.log(`🔍 Product ${product.name} image data:`, {
             images: product.images,
             imageUrls: product.imageUrls,
-            firstImage: product.images?.[0]
+            firstImage: product.images?.[0],
+            hasColorVariants: product.hasColorVariants,
+            colorVariants: product.colorVariants
         });
         
+        // Helper function to process image URL
+        function processImageUrl(imgUrl) {
+            if (!imgUrl || imgUrl === 'has_images' || imgUrl === '') return null;
+            
+            if (imgUrl.startsWith('http')) {
+                return imgUrl; // Full URL
+            } else if (imgUrl.startsWith('uploads/')) {
+                return '/' + imgUrl; // Relative path from root
+            } else if (imgUrl.startsWith('/uploads/')) {
+                return imgUrl; // Already has leading slash
+            } else {
+                return '/uploads/products/' + imgUrl; // Just filename
+            }
+        }
+        
+        // Try regular product images first
         if (product.images && product.images.length > 0) {
             const firstImage = product.images[0];
-            if (typeof firstImage === 'string' && firstImage !== 'has_images' && firstImage !== '') {
-                // Handle different path formats
-                if (firstImage.startsWith('http')) {
-                    imageUrl = firstImage; // Full URL
-                } else if (firstImage.startsWith('uploads/')) {
-                    imageUrl = '/' + firstImage; // Relative path from root
-                } else if (firstImage.startsWith('/uploads/')) {
-                    imageUrl = firstImage; // Already has leading slash
-                } else {
-                    imageUrl = '/uploads/products/' + firstImage; // Just filename
-                }
-            } else if (firstImage && firstImage.url && firstImage.url !== 'has_images' && firstImage.url !== '') {
-                const imgUrl = firstImage.url;
-                if (imgUrl.startsWith('http')) {
-                    imageUrl = imgUrl; // Full URL
-                } else if (imgUrl.startsWith('uploads/')) {
-                    imageUrl = '/' + imgUrl; // Relative path from root
-                } else if (imgUrl.startsWith('/uploads/')) {
-                    imageUrl = imgUrl; // Already has leading slash
-                } else {
-                    imageUrl = '/uploads/products/' + imgUrl; // Just filename
-                }
+            if (typeof firstImage === 'string') {
+                const processedUrl = processImageUrl(firstImage);
+                if (processedUrl) imageUrl = processedUrl;
+            } else if (firstImage && firstImage.url) {
+                const processedUrl = processImageUrl(firstImage.url);
+                if (processedUrl) imageUrl = processedUrl;
             }
         } else if (product.imageUrls && product.imageUrls.length > 0) {
-            const firstUrl = product.imageUrls[0];
-            if (firstUrl && firstUrl !== 'has_images' && firstUrl !== '') {
-                if (firstUrl.startsWith('http')) {
-                    imageUrl = firstUrl; // Full URL
-                } else if (firstUrl.startsWith('uploads/')) {
-                    imageUrl = '/' + firstUrl; // Relative path from root
-                } else if (firstUrl.startsWith('/uploads/')) {
-                    imageUrl = firstUrl; // Already has leading slash
-                } else {
-                    imageUrl = '/uploads/products/' + firstUrl; // Just filename
+            const processedUrl = processImageUrl(product.imageUrls[0]);
+            if (processedUrl) imageUrl = processedUrl;
+        }
+        // NEW: Fallback to color variant images if no regular images
+        else if (product.hasColorVariants && product.colorVariants && product.colorVariants.length > 0) {
+            console.log(`🎨 No regular images found, checking color variants for ${product.name}`);
+            
+            // Find the first active color variant with images
+            const variantWithImages = product.colorVariants.find(variant => 
+                variant.isActive !== false && variant.images && variant.images.length > 0
+            );
+            
+            if (variantWithImages) {
+                console.log(`🎨 Found color variant with images: ${variantWithImages.colorName}`);
+                
+                // Use the primary image or first image from the color variant
+                const primaryImage = variantWithImages.images.find(img => img.isPrimary) || variantWithImages.images[0];
+                
+                if (primaryImage && primaryImage.url) {
+                    const processedUrl = processImageUrl(primaryImage.url);
+                    if (processedUrl) {
+                        imageUrl = processedUrl;
+                        console.log(`🎨 Using color variant image: ${imageUrl}`);
+                    }
                 }
+            } else {
+                console.log(`🎨 No color variants with images found for ${product.name}`);
             }
         }
         
         // Final check: Skip broken "has_images" placeholder or empty URLs
-        if (imageUrl === 'has_images' || imageUrl === '/has_images' || imageUrl === '' || imageUrl === '/') {
-            imageUrl = 'https://via.placeholder.com/400x500/65AAC3/FFFFFF?text=No+Image';
+        if (imageUrl === 'has_images' || imageUrl === '/has_images' || imageUrl === '' || imageUrl === '/' || imageUrl === 'https://via.placeholder.com/400x500/65AAC3/FFFFFF?text=No+Image') {
+            // If we still don't have a valid image, try one more time with color variants
+            if (product.hasColorVariants && product.colorVariants && product.colorVariants.length > 0) {
+                console.log(`🔄 Final attempt: checking all color variants for ${product.name}`);
+                
+                for (const variant of product.colorVariants) {
+                    if (variant.images && variant.images.length > 0) {
+                        const anyImage = variant.images[0];
+                        if (anyImage && anyImage.url) {
+                            const processedUrl = processImageUrl(anyImage.url);
+                            if (processedUrl && processedUrl !== imageUrl) {
+                                imageUrl = processedUrl;
+                                console.log(`🎨 Final fallback image found: ${imageUrl}`);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // If still no valid image, use placeholder
+            if (imageUrl === 'has_images' || imageUrl === '/has_images' || imageUrl === '' || imageUrl === '/') {
+                imageUrl = 'https://via.placeholder.com/400x500/65AAC3/FFFFFF?text=No+Image';
+            }
         }
         
         console.log(`🖼️ Final Image URL for ${product.name}:`, imageUrl);
         
-        const price = product.price ? `₹${product.price.toLocaleString()}` : 'Price not available';
+        // Handle pricing and discount display
+        let priceDisplay = '';
+        let saleBadge = ''; // Sale badge for top-left corner
+        let originalPrice = product.price;
+        let finalPrice = product.price;
+        
+        // Check if product has discount from backend
+        if (product.discount && product.discount.isOnSale && product.discount.percentage > 0) {
+            finalPrice = product.discount.salePrice || Math.round(originalPrice * (1 - product.discount.percentage / 100));
+            
+            priceDisplay = `
+                <div class="price-container">
+                    <span class="current-price">₹${finalPrice.toLocaleString()}</span>
+                    <span class="original-price">₹${originalPrice.toLocaleString()}</span>
+                </div>
+                <div class="discount-info">
+                    <span class="discount-percentage">${product.discount.percentage}% OFF</span>
+                    <span class="savings">Save ₹${(originalPrice - finalPrice).toLocaleString()}</span>
+                </div>
+            `;
+            
+            saleBadge = `<div class="sale-badge">Sale</div>`; // Red Sale badge only
+        } else {
+            priceDisplay = `<div class="price-container"><span class="current-price">₹${originalPrice.toLocaleString()}</span></div>`;
+        }
         
         // Determine category filter using the helper function
         const categoryFilter = getProductCategory(product);
@@ -188,11 +286,15 @@ function displayMensProducts(products) {
         const productCard = `
             <div class="product-card ${outOfStockClass}" data-category="${categoryFilter}" onclick="goToDetail('${product._id}')">
                 <div class="product-image-container">
+                    ${saleBadge}
                     <img src="${imageUrl}" 
                          class="product-image" 
                          alt="${product.name}"
                          onerror="this.src='https://via.placeholder.com/400x500/ff6b6b/ffffff?text=Image+Error'">
                     ${outOfStockBadge}
+                    <div class="wishlist-icon" onclick="event.stopPropagation(); toggleWishlist('${product._id}', '${product.name}', '${imageUrl}', ${finalPrice})">
+                        <i class="far fa-heart"></i>
+                    </div>
                     <div class="product-overlay">
                         <div class="overlay-content">
                             <button class="quick-view-btn" onclick="event.stopPropagation(); viewProductDetails('${product._id}')">Quick View</button>
@@ -201,16 +303,19 @@ function displayMensProducts(products) {
                 </div>
                 <div class="product-info">
                     <h3 class="product-name">${product.name}</h3>
-                    <div class="product-price">${price}</div>
+                    <div class="product-price">${priceDisplay}</div>
                     <div class="product-rating">
-                        ${generateStars(product.rating || 5)}
-                    </div>
-                    <div class="product-category">
-                        <small>Category: ${product.category?.name || 'Men'}</small>
+                        ${generateStars(product.rating || 0)}
+                        <span class="rating-count">(${product.numReviews || 0})</span>
                     </div>
                 </div>
             </div>
         `;
+        
+        // Debug logging for rating
+        if (product.rating > 0 || product.numReviews > 0) {
+            console.log(`⭐ Product with rating: ${product.name} - ${product.rating}★ (${product.numReviews} reviews)`);
+        }
         
         allProductsHTML += productCard;
     });
@@ -245,11 +350,8 @@ function goToDetail(productId) {
     window.location.href = `product.html?id=${productId}`;
 }
 
-// Load products when page loads - SINGLE EVENT LISTENER
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('📄 DOM loaded, initializing men\'s products loader...');
-    
-    // Add CSS for loading animation
+// Add CSS for loading animation on page load
+(function() {
     const style = document.createElement('style');
     style.textContent = `
         @keyframes spin {
@@ -258,13 +360,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     `;
     document.head.appendChild(style);
-    
-    // Wait a bit for other scripts to load
-    setTimeout(() => {
-        console.log('🚀 Starting product load...');
-        loadMensProducts(1, 'all');
-    }, 500);
-});
+})();
 
 // Update pagination UI
 function updatePagination(pagination) {
@@ -387,7 +483,7 @@ function applyFilter(filterValue) {
     }
 }
 
-// Load men's products and apply client-side filtering
+// Load men's products and apply client-side filtering - ALL PRODUCTS (NO PAGINATION)
 async function loadMensProductsWithFilter(page = 1, filter = 'all') {
     console.log(`📦 Loading men's products with filter: ${filter}, page: ${page}`);
     
@@ -411,7 +507,7 @@ async function loadMensProductsWithFilter(page = 1, filter = 'all') {
 
     try {
         // Load all men's products first
-        const apiUrl = `${window.API_BASE_URL}/products/category/men`;
+        const apiUrl = `${window.API_BASE_URL}/products/category/men?limit=1000`;
         console.log('🔗 Fetching from:', apiUrl);
         
         const response = await fetch(apiUrl, {
@@ -435,17 +531,27 @@ async function loadMensProductsWithFilter(page = 1, filter = 'all') {
         
         // Apply client-side filtering
         if (filter !== 'all') {
+            const beforeFilterCount = products.length;
             products = products.filter(product => {
                 const productCategory = getProductCategory(product);
                 const normalizedProductCategory = productCategory.toLowerCase().replace(/\s+/g, '-');
                 const normalizedFilter = filter.toLowerCase().replace(/\s+/g, '-');
                 
-                console.log(`🔍 Product: "${product.name}" | Category: "${productCategory}" | Normalized: "${normalizedProductCategory}" | Filter: "${normalizedFilter}"`);
+                const matches = normalizedProductCategory === normalizedFilter;
                 
-                return normalizedProductCategory === normalizedFilter;
+                if (!matches) {
+                    console.log(`❌ FILTERED OUT: "${product.name}" | Category: "${productCategory}" (${normalizedProductCategory}) | Filter: "${normalizedFilter}"`);
+                } else {
+                    console.log(`✅ MATCHED: "${product.name}" | Category: "${productCategory}" (${normalizedProductCategory})`);
+                }
+                
+                return matches;
             });
             
-            console.log(`✅ After filtering: ${products.length} products match "${filter}"`);
+            console.log(`\n📊 FILTER SUMMARY:`);
+            console.log(`   Before: ${beforeFilterCount} products`);
+            console.log(`   After: ${products.length} products`);
+            console.log(`   Filter: "${filter}"\n`);
         }
         
         // Apply pagination to filtered results
@@ -520,14 +626,36 @@ function getProductCategory(product) {
         if (name.includes('accessor')) return 'accessories';
     }
     
-    // 3. Check product name (fallback)
+    // 3. Check product name (fallback for products without subcategory)
     if (product.name) {
         const name = product.name.toLowerCase();
-        if (name.includes('shirt') && !name.includes('t-shirt') && !name.includes('tshirt')) return 'shirts';
-        if (name.includes('t-shirt') || name.includes('tshirt')) return 't-shirts';
-        if (name.includes('jacket')) return 'jackets';
-        if (name.includes('jean')) return 'jeans';
-        if (name.includes('accessor')) return 'accessories';
+        
+        // More comprehensive name matching
+        // Shirts (but not T-Shirts)
+        if ((name.includes('shirt') || name.includes('button') || name.includes('dress shirt') || name.includes('formal')) 
+            && !name.includes('t-shirt') && !name.includes('tshirt') && !name.includes('tee')) {
+            return 'shirts';
+        }
+        
+        // T-Shirts
+        if (name.includes('t-shirt') || name.includes('tshirt') || name.includes('tee') || name.includes('polo')) {
+            return 't-shirts';
+        }
+        
+        // Jackets
+        if (name.includes('jacket') || name.includes('coat') || name.includes('blazer') || name.includes('hoodie') || name.includes('sweater') || name.includes('cardigan')) {
+            return 'jackets';
+        }
+        
+        // Jeans
+        if (name.includes('jean') || name.includes('denim') || name.includes('trouser') || name.includes('pant') || name.includes('cargo')) {
+            return 'jeans';
+        }
+        
+        // Accessories
+        if (name.includes('accessor') || name.includes('belt') || name.includes('wallet') || name.includes('bag') || name.includes('watch') || name.includes('cap') || name.includes('hat')) {
+            return 'accessories';
+        }
     }
     
     // Default fallback
@@ -547,4 +675,85 @@ function changePage(page) {
     } else {
         loadMensProductsWithFilter(page, currentFilter);
     }
+}
+
+
+
+// Sort functionality
+let currentSortBy = 'featured';
+let currentPageProducts = []; // Store current page products for sorting
+
+// Initialize sort dropdown
+document.addEventListener('DOMContentLoaded', function() {
+    const sortSelect = document.getElementById('sortBySelect');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            // If empty value (placeholder), default to featured
+            currentSortBy = this.value || 'featured';
+            console.log('🔄 Sort changed to:', currentSortBy);
+            // Re-render current page products with new sort
+            if (currentPageProducts && currentPageProducts.length > 0) {
+                const sortedProducts = applySortToProducts(currentPageProducts);
+                renderMensProducts(sortedProducts);
+            }
+        });
+    }
+    
+    // Initialize products on page load
+    loadMensProducts(1, 'all');
+});
+
+// Function to apply sort to products (returns sorted array)
+function applySortToProducts(products) {
+    if (!products || products.length === 0) return products;
+    
+    let sortedProducts = [...products];
+    
+    switch(currentSortBy) {
+        case 'availability':
+            // Filter out out-of-stock products and sort by stock quantity
+            sortedProducts = sortedProducts.filter(product => {
+                return product.stock !== undefined && product.stock > 0;
+            });
+            sortedProducts.sort((a, b) => (b.stock || 0) - (a.stock || 0));
+            break;
+        case 'price-low':
+            sortedProducts.sort((a, b) => {
+                const priceA = a.discount?.isOnSale ? a.discount.salePrice : a.price;
+                const priceB = b.discount?.isOnSale ? b.discount.salePrice : b.price;
+                return priceA - priceB;
+            });
+            break;
+        case 'price-high':
+            sortedProducts.sort((a, b) => {
+                const priceA = a.discount?.isOnSale ? a.discount.salePrice : a.price;
+                const priceB = b.discount?.isOnSale ? b.discount.salePrice : b.price;
+                return priceB - priceA;
+            });
+            break;
+        case 'newest':
+            sortedProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            break;
+        case 'oldest':
+            sortedProducts.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            break;
+        case 'discount':
+            sortedProducts.sort((a, b) => {
+                const discountA = a.discount?.isOnSale ? a.discount.percentage : 0;
+                const discountB = b.discount?.isOnSale ? b.discount.percentage : 0;
+                return discountB - discountA;
+            });
+            break;
+        case 'featured':
+        default:
+            // Featured products first, then by creation date
+            sortedProducts.sort((a, b) => {
+                if (a.featured && !b.featured) return -1;
+                if (!a.featured && b.featured) return 1;
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
+            break;
+    }
+    
+    return sortedProducts;
 }

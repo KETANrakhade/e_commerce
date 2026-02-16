@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status Badge Color Verification</title>
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/app.min.css" rel="stylesheet">
+    <style>
+        /* Enhanced Order Status Badge Colors - Same as in orders.php */
+        .badge-soft-primary {
+            color: #0d6efd !important;
+            background-color: rgba(13, 110, 253, 0.1) !important;
+            border: 1px solid rgba(13, 110, 253, 0.2) !important;
+        }
+
+        .badge-soft-info {
+            color: #0dcaf0 !important;
+            background-color: rgba(13, 202, 240, 0.1) !important;
+            border: 1px solid rgba(13, 202, 240, 0.2) !important;
+        }
+
+        .badge-soft-warning {
+            color: #fd7e14 !important;
+            background-color: rgba(253, 126, 20, 0.1) !important;
+            border: 1px solid rgba(253, 126, 20, 0.2) !important;
+        }
+
+        .badge-soft-success {
+            color: #198754 !important;
+            background-color: rgba(25, 135, 84, 0.1) !important;
+            border: 1px solid rgba(25, 135, 84, 0.2) !important;
+        }
+
+        .badge-soft-danger {
+            color: #dc3545 !important;
+            background-color: rgba(220, 53, 69, 0.1) !important;
+            border: 1px solid rgba(220, 53, 69, 0.2) !important;
+        }
+
+        .badge-soft-dark {
+            color: #212529 !important;
+            background-color: rgba(33, 37, 41, 0.1) !important;
+            border: 1px solid rgba(33, 37, 41, 0.2) !important;
+        }
+
+        .verification-container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .color-test {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .color-comparison {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .status-info {
+            flex: 1;
+        }
+
+        .badge-pill {
+            padding: 0.35em 0.65em;
+            border-radius: 10rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="verification-container">
+        <h1 class="text-center mb-4">✅ Status Badge Color Verification</h1>
+        <p class="text-center text-muted mb-5">Verifying that all status badges have distinct colors</p>
+
+        <div class="alert alert-success">
+            <h5><i class="bx bx-check-circle"></i> Color Conflict Resolution</h5>
+            <p class="mb-0">
+                <strong>Issue Fixed:</strong> "Delivered" and "Paid" no longer use the same green color<br>
+                <strong>Solution:</strong> "Delivered" = Green, "Paid" = Light Blue
+            </p>
+        </div>
+
+        <h3 class="mt-4 mb-3">Order Status Colors</h3>
+
+        <div class="color-test">
+            <div class="status-info">
+                <strong>Pending Orders</strong>
+                <br><small class="text-muted">Waiting for confirmation</small>
+            </div>
+            <div class="color-comparison">
+                <span class="badge badge-pill badge-soft-warning font-size-11">Pending</span>
+                <small class="text-muted">Orange/Yellow</small>
+            </div>
+        </div>
+
+        <div class="color-test">
+            <div class="status-info">
+                <strong>Confirmed Orders</strong>
+                <br><small class="text-muted">Confirmed by admin</small>
+            </div>
+            <div class="color-comparison">
+                <span class="badge badge-pill badge-soft-primary font-size-11">Confirmed</span>
+                <small class="text-muted">Blue</small>
+            </div>
+        </div>
+
+        <div class="color-test">
+            <div class="status-info">
+                <strong>Processing Orders</strong>
+                <br><small class="text-muted">Being prepared</small>
+            </div>
+            <div class="color-comparison">
+                <span class="badge badge-pill badge-soft-info font-size-11">Processing</span>
+                <small class="text-muted">Light Blue</small>
+            </div>
+        </div>
+
+        <div class="color-test">
+            <div class="status-info">
+                <strong>Shipped Orders</strong>
+                <br><small class="text-muted">Dispatched for delivery</small>
+            </div>
+            <div class="color-comparison">
+                <span class="badge badge-pill badge-soft-dark font-size-11">Shipped</span>
+                <small class="text-muted">Dark Gray</small>
+            </div>
+        </div>
+
+        <div class="color-test">
+            <div class="status-info">
+                <strong>Delivered Orders</strong>
+                <br><small class="text-muted">Successfully delivered</small>
+            </div>
+            <div class="color-comparison">
+                <span class="badge badge-pill badge-soft-success font-size-11">Delivered</span>
+                <small class="text-muted">Green ✅</small>
+            </div>
+        </div>
+
+        <div class="color-test">
+            <div class="status-info">
+                <strong>Cancelled Orders</strong>
+                <br><small class="text-muted">Cancelled by customer/admin</small>
+            </div>
+            <div class="color-comparison">
+                <span class="badge badge-pill badge-soft-danger font-size-11">Cancelled</span>
+                <small class="text-muted">Red</small>
+            </div>
+        </div>
+
+        <h3 class="mt-5 mb-3">Payment Status Colors</h3>
+
+        <div class="color-test">
+            <div class="status-info">
+                <strong>Paid Orders</strong>
+                <br><small class="text-muted">Payment received</small>
+            </div>
+            <div class="color-comparison">
+                <span class="badge badge-pill badge-soft-info font-size-11">Paid</span>
+                <small class="text-muted">Light Blue ✅ (Changed from Green)</small>
+            </div>
+        </div>
+
+        <div class="color-test">
+            <div class="status-info">
+                <strong>Unpaid Orders</strong>
+                <br><small class="text-muted">Payment pending</small>
+            </div>
+            <div class="color-comparison">
+                <span class="badge badge-pill badge-soft-warning font-size-11">Unpaid</span>
+                <small class="text-muted">Orange/Yellow</small>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-4">
+            <h5><i class="bx bx-info-circle"></i> Color Distinction Summary</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>Order Status:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Pending: Orange</li>
+                        <li>Confirmed: Blue</li>
+                        <li>Processing: Light Blue</li>
+                        <li>Shipped: Dark Gray</li>
+                        <li>Delivered: Green</li>
+                        <li>Cancelled: Red</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <strong>Payment Status:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Paid: Light Blue</li>
+                        <li>Unpaid: Orange</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="index.php?page=orders" class="btn btn-primary">← View Orders Page</a>
+            <a href="test-status-badges.html" class="btn btn-secondary">View Full Test Page</a>
+        </div>
+    </div>
+
+    <script src="assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

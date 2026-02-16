@@ -8,7 +8,7 @@ const Product = require('../models/productModel');
 const getCart = asyncHandler(async (req, res) => {
   console.log('📋 Get cart request for user:', req.user._id);
   
-  const cart = await Cart.findOne({ user: req.user._id }).populate('items.product', 'name price images stock');
+  const cart = await Cart.findOne({ user: req.user._id }).populate('items.product', 'name price images imageUrls colorVariants stock');
   
   if (!cart) {
     console.log('📦 No cart found, returning empty cart');

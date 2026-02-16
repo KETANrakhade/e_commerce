@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Export Layout</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .test-table th, .test-table td { 
+            border: 1px solid #ddd; 
+            padding: 12px; 
+            text-align: left; 
+        }
+        .test-table th { 
+            background-color: #f5f5f5; 
+            font-weight: bold; 
+        }
+        .customer-info { 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .customer-name { font-weight: 500; }
+        .customer-email { 
+            font-size: 0.9em; 
+            color: #666; 
+            margin-top: 2px; 
+        }
+        .payment-paid { 
+            color: #28a745; 
+            background: #d4edda; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 0.85em;
+        }
+        .payment-unpaid { 
+            color: #dc3545; 
+            background: #f8d7da; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Export Layout Test - Matching Your Image</h1>
+    
+    <h2>New PDF Layout Preview:</h2>
+    <table class="test-table">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Payment</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>ORD-176906080243-466</td>
+                <td>
+                    <div class="customer-info">
+                        <div class="customer-name">Admin User</div>
+                        <div class="customer-email">admin@pyramid.com</div>
+                    </div>
+                </td>
+                <td>Jan 22, 2026</td>
+                <td>Rs. 2,499.00</td>
+                <td><span class="payment-paid">Paid</span></td>
+            </tr>
+            <tr>
+                <td>ORD-176906089845-304</td>
+                <td>
+                    <div class="customer-info">
+                        <div class="customer-name">Admin User</div>
+                        <div class="customer-email">admin@pyramid.com</div>
+                    </div>
+                </td>
+                <td>Jan 22, 2026</td>
+                <td>Rs. 4,998.00</td>
+                <td><span class="payment-unpaid">Unpaid</span></td>
+            </tr>
+            <tr>
+                <td>ORD-176890987622-429</td>
+                <td>
+                    <div class="customer-info">
+                        <div class="customer-name">Test User</div>
+                        <div class="customer-email">test@example.com</div>
+                    </div>
+                </td>
+                <td>Jan 20, 2026</td>
+                <td>Rs. 4,999.00</td>
+                <td><span class="payment-unpaid">Unpaid</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Changes Made:</h2>
+    <ul>
+        <li>✅ <strong>Order ID</strong> - First column (wider for full order numbers)</li>
+        <li>✅ <strong>Customer</strong> - Second column with name and email on separate lines</li>
+        <li>✅ <strong>Date</strong> - Third column with "Jan 22, 2026" format</li>
+        <li>✅ <strong>Amount</strong> - Fourth column with Rs. prefix</li>
+        <li>✅ <strong>Payment</strong> - Fifth column with color-coded status</li>
+        <li>✅ Removed "Status" column (order status)</li>
+        <li>✅ Increased row height for two-line customer info</li>
+        <li>✅ Updated CSV export to match new column order</li>
+    </ul>
+
+    <h2>Test the Export:</h2>
+    <p>Go to your admin panel at <a href="http://localhost:8000" target="_blank">http://localhost:8000</a> and test the PDF export to see the new layout!</p>
+</body>
+</html>

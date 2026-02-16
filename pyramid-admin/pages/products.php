@@ -3,7 +3,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Start output buffering to prevent header issues
+// Start output buffering to prevent header issues.  
 ob_start();
 
 // Handle product actions
@@ -13,11 +13,11 @@ $productId = $_GET['id'] ?? '';
 // Check for session success message
 $sessionSuccess = '';
 $sessionSuccessType = '';
-if (isset($_SESSION['product_success'])) {
-    $sessionSuccess = $_SESSION['product_success'];
+if (isset($_SESSION['product_success'])) { 
+    $sessionSuccess = $_SESSION['product_success'];   
     $sessionSuccessType = $_SESSION['product_success_type'] ?? 'info';
-    unset($_SESSION['product_success']);
-    unset($_SESSION['product_success_type']);
+    unset($_SESSION['product_success']);         
+    unset($_SESSION['product_success_type']);   
 }
 
 // Get products data from Node.js backend API only
@@ -249,6 +249,30 @@ if ($_POST && isset($_POST['action'])) {
             'featured' => isset($_POST['featured']) ? true : false
         ];
         
+        // Handle discount data
+        if (isset($_POST['enableDiscount']) && $_POST['enableDiscount'] === 'on') {
+            $discountPercentage = floatval($_POST['discountPercentage'] ?? 0);
+            $saleLabel = trim($_POST['saleLabel'] ?? '');
+            $startDate = !empty($_POST['saleStartDate']) ? $_POST['saleStartDate'] : null;
+            $endDate = !empty($_POST['saleEndDate']) ? $_POST['saleEndDate'] : null;
+            
+            $productData['discount'] = [
+                'isOnSale' => true,
+                'percentage' => max(0, min(99, $discountPercentage)), // Ensure 0-99 range
+                'saleLabel' => $saleLabel,
+                'startDate' => $startDate,
+                'endDate' => $endDate
+            ];
+        } else {
+            $productData['discount'] = [
+                'isOnSale' => false,
+                'percentage' => 0,
+                'saleLabel' => '',
+                'startDate' => null,
+                'endDate' => null
+            ];
+        }
+        
         // Handle images - process file uploads with comprehensive debugging
         $uploadedImages = [];
         
@@ -407,8 +431,18 @@ if ($_POST && isset($_POST['action'])) {
             }
         }
         
-        // Image validation with debugging
+        // Debug: Log POST data size and structure
+        error_log('POST data size: ' . count($_POST, COUNT_RECURSIVE) . ' variables');
+        error_log('max_input_vars limit: ' . ini_get('max_input_vars'));
+        
+        if (count($_POST, COUNT_RECURSIVE) > (ini_get('max_input_vars') * 0.8)) {
+            error_log('WARNING: Approaching max_input_vars limit!');
+        }
+        
+        // Image validation with debugging - CONDITIONAL FOR COLOR VARIANTS
         $hasImages = false;
+        $hasColorVariants = !empty($_POST['colorVariantsData']);
+        
         if (!empty($allImages)) {
             $hasImages = true;
         }
@@ -417,9 +451,11 @@ if ($_POST && isset($_POST['action'])) {
         error_log("UPLOAD DEBUG - Uploaded images: " . print_r($uploadedImages, true));
         error_log("UPLOAD DEBUG - All images: " . print_r($allImages, true));
         error_log("UPLOAD DEBUG - Has images: " . ($hasImages ? 'YES' : 'NO'));
+        error_log("UPLOAD DEBUG - Has color variants: " . ($hasColorVariants ? 'YES' : 'NO'));
         
-        if (!$hasImages) {
-            $validationErrors[] = 'At least one product image is required';
+        // Only require images if no color variants are provided
+        if (!$hasImages && !$hasColorVariants) {
+            $validationErrors[] = 'At least one product image is required (or enable color variants with images)';
         }
         
         // If there are validation errors, show them
@@ -466,6 +502,72 @@ if ($_POST && isset($_POST['action'])) {
             
             // Debug: Log the product data being sent
             error_log('Creating product with data: ' . json_encode($productData));
+            
+            // Handle color variants if enabled
+            if (!empty($_POST['colorVariantsData'])) {
+                $colorVariantsData = json_decode($_POST['colorVariantsData'], true);
+                if ($colorVariantsData && is_array($colorVariantsData)) {
+                    error_log('Processing color variants: ' . json_encode($colorVariantsData));
+                    error_log('Number of color variants: ' . count($colorVariantsData));
+                    
+                    // Check for JSON decode errors
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        error_log('JSON decode error: ' . json_last_error_msg());
+                        $validationErrors[] = 'Invalid color variants data: ' . json_last_error_msg();
+                    } else {
+                        // Process color variant images
+                        foreach ($colorVariantsData as &$variant) {
+                            if (!empty($variant['images'])) {
+                                $processedImages = [];
+                                foreach ($variant['images'] as $imageData) {
+                                    if (!empty($imageData['data']) && strpos($imageData['data'], 'data:image/') === 0) {
+                                        // Process base64 image data
+                                        $imageInfo = explode(',', $imageData['data']);
+                                        if (count($imageInfo) === 2) {
+                                            $imageContent = base64_decode($imageInfo[1]);
+                                            $mimeType = explode(';', explode(':', $imageInfo[0])[1])[0];
+                                            
+                                            // Determine file extension
+                                            $extension = 'jpg';
+                                            if ($mimeType === 'image/png') $extension = 'png';
+                                            elseif ($mimeType === 'image/webp') $extension = 'webp';
+                                            elseif ($mimeType === 'image/gif') $extension = 'gif';
+                                            
+                                            // Generate unique filename
+                                            $uniqueName = 'color_variant_' . time() . '_' . rand(1000, 9999) . '.' . $extension;
+                                            $uploadPath = __DIR__ . '/../../uploads/products/' . $uniqueName;
+                                            
+                                            // Save the image
+                                            if (file_put_contents($uploadPath, $imageContent)) {
+                                                $processedImages[] = [
+                                                    'url' => 'uploads/products/' . $uniqueName,
+                                                    'publicId' => 'color-variant-' . time() . '-' . rand(1000, 9999),
+                                                    'alt' => $productData['name'] . ' - ' . $variant['colorName'],
+                                                    'isPrimary' => $imageData['isPrimary'] ?? false
+                                                ];
+                                            }
+                                        }
+                                    }
+                                }
+                                $variant['images'] = $processedImages;
+                            }
+                        }
+                        
+                        $productData['colorVariants'] = $colorVariantsData;
+                        $productData['hasColorVariants'] = true;
+                        
+                        // Set default color variant
+                        $defaultVariant = array_filter($colorVariantsData, function($v) { return $v['isDefault'] ?? false; });
+                        if (!empty($defaultVariant)) {
+                            $productData['defaultColorVariant'] = array_keys($defaultVariant)[0];
+                        }
+                    }
+                } else {
+                    error_log('Color variants data is not valid array');
+                    $validationErrors[] = 'Invalid color variants data format';
+                }
+            }
+            
             error_log('Final product data being sent: ' . json_encode($productData));
             
             // Proceed with API call
@@ -535,7 +637,23 @@ if ($_POST && isset($_POST['action'])) {
                     } elseif ($result['http_code'] === 0) {
                         $error = 'Connection error: Could not reach backend server. Make sure backend is running on port 5001.' . $debugInfo;
                     } else {
-                        $error = 'Error ' . $result['http_code'] . ': ' . ($result['data']['error'] ?? $result['data']['message'] ?? 'Failed to create product') . $debugInfo;
+                        $error = 'Error ' . $result['http_code'] . ': ' . ($result['data']['error'] ?? $result['data']['message'] ?? 'Failed to create product');
+                        
+                        // Check if it's a SKU conflict error and extract suggestions
+                        $errorMsg = $result['data']['error'] ?? $result['data']['message'] ?? '';
+                        if (strpos($errorMsg, 'SKUs already exist') !== false && strpos($errorMsg, 'Suggested alternatives') !== false) {
+                            // Parse the error message to extract suggestions
+                            $parts = explode('Suggested alternatives: ', $errorMsg);
+                            if (count($parts) > 1) {
+                                $suggestions = $parts[1];
+                                $error .= '<br><br><strong>💡 Suggested SKUs:</strong><br>';
+                                $error .= '<div class="alert alert-info mt-2">';
+                                $error .= '<small>Try using these unique SKUs: <code>' . htmlspecialchars($suggestions) . '</code></small>';
+                                $error .= '</div>';
+                            }
+                        }
+                        
+                        $error .= $debugInfo;
                     }
                 } else {
                     $error = ($result['error'] ?? ($result['data']['error'] ?? $result['data']['message'] ?? 'Failed to create product')) . $debugInfo;
@@ -557,6 +675,30 @@ if ($_POST && isset($_POST['action'])) {
             'featured' => isset($_POST['featured']),
             'isActive' => isset($_POST['isActive'])
         ];
+        
+        // Handle discount data for update
+        if (isset($_POST['enableDiscount']) && $_POST['enableDiscount'] === 'on') {
+            $discountPercentage = floatval($_POST['discountPercentage'] ?? 0);
+            $saleLabel = trim($_POST['saleLabel'] ?? '');
+            $startDate = !empty($_POST['saleStartDate']) ? $_POST['saleStartDate'] : null;
+            $endDate = !empty($_POST['saleEndDate']) ? $_POST['saleEndDate'] : null;
+            
+            $productData['discount'] = [
+                'isOnSale' => true,
+                'percentage' => max(0, min(99, $discountPercentage)), // Ensure 0-99 range
+                'saleLabel' => $saleLabel,
+                'startDate' => $startDate,
+                'endDate' => $endDate
+            ];
+        } else {
+            $productData['discount'] = [
+                'isOnSale' => false,
+                'percentage' => 0,
+                'saleLabel' => '',
+                'startDate' => null,
+                'endDate' => null
+            ];
+        }
         
         // Handle images - process file uploads for update
         $uploadedImages = [];
@@ -1033,6 +1175,69 @@ if ($action === 'edit' && $productId) {
                                                                                 <i class="bx bx-package font-size-16 text-muted"></i>
                                                                             </div> -->
                                                                         <?php } ?>
+                                                                    <?php elseif (!empty($prod['hasColorVariants']) && !empty($prod['colorVariants']) && is_array($prod['colorVariants'])): ?>
+                                                                        <?php 
+                                                                        // NEW: Fallback to color variant images if no regular images
+                                                                        error_log('No regular images found, checking color variants for ' . $prod['name']);
+                                                                        
+                                                                        $colorVariantImageUrl = '';
+                                                                        $colorVariantImagePath = '';
+                                                                        
+                                                                        // Find the first active color variant with images
+                                                                        foreach ($prod['colorVariants'] as $variant) {
+                                                                            if ((!isset($variant['isActive']) || $variant['isActive'] !== false) && 
+                                                                                !empty($variant['images']) && is_array($variant['images']) && 
+                                                                                !empty($variant['images'][0])) {
+                                                                                
+                                                                                error_log('Found color variant with images: ' . ($variant['colorName'] ?? 'Unknown'));
+                                                                                
+                                                                                // Use the primary image or first image from the color variant
+                                                                                $primaryImage = null;
+                                                                                foreach ($variant['images'] as $img) {
+                                                                                    if (is_array($img) && !empty($img['isPrimary'])) {
+                                                                                        $primaryImage = $img;
+                                                                                        break;
+                                                                                    }
+                                                                                }
+                                                                                
+                                                                                if (!$primaryImage) {
+                                                                                    $primaryImage = $variant['images'][0];
+                                                                                }
+                                                                                
+                                                                                if (is_array($primaryImage)) {
+                                                                                    $colorVariantImageUrl = $primaryImage['url'] ?? '';
+                                                                                } else {
+                                                                                    $colorVariantImageUrl = $primaryImage;
+                                                                                }
+                                                                                
+                                                                                if (!empty($colorVariantImageUrl)) {
+                                                                                    error_log('Using color variant image: ' . $colorVariantImageUrl);
+                                                                                    break;
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        
+                                                                        if (!empty($colorVariantImageUrl)) {
+                                                                            $colorVariantImagePath = $colorVariantImageUrl;
+                                                                            if (!preg_match('/^https?:\/\//', $colorVariantImageUrl)) {
+                                                                                $cleanUrl = ltrim($colorVariantImageUrl, '/');
+                                                                                $colorVariantImagePath = 'uploads-root/' . str_replace('uploads/', '', $cleanUrl);
+                                                                            }
+                                                                        ?>
+                                                                            <img src="<?php echo htmlspecialchars($colorVariantImagePath); ?>" 
+                                                                                 alt="<?php echo htmlspecialchars($prod['name']); ?>" 
+                                                                                 class="img-fluid d-block"
+                                                                                 style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 2px solid #007bff;"
+                                                                                 title="Color Variant Image"
+                                                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                                            <!-- <div class="avatar-sm bg-light d-flex align-items-center justify-content-center" style="display: none; width: 40px; height: 40px; border-radius: 4px;">
+                                                                                <i class="bx bx-palette font-size-16 text-muted"></i>
+                                                                            </div> -->
+                                                                        <?php } else { ?>
+                                                                            <!-- <div class="avatar-sm bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 4px;">
+                                                                                <i class="bx bx-palette font-size-16 text-muted"></i>
+                                                                            </div> -->
+                                                                        <?php } ?>
                                                                     <?php else: ?>
                                                                         <!-- <div class="avatar-sm bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 4px;">
                                                                             <i class="bx bx-package font-size-16 text-muted"></i>
@@ -1064,14 +1269,14 @@ if ($action === 'edit' && $productId) {
                                                             </span>
                                                         </td>
                                                         <td>
-                                                            <div class="d-flex gap-3">
+                                                            <div class="d-flex gap-2">
                                                                 <a href="index.php?page=edit-product&id=<?php echo $prod['_id']; ?>" 
-                                                                   class="text-success">
-                                                                    <i class="mdi mdi-pencil font-size-18"></i>
+                                                                   class="btn btn-sm btn-outline-success" title="Edit Product">
+                                                                    <i class="mdi mdi-pencil"></i>
                                                                 </a>
-                                                                <a href="javascript:void(0);" class="text-danger" 
-                                                                   onclick="deleteProduct('<?php echo $prod['_id']; ?>')">
-                                                                    <i class="mdi mdi-delete font-size-18"></i>
+                                                                <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger" 
+                                                                   onclick="deleteProduct('<?php echo $prod['_id']; ?>')" title="Delete Product">
+                                                                    <i class="mdi mdi-delete"></i>
                                                                 </a>
                                                             </div>
                                                         </td>
@@ -1199,6 +1404,90 @@ if ($action === 'edit' && $productId) {
                                                 </div>
                                                 <small class="text-muted">Minimum ₹1, maximum ₹999,999</small>
                                             </div>
+
+                                            <!-- Discount Section -->
+                                            <div class="mb-4">
+                                                <div class="card">
+                                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                                        <h5 class="card-title mb-0">
+                                                            <i class="mdi mdi-percent me-2"></i>Discount Settings
+                                                        </h5>
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" id="enableDiscount" name="enableDiscount" 
+                                                                   <?php echo (isset($product['discount']['isOnSale']) && $product['discount']['isOnSale']) ? 'checked' : ''; ?>>
+                                                            <label class="form-check-label" for="enableDiscount">Enable Sale</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body" id="discountSection" style="display: <?php echo (isset($product['discount']['isOnSale']) && $product['discount']['isOnSale']) ? 'block' : 'none'; ?>;">
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label for="discountPercentage" class="form-label">Discount Percentage (%)</label>
+                                                                    <input type="number" class="form-control" id="discountPercentage" name="discountPercentage" 
+                                                                           min="1" max="99" step="1" 
+                                                                           value="<?php echo $product['discount']['percentage'] ?? ''; ?>"
+                                                                           placeholder="e.g., 25">
+                                                                    <small class="text-muted">Enter discount percentage (1-99%)</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label for="saleLabel" class="form-label">Sale Label</label>
+                                                                    <select class="form-select" id="saleLabel" name="saleLabel">
+                                                                        <option value="">No Label</option>
+                                                                        <option value="SALE" <?php echo (isset($product['discount']['saleLabel']) && $product['discount']['saleLabel'] === 'SALE') ? 'selected' : ''; ?>>SALE</option>
+                                                                        <option value="HOT DEAL" <?php echo (isset($product['discount']['saleLabel']) && $product['discount']['saleLabel'] === 'HOT DEAL') ? 'selected' : ''; ?>>HOT DEAL</option>
+                                                                        <option value="MEGA SALE" <?php echo (isset($product['discount']['saleLabel']) && $product['discount']['saleLabel'] === 'MEGA SALE') ? 'selected' : ''; ?>>MEGA SALE</option>
+                                                                        <option value="CLEARANCE" <?php echo (isset($product['discount']['saleLabel']) && $product['discount']['saleLabel'] === 'CLEARANCE') ? 'selected' : ''; ?>>CLEARANCE</option>
+                                                                        <option value="LIMITED OFFER" <?php echo (isset($product['discount']['saleLabel']) && $product['discount']['saleLabel'] === 'LIMITED OFFER') ? 'selected' : ''; ?>>LIMITED OFFER</option>
+                                                                        <option value="FLASH SALE" <?php echo (isset($product['discount']['saleLabel']) && $product['discount']['saleLabel'] === 'FLASH SALE') ? 'selected' : ''; ?>>FLASH SALE</option>
+                                                                    </select>
+                                                                    <small class="text-muted">Optional label to display with the discount</small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label for="saleStartDate" class="form-label">Sale Start Date (Optional)</label>
+                                                                    <input type="datetime-local" class="form-control" id="saleStartDate" name="saleStartDate" 
+                                                                           value="<?php 
+                                                                           if (isset($product['discount']['startDate'])) {
+                                                                               echo date('Y-m-d\TH:i', strtotime($product['discount']['startDate']));
+                                                                           }
+                                                                           ?>">
+                                                                    <small class="text-muted">When the sale should start</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label for="saleEndDate" class="form-label">Sale End Date (Optional)</label>
+                                                                    <input type="datetime-local" class="form-control" id="saleEndDate" name="saleEndDate" 
+                                                                           value="<?php 
+                                                                           if (isset($product['discount']['endDate'])) {
+                                                                               echo date('Y-m-d\TH:i', strtotime($product['discount']['endDate']));
+                                                                           }
+                                                                           ?>">
+                                                                    <small class="text-muted">When the sale should end</small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="discount-preview" id="discountPreview" style="display: none;">
+                                                            <div class="alert alert-info">
+                                                                <h6><i class="mdi mdi-calculator me-2"></i>Price Preview:</h6>
+                                                                <div class="d-flex align-items-center gap-3">
+                                                                    <span>Original Price: <strong>₹<span id="originalPricePreview">0</span></strong></span>
+                                                                    <span>Sale Price: <strong class="text-success">₹<span id="salePricePreview">0</span></strong></span>
+                                                                    <span>You Save: <strong class="text-danger">₹<span id="savingsPreview">0</span> (<span id="discountPreviewPercent">0</span>%)</strong></span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                             <div class="mb-3">
                                                 <label for="brand" class="form-label">Brand</label>
                                                 <input id="brand" name="brand" type="text" class="form-control" 
@@ -1498,7 +1787,7 @@ if ($action === 'edit' && $productId) {
                                                 <!-- Hidden input for form submission -->
                                                 <input type="hidden" id="images" name="images" value="">
                                                 
-                                                <div class="alert alert-info mt-3">
+                                                <div class="alert alert-info mt-3" id="imageUploadInfo">
                                                     <i class="mdi mdi-information-outline me-2"></i>
                                                     <strong>Tips:</strong>
                                                     <ul class="mb-0 mt-2">
@@ -1508,7 +1797,65 @@ if ($action === 'edit' && $productId) {
                                                         <li>Maximum file size: 5MB per image</li>
                                                         <li>You can add multiple images to show different angles</li>
                                                         <li>Images will be automatically optimized and stored securely</li>
+                                                        <li id="colorVariantImageTip" style="display: none;"><strong>Note:</strong> When using color variants, product images are optional. Each color variant can have its own images.</li>
                                                     </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Color Variants Section -->
+                                    <div class="mb-4">
+                                        <div class="card">
+                                            <div class="card-header d-flex justify-content-between align-items-center">
+                                                <h5 class="card-title mb-0">
+                                                    <i class="mdi mdi-palette me-2"></i>Color Variants
+                                                </h5>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="enableColorVariants" name="enableColorVariants">
+                                                    <label class="form-check-label" for="enableColorVariants">Enable Color Variants</label>
+                                                </div>
+                                            </div>
+                                            <div class="card-body" id="colorVariantsSection" style="display: none;">
+                                                <div class="alert alert-info">
+                                                    <i class="mdi mdi-information-outline me-2"></i>
+                                                    <strong>Color Variants:</strong> Add multiple color options for this product. Each color can have its own images, stock, and pricing.
+                                                    <br><strong>Important:</strong> When using color variants, regular product images become optional. Make sure to upload images for each color variant instead.
+                                                </div>
+                                                
+                                                <div id="colorVariantsContainer">
+                                                    <!-- Color variants will be added here -->
+                                                </div>
+                                                
+                                                <button type="button" class="btn btn-outline-primary" onclick="addColorVariant()">
+                                                    <i class="mdi mdi-plus me-1"></i>Add Color Variant
+                                                </button>
+                                                
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
+                                                        <i class="mdi mdi-information-outline me-1"></i>
+                                                        <strong>Limits:</strong> Maximum 10 color variants, 5 images per variant.
+                                                        Each image should be under 10MB.
+                                                    </small>
+                                                    <br>
+                                                    <small class="text-info">
+                                                        <i class="mdi mdi-currency-inr me-1"></i>
+                                                        <strong>Pricing:</strong> Set individual prices for each color variant. 
+                                                        If variant price is 0, the base product price will be used.
+                                                    </small>
+                                                </div>
+                                                
+                                                <div class="mt-3">
+                                                    <small class="text-muted">
+                                                        <i class="mdi mdi-lightbulb-outline me-1"></i>
+                                                        <strong>Tips:</strong>
+                                                        <ul class="mb-0 mt-1">
+                                                            <li>Each color variant should have a unique SKU</li>
+                                                            <li>Upload 4-5 images per color for best results</li>
+                                                            <li>Set one image as primary for each color</li>
+                                                            <li>Price modifier can be positive (premium colors) or negative (discounted colors)</li>
+                                                        </ul>
+                                                    </small>
                                                 </div>
                                             </div>
                                         </div>
@@ -1745,9 +2092,116 @@ function initializeFormValidation() {
     // Description character counter
     updateDescriptionCount();
     
+    // Process color variants for form submission
+    function processColorVariants() {
+        const colorVariants = [];
+        const variantElements = document.querySelectorAll('.color-variant-item');
+        
+        if (variantElements.length === 0) {
+            alert('Please add at least one color variant or disable color variants.');
+            return false;
+        }
+        
+        let hasErrors = false;
+        const usedSkus = new Set();
+        
+        variantElements.forEach((element, index) => {
+            const variantId = element.getAttribute('data-variant-id');
+            const colorName = element.querySelector(`input[name="colorVariants[${variantId}][colorName]"]`).value.trim();
+            const colorCode = element.querySelector(`input[name="colorVariants[${variantId}][colorCode]"]`).value;
+            const sku = element.querySelector(`input[name="colorVariants[${variantId}][sku]"]`).value.trim();
+            const stock = element.querySelector(`input[name="colorVariants[${variantId}][stock]"]`).value;
+            const priceModifier = element.querySelector(`input[name="colorVariants[${variantId}][priceModifier]"]`).value;
+            const isActive = element.querySelector(`input[name="colorVariants[${variantId}][isActive]"]`).checked;
+            const isDefault = element.querySelector(`input[name="defaultColorVariant"]:checked`)?.value === variantId;
+            
+            // Validation
+            if (!colorName) {
+                alert(`Color variant #${index + 1}: Color name is required`);
+                hasErrors = true;
+                return;
+            }
+            
+            if (!sku) {
+                alert(`Color variant #${index + 1}: SKU is required`);
+                hasErrors = true;
+                return;
+            }
+            
+            if (usedSkus.has(sku)) {
+                alert(`Color variant #${index + 1}: SKU "${sku}" is already used. Each variant must have a unique SKU.`);
+                hasErrors = true;
+                return;
+            }
+            usedSkus.add(sku);
+            
+            // Collect images - optimize to reduce form variables
+            const images = [];
+            const imageElements = element.querySelectorAll(`input[name="colorVariants[${variantId}][images][]"]`);
+            
+            // Limit images per variant to prevent hitting PHP limits
+            const maxImagesPerVariant = 5;
+            let imageCount = 0;
+            
+            imageElements.forEach((imgInput, imgIndex) => {
+                if (imgInput.value && imageCount < maxImagesPerVariant) {
+                    images.push({
+                        data: imgInput.value,
+                        isPrimary: imgIndex === 0
+                    });
+                    imageCount++;
+                }
+            });
+            
+            if (imageElements.length > maxImagesPerVariant) {
+                console.warn(`Color variant ${colorName}: Only first ${maxImagesPerVariant} images will be processed`);
+            }
+            
+            colorVariants.push({
+                colorName,
+                colorCode,
+                sku,
+                stock: parseInt(stock) || 0,
+                priceModifier: parseFloat(priceModifier) || 0,
+                isActive,
+                isDefault,
+                sortOrder: index,
+                images
+            });
+        });
+        
+        if (hasErrors) {
+            return false;
+        }
+        
+        // Check if at least one variant is set as default
+        const hasDefault = colorVariants.some(v => v.isDefault);
+        if (!hasDefault && colorVariants.length > 0) {
+            colorVariants[0].isDefault = true; // Set first as default
+        }
+        
+        // Add color variants data to form as hidden input
+        const colorVariantsInput = document.createElement('input');
+        colorVariantsInput.type = 'hidden';
+        colorVariantsInput.name = 'colorVariantsData';
+        colorVariantsInput.value = JSON.stringify(colorVariants);
+        form.appendChild(colorVariantsInput);
+        
+        console.log('Color variants processed:', colorVariants);
+        return true;
+    }
+    
     // Form submission validation
     form.addEventListener('submit', function(e) {
         console.log('Form submission started');
+        
+        // Process color variants if enabled
+        if (document.getElementById('enableColorVariants').checked) {
+            if (!processColorVariants()) {
+                e.preventDefault();
+                return;
+            }
+        }
         
         // Debug: Check file inputs
         const fileInputs = form.querySelectorAll('.image-file');
@@ -1937,13 +2391,18 @@ function validateForm() {
     
     console.log('Image validation - hasImages:', hasImages);
     
-    // Add visible alert for debugging
-    if (!hasImages) {
-        alert('DEBUG: No images detected!\nFile inputs found: ' + imageInputs.length + '\nCheck console for details.');
-    }
+    // Check if color variants are enabled
+    const colorVariantsEnabled = document.getElementById('enableColorVariants').checked;
+    const colorVariantItems = document.querySelectorAll('.color-variant-item');
+    const hasColorVariants = colorVariantsEnabled && colorVariantItems.length > 0;
     
-    if (!hasImages) {
-        showValidationError('Please upload at least one product image.');
+    console.log('Color variants enabled:', colorVariantsEnabled);
+    console.log('Color variant items:', colorVariantItems.length);
+    console.log('Has color variants:', hasColorVariants);
+    
+    // Only require images if no color variants are provided
+    if (!hasImages && !hasColorVariants) {
+        showValidationError('Please upload at least one product image OR enable color variants with images.');
         isValid = false;
     }
     
@@ -2294,6 +2753,330 @@ function resetForm() {
     }
 }
 
+// Color Variant Management Functions
+let colorVariantIndex = 0;
+
+// Toggle color variants section
+document.getElementById('enableColorVariants').addEventListener('change', function() {
+    const section = document.getElementById('colorVariantsSection');
+    const colorVariantTip = document.getElementById('colorVariantImageTip');
+    
+    if (this.checked) {
+        section.style.display = 'block';
+        colorVariantTip.style.display = 'block'; // Show the tip about optional images
+        if (document.getElementById('colorVariantsContainer').children.length === 0) {
+            addColorVariant(); // Add first variant automatically
+        }
+    } else {
+        section.style.display = 'none';
+        colorVariantTip.style.display = 'none'; // Hide the tip
+        // Clear all variants
+        document.getElementById('colorVariantsContainer').innerHTML = '';
+        colorVariantIndex = 0;
+    }
+});
+
+// Toggle discount section
+document.getElementById('enableDiscount').addEventListener('change', function() {
+    const section = document.getElementById('discountSection');
+    const preview = document.getElementById('discountPreview');
+    
+    if (this.checked) {
+        section.style.display = 'block';
+        updateDiscountPreview(); // Show preview immediately
+    } else {
+        section.style.display = 'none';
+        preview.style.display = 'none';
+        // Clear discount fields
+        document.getElementById('discountPercentage').value = '';
+        document.getElementById('saleLabel').value = '';
+        document.getElementById('saleStartDate').value = '';
+        document.getElementById('saleEndDate').value = '';
+    }
+});
+
+// Update discount preview when price or discount changes
+function updateDiscountPreview() {
+    const priceInput = document.getElementById('price');
+    const discountInput = document.getElementById('discountPercentage');
+    const preview = document.getElementById('discountPreview');
+    
+    const price = parseFloat(priceInput.value) || 0;
+    const discount = parseFloat(discountInput.value) || 0;
+    
+    if (price > 0 && discount > 0) {
+        const salePrice = Math.round(price * (1 - discount / 100));
+        const savings = price - salePrice;
+        
+        document.getElementById('originalPricePreview').textContent = price.toLocaleString();
+        document.getElementById('salePricePreview').textContent = salePrice.toLocaleString();
+        document.getElementById('savingsPreview').textContent = savings.toLocaleString();
+        document.getElementById('discountPreviewPercent').textContent = discount;
+        
+        preview.style.display = 'block';
+    } else {
+        preview.style.display = 'none';
+    }
+}
+
+// Add event listeners for price preview
+document.addEventListener('DOMContentLoaded', function() {
+    const priceInput = document.getElementById('price');
+    const discountInput = document.getElementById('discountPercentage');
+    
+    if (priceInput) {
+        priceInput.addEventListener('input', updateDiscountPreview);
+    }
+    
+    if (discountInput) {
+        discountInput.addEventListener('input', updateDiscountPreview);
+    }
+    
+    // Show preview on page load if discount is enabled
+    if (document.getElementById('enableDiscount').checked) {
+        updateDiscountPreview();
+    }
+});
+
+// Add a new color variant
+function addColorVariant() {
+    const container = document.getElementById('colorVariantsContainer');
+    
+    // Check if we're approaching the limit
+    const currentVariants = container.children.length;
+    if (currentVariants >= 10) {
+        alert('Maximum 10 color variants allowed to prevent server limits. Please contact support if you need more.');
+        return;
+    }
+    
+    // Warn at 5 variants
+    if (currentVariants >= 5) {
+        if (!confirm('Adding many color variants may cause performance issues. Continue?')) {
+            return;
+        }
+    }
+    
+    const variantId = 'variant_' + colorVariantIndex++;
+    
+    const variantHtml = `
+        <div class="color-variant-item border rounded p-3 mb-3" data-variant-id="${variantId}">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0">
+                    <i class="mdi mdi-palette me-2"></i>Color Variant #${colorVariantIndex}
+                </h6>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeColorVariant('${variantId}')">
+                    <i class="mdi mdi-delete"></i> Remove
+                </button>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Color Name *</label>
+                        <input type="text" class="form-control" name="colorVariants[${variantId}][colorName]" 
+                               placeholder="e.g., Jet Black, Navy Blue" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Color Code</label>
+                        <div class="input-group">
+                            <input type="color" class="form-control form-control-color" 
+                                   name="colorVariants[${variantId}][colorCode]" value="#000000"
+                                   onchange="updateColorPreview('${variantId}', this.value)">
+                            <input type="text" class="form-control" 
+                                   name="colorVariants[${variantId}][colorCodeText]" 
+                                   placeholder="#000000" value="#000000"
+                                   onchange="updateColorFromText('${variantId}', this.value)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">SKU *</label>
+                        <input type="text" class="form-control" name="colorVariants[${variantId}][sku]" 
+                               placeholder="PRODUCT-COLOR-001" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Stock Quantity</label>
+                        <input type="number" class="form-control" name="colorVariants[${variantId}][stock]" 
+                               min="0" value="0">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Variant Price (₹)</label>
+                        <input type="number" class="form-control" name="colorVariants[${variantId}][priceModifier]" 
+                               step="0.01" value="0" placeholder="Enter price for this color">
+                        <small class="text-muted">Set the actual price for this color variant. Leave 0 to use base product price.</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Color Images</label>
+                <div class="color-images-container" id="colorImages_${variantId}">
+                    <div class="image-upload-area border-2 border-dashed rounded p-4 text-center mb-3" 
+                         onclick="triggerColorImageUpload('${variantId}')"
+                         ondrop="handleColorImageDrop(event, '${variantId}')"
+                         ondragover="handleDragOver(event)"
+                         ondragleave="handleDragLeave(event)">
+                        <i class="mdi mdi-cloud-upload-alt mdi-48px text-muted mb-2"></i>
+                        <p class="mb-0">Click to upload or drag & drop images</p>
+                        <small class="text-muted">Maximum 5 images, 5MB each</small>
+                    </div>
+                    <input type="file" id="colorImageUpload_${variantId}" multiple accept="image/*" 
+                           style="display: none;" onchange="handleColorImageUpload('${variantId}', this.files)">
+                    <div class="color-image-previews d-flex flex-wrap gap-2" id="colorImagePreviews_${variantId}">
+                        <!-- Image previews will appear here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" 
+                               name="colorVariants[${variantId}][isActive]" value="1" checked>
+                        <label class="form-check-label">Active (visible to customers)</label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" 
+                               name="defaultColorVariant" value="${variantId}"
+                               ${colorVariantIndex === 1 ? 'checked' : ''}>
+                        <label class="form-check-label">Set as default color</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', variantHtml);
+    
+    // Auto-generate SKU suggestion with timestamp for uniqueness
+    const productNameInput = document.getElementById('name');
+    if (productNameInput && productNameInput.value) {
+        const baseSku = productNameInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '-').substring(0, 8);
+        const timestamp = Date.now().toString().slice(-6); // Last 6 digits of timestamp
+        const randomNum = Math.floor(Math.random() * 999).toString().padStart(3, '0');
+        const skuInput = container.querySelector(`input[name="colorVariants[${variantId}][sku]"]`);
+        skuInput.value = `${baseSku}-${timestamp}-${randomNum}`;
+        
+        // Add real-time SKU validation
+        skuInput.addEventListener('blur', function() {
+            validateSku(this);
+        });
+    }
+}
+
+// Remove a color variant
+function removeColorVariant(variantId) {
+    const variantElement = document.querySelector(`[data-variant-id="${variantId}"]`);
+    if (variantElement) {
+        variantElement.remove();
+        
+        // If this was the default, make the first remaining variant default
+        const remainingVariants = document.querySelectorAll('.color-variant-item');
+        if (remainingVariants.length > 0) {
+            const defaultRadio = remainingVariants[0].querySelector('input[name="defaultColorVariant"]');
+            if (defaultRadio) {
+                defaultRadio.checked = true;
+            }
+        }
+    }
+}
+
+// Update color preview
+function updateColorPreview(variantId, colorValue) {
+    const textInput = document.querySelector(`input[name="colorVariants[${variantId}][colorCodeText]"]`);
+    if (textInput) {
+        textInput.value = colorValue;
+    }
+}
+
+// Update color from text input
+function updateColorFromText(variantId, textValue) {
+    if (textValue.match(/^#[0-9A-F]{6}$/i)) {
+        const colorInput = document.querySelector(`input[name="colorVariants[${variantId}][colorCode]"]`);
+        if (colorInput) {
+            colorInput.value = textValue;
+        }
+    }
+}
+
+// Trigger color image upload
+function triggerColorImageUpload(variantId) {
+    document.getElementById(`colorImageUpload_${variantId}`).click();
+}
+
+// Handle color image upload
+function handleColorImageUpload(variantId, files) {
+    const previewContainer = document.getElementById(`colorImagePreviews_${variantId}`);
+    const currentImages = previewContainer.children.length;
+    
+    if (currentImages + files.length > 5) {
+        alert('Maximum 5 images allowed per color variant');
+        return;
+    }
+    
+    Array.from(files).forEach((file, index) => {
+        if (file.size > 5 * 1024 * 1024) {
+            alert(`File ${file.name} is too large. Maximum 5MB allowed.`);
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imageIndex = currentImages + index;
+            const imagePreview = document.createElement('div');
+            imagePreview.className = 'position-relative';
+            imagePreview.innerHTML = `
+                <img src="${e.target.result}" class="img-thumbnail" style="width: 80px; height: 80px; object-fit: cover;">
+                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0" 
+                        onclick="removeColorImage(this)" style="transform: translate(50%, -50%);">
+                    <i class="mdi mdi-close"></i>
+                </button>
+                <input type="hidden" name="colorVariants[${variantId}][images][]" value="${e.target.result}">
+                ${imageIndex === 0 ? '<div class="badge bg-primary position-absolute bottom-0 start-0">Primary</div>' : ''}
+            `;
+            previewContainer.appendChild(imagePreview);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// Remove color image
+function removeColorImage(button) {
+    button.parentElement.remove();
+}
+
+// Handle drag and drop for color images
+function handleDragOver(event) {
+    event.preventDefault();
+    event.currentTarget.classList.add('border-primary', 'bg-light');
+}
+
+function handleDragLeave(event) {
+    event.currentTarget.classList.remove('border-primary', 'bg-light');
+}
+
+function handleColorImageDrop(event, variantId) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('border-primary', 'bg-light');
+    
+    const files = event.dataTransfer.files;
+    if (files.length > 0) {
+        handleColorImageUpload(variantId, files);
+    }
+}
+
 // Show loading state for products table
 function showLoadingState() {
     const tableBody = document.querySelector('tbody');
@@ -2311,6 +3094,84 @@ function showLoadingState() {
                 </td>
             </tr>
         `;
+    }
+}
+
+// SKU validation function
+async function validateSku(skuInput) {
+    const sku = skuInput.value.trim();
+    if (!sku) return;
+    
+    try {
+        const response = await fetch('http://localhost:5001/api/admin/products/check-sku', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+            },
+            body: JSON.stringify({ skus: [sku] })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            if (result.data.allAvailable) {
+                // SKU is available
+                skuInput.classList.remove('is-invalid');
+                skuInput.classList.add('is-valid');
+                
+                // Remove any existing error message
+                const existingError = skuInput.parentNode.querySelector('.invalid-feedback');
+                if (existingError) {
+                    existingError.remove();
+                }
+                
+                // Remove existing suggestion
+                const existingSuggestion = skuInput.parentNode.querySelector('.text-info');
+                if (existingSuggestion) {
+                    existingSuggestion.remove();
+                }
+            } else {
+                // SKU is already taken
+                skuInput.classList.remove('is-valid');
+                skuInput.classList.add('is-invalid');
+                
+                // Add error message
+                let errorDiv = skuInput.parentNode.querySelector('.invalid-feedback');
+                if (!errorDiv) {
+                    errorDiv = document.createElement('div');
+                    errorDiv.className = 'invalid-feedback';
+                    skuInput.parentNode.appendChild(errorDiv);
+                }
+                errorDiv.textContent = `SKU "${sku}" is already in use. Please choose a different SKU.`;
+                
+                // Suggest a new SKU
+                const timestamp = Date.now().toString().slice(-6);
+                const randomNum = Math.floor(Math.random() * 999).toString().padStart(3, '0');
+                const baseSku = sku.split('-')[0] || 'PRODUCT';
+                const suggestedSku = `${baseSku}-${timestamp}-${randomNum}`;
+                
+                // Add suggestion
+                const suggestionDiv = document.createElement('div');
+                suggestionDiv.className = 'text-info mt-1';
+                suggestionDiv.innerHTML = `
+                    <small>
+                        💡 Try: <a href="#" onclick="this.closest('.mb-3').querySelector('input').value='${suggestedSku}'; validateSku(this.closest('.mb-3').querySelector('input')); this.parentElement.remove(); return false;" class="text-decoration-none">${suggestedSku}</a>
+                    </small>
+                `;
+                
+                // Remove existing suggestion
+                const existingSuggestion = skuInput.parentNode.querySelector('.text-info');
+                if (existingSuggestion) {
+                    existingSuggestion.remove();
+                }
+                
+                skuInput.parentNode.appendChild(suggestionDiv);
+            }
+        }
+    } catch (error) {
+        console.error('SKU validation error:', error);
+        // Don't show error to user for validation failures
     }
 }
 </script>

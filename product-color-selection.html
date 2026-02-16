@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Color Selection - Myntra Style</title>
+    <link rel="stylesheet" href="css/product-color-selection.css">
+</head>
+<body>
+    <div class="container">
+        <div class="product-page">
+            <!-- Product Image Gallery -->
+            <div class="product-gallery">
+                <div class="main-image-container">
+                    <img id="mainProductImage" src="" alt="Product Image" class="main-image">
+                    <div class="image-navigation">
+                        <button class="nav-btn prev-btn" onclick="previousImage()">‹</button>
+                        <button class="nav-btn next-btn" onclick="nextImage()">›</button>
+                    </div>
+                </div>
+                
+                <!-- Thumbnail Gallery -->
+                <div class="thumbnail-gallery">
+                    <div id="imageThumbnails" class="image-thumbnails"></div>
+                </div>
+            </div>
+
+            <!-- Product Details -->
+            <div class="product-details">
+                <div class="product-header">
+                    <h1 id="productTitle" class="product-title">Loading...</h1>
+                    <div class="product-rating">
+                        <span class="rating">4.2 ★</span>
+                        <span class="rating-count">(1.2k)</span>
+                    </div>
+                </div>
+
+                <div class="price-section">
+                    <span id="productPrice" class="current-price">₹0</span>
+                    <span id="originalPrice" class="original-price">₹0</span>
+                    <span id="discount" class="discount">0% OFF</span>
+                </div>
+
+                <!-- Color Selection Section -->
+                <div class="color-selection-section">
+                    <h3 class="section-title">
+                        Select Color: <span id="selectedColorName" class="selected-color-name">Black</span>
+                    </h3>
+                    <div id="colorThumbnails" class="color-thumbnails">
+                        <!-- Color thumbnails will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Size Selection -->
+                <div class="size-selection-section">
+                    <h3 class="section-title">Select Size</h3>
+                    <div class="size-options">
+                        <button class="size-btn" data-size="S">S</button>
+                        <button class="size-btn" data-size="M">M</button>
+                        <button class="size-btn active" data-size="L">L</button>
+                        <button class="size-btn" data-size="XL">XL</button>
+                        <button class="size-btn" data-size="XXL">XXL</button>
+                    </div>
+                </div>
+
+                <!-- Product Info -->
+                <div class="product-info">
+                    <div class="info-item">
+                        <span class="info-label">SKU:</span>
+                        <span id="productSku" class="info-value">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Availability:</span>
+                        <span id="productAvailability" class="info-value availability">In Stock</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Material:</span>
+                        <span id="productMaterial" class="info-value">Cotton Blend</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="btn btn-primary add-to-bag">
+                        <span class="btn-icon">🛍️</span>
+                        ADD TO BAG
+                    </button>
+                    <button class="btn btn-secondary add-to-wishlist">
+                        <span class="btn-icon">♡</span>
+                        WISHLIST
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Products for Testing -->
+        <div class="product-selector">
+            <h3>Test Different Products:</h3>
+            <button onclick="loadProduct('men-tshirt')" class="test-btn">Men's T-Shirt</button>
+            <button onclick="loadProduct('women-dress')" class="test-btn">Women's Dress</button>
+            <button onclick="loadProduct('men-jeans')" class="test-btn">Men's Jeans</button>
+        </div>
+    </div>
+
+    <script src="js/product-color-selection.js"></script>
+</body>
+</html>

@@ -87,7 +87,8 @@ class ProductService {
       .populate('brand', 'name slug')
       .limit(limit)
       .skip(limit * (page - 1))
-      .sort({ [sortBy]: sortOrder === 'desc' ? -1 : 1 });
+      .sort({ [sortBy]: sortOrder === 'desc' ? -1 : 1 })
+      .lean(); // Use lean() for better performance and ensure all fields are returned
 
     return {
       products,
@@ -132,7 +133,8 @@ class ProductService {
       seoTitle,
       seoDescription,
       featured = false,
-      sku
+      sku,
+      discount
     } = productData;
 
     // Validation
@@ -202,6 +204,108 @@ class ProductService {
     // Generate SKU if not provided
     const generatedSku = sku || `${categoryExists.name.substring(0, 3).toUpperCase()}-${Date.now()}`;
 
+    // Process discount data
+    let processedDiscount = {
+      isOnSale: false,
+      percentage: 0,
+      salePrice: 0,
+      startDate: null,
+      endDate: null,
+      saleLabel: ''
+    };
+
+    if (discount) {
+      console.log('🔍 Processing discount data:', discount);
+      
+      processedDiscount = {
+        isOnSale: Boolean(discount.isOnSale || discount.percentage > 0),
+        percentage: Number(discount.percentage) || 0,
+        salePrice: Number(discount.salePrice) || 0,
+        startDate: discount.startDate ? new Date(discount.startDate) : null,
+        endDate: discount.endDate ? new Date(discount.endDate) : null,
+        saleLabel: discount.saleLabel || (discount.percentage > 0 ? 'SALE' : '')
+      };
+
+      // Calculate sale price if not provided but percentage is given
+      if (processedDiscount.percentage > 0 && !processedDiscount.salePrice) {
+        processedDiscount.salePrice = Math.round(Number(price) * (1 - processedDiscount.percentage / 100));
+      }
+
+      console.log('🔍 Processed discount:', processedDiscount);
+    }
+
+    // Process color variants
+    let processedColorVariants = [];
+    let calculatedStock = Number(stock);
+    let hasColorVariantsFlag = false;
+    let defaultColorVariantId = null;
+    
+    if (productData.hasColorVariants && productData.colorVariants && productData.colorVariants.length > 0) {
+      // Validate color variant SKUs are unique
+      const variantSkus = productData.colorVariants.map(v => v.sku);
+      const uniqueSkus = new Set(variantSkus);
+      if (variantSkus.length !== uniqueSkus.size) {
+        throw new Error('Color variant SKUs must be unique');
+      }
+      
+      // Check if any SKU already exists in database
+      const existingProducts = await Product.find({
+        $or: [
+          { sku: { $in: variantSkus } },
+          { 'colorVariants.sku': { $in: variantSkus } }
+        ]
+      });
+      
+      if (existingProducts.length > 0) {
+        // Find which specific SKUs are conflicting
+        const conflictingSKUs = [];
+        for (const product of existingProducts) {
+          if (variantSkus.includes(product.sku)) {
+            conflictingSKUs.push(product.sku);
+          }
+          if (product.colorVariants) {
+            for (const variant of product.colorVariants) {
+              if (variantSkus.includes(variant.sku)) {
+                conflictingSKUs.push(variant.sku);
+              }
+            }
+          }
+        }
+        
+        // Generate suggested alternative SKUs
+        const suggestions = [];
+        for (const conflictSku of [...new Set(conflictingSKUs)]) {
+          const timestamp = Date.now().toString().slice(-6);
+          const randomNum = Math.floor(Math.random() * 999).toString().padStart(3, '0');
+          const baseSku = conflictSku.split('-')[0] || 'PRODUCT';
+          suggestions.push(`${baseSku}-${timestamp}-${randomNum}`);
+        }
+        
+        throw new Error(`The following SKUs already exist: ${[...new Set(conflictingSKUs)].join(', ')}. Suggested alternatives: ${suggestions.join(', ')}`);
+      }
+      
+      processedColorVariants = productData.colorVariants.map((variant, index) => ({
+        colorName: variant.colorName,
+        colorCode: variant.colorCode || '#000000',
+        sku: variant.sku,
+        images: variant.images || [],
+        stock: Number(variant.stock) || 0,
+        priceModifier: Number(variant.priceModifier) || 0,
+        isActive: variant.isActive !== false, // Default to true
+        sortOrder: variant.sortOrder || index
+      }));
+      
+      // Calculate total stock from variants
+      calculatedStock = processedColorVariants.reduce((total, variant) => total + variant.stock, 0);
+      hasColorVariantsFlag = true;
+      
+      // Find default variant
+      const defaultVariant = productData.colorVariants.find(v => v.isDefault);
+      if (defaultVariant) {
+        // We'll set this after the product is saved and we have the variant IDs
+      }
+    }
+
     const product = new Product({
       name,
       description,
@@ -209,7 +313,7 @@ class ProductService {
       category,
       subcategory,
       brand: brandId,
-      stock: Number(stock),
+      stock: calculatedStock,
       images: processedImages,
       imageUrls: processedImageUrls,
       weight: weight ? Number(weight) : undefined,
@@ -218,10 +322,30 @@ class ProductService {
       seoTitle: seoTitle || name,
       seoDescription: seoDescription || description,
       featured: Boolean(featured),
-      sku: generatedSku
+      sku: generatedSku,
+      colorVariants: processedColorVariants,
+      hasColorVariants: hasColorVariantsFlag,
+      discount: processedDiscount
     });
 
     const createdProduct = await product.save();
+    
+    // Set default color variant if specified
+    if (hasColorVariantsFlag && processedColorVariants.length > 0) {
+      const defaultVariant = productData.colorVariants.find(v => v.isDefault);
+      if (defaultVariant) {
+        const savedVariant = createdProduct.colorVariants.find(v => v.sku === defaultVariant.sku);
+        if (savedVariant) {
+          createdProduct.defaultColorVariant = savedVariant._id;
+          await createdProduct.save();
+        }
+      } else {
+        // Set first variant as default
+        createdProduct.defaultColorVariant = createdProduct.colorVariants[0]._id;
+        await createdProduct.save();
+      }
+    }
+    
     return createdProduct;
   }
 

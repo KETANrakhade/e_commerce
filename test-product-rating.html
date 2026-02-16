@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Product Rating</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .product-card {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .rating {
+            font-size: 24px;
+            color: #f39c12;
+        }
+    </style>
+</head>
+<body>
+    <h1>Product Rating Test</h1>
+    
+    <div id="status"></div>
+    
+    <button onclick="testProductRating()">Test Product Rating</button>
+    <button onclick="testReviews()">Test Reviews API</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        // Inline API config
+        window.API_BASE_URL = 'http://localhost:5001/api';
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+            console.log(message);
+        }
+        
+        function showResult(html) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = html;
+        }
+        
+        async function testProductRating() {
+            showStatus('🔄 Fetching product with rating...', 'info');
+            
+            try {
+                // Get first product
+                const response = await fetch(`${window.API_BASE_URL}/products`);
+                const data = await response.json();
+                
+                if (!data.success || !data.data.products || data.data.products.length === 0) {
+                    showStatus('❌ No products found', 'error');
+                    return;
+                }
+                
+                const product = data.data.products[0];
+                
+                showStatus(`✅ Found product: ${product.name}`, 'success');
+                
+                const stars = '⭐'.repeat(Math.round(product.rating || 0));
+                
+                showResult(`
+                    <div class="product-card">
+                        <h2>${product.name}</h2>
+                        <div class="rating">
+                            ${stars} ${(product.rating || 0).toFixed(1)} / 5.0
+                        </div>
+                        <p><strong>Number of Reviews:</strong> ${product.numReviews || 0}</p>
+                        <p><strong>Price:</strong> ₹${product.price}</p>
+                        <p><strong>Product ID:</strong> ${product._id}</p>
+                        <button onclick="window.location.href='product.html?id=${product._id}'">
+                            View Product Page
+                        </button>
+                    </div>
+                    <h3>Raw Data:</h3>
+                    <pre>${JSON.stringify(product, null, 2)}</pre>
+                `);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testReviews() {
+            showStatus('🔄 Fetching reviews...', 'info');
+            
+            try {
+                // Get first product
+                const productResponse = await fetch(`${window.API_BASE_URL}/products`);
+                const productData = await productResponse.json();
+                
+                if (!productData.success || !productData.data.products || productData.data.products.length === 0) {
+                    showStatus('❌ No products found', 'error');
+                    return;
+                }
+                
+                const product = productData.data.products[0];
+                
+                // Get reviews for this product
+                const reviewsResponse = await fetch(`${window.API_BASE_URL}/reviews/${product._id}`);
+                const reviewsData = await reviewsResponse.json();
+                
+                if (!reviewsData.success) {
+                    showStatus('❌ Failed to fetch reviews', 'error');
+                    return;
+                }
+                
+                const reviews = reviewsData.data.reviews || [];
+                
+                showStatus(`✅ Found ${reviews.length} reviews for ${product.name}`, 'success');
+                
+                let reviewsHTML = '<h3>Reviews:</h3>';
+                if (reviews.length === 0) {
+                    reviewsHTML += '<p>No reviews yet</p>';
+                } else {
+                    reviews.forEach((review, i) => {
+                        const stars = '⭐'.repeat(review.rating);
+                        reviewsHTML += `
+                            <div class="product-card">
+                                <div class="rating">${stars} ${review.rating}/5</div>
+                                <p><strong>By:</strong> ${review.user?.name || 'Anonymous'}</p>
+                                <p><strong>Comment:</strong> ${review.comment}</p>
+                                <p><strong>Verified Purchase:</strong> ${review.isVerifiedPurchase ? 'Yes ✓' : 'No'}</p>
+                                <p><strong>Date:</strong> ${new Date(review.createdAt).toLocaleDateString()}</p>
+                            </div>
+                        `;
+                    });
+                }
+                
+                showResult(reviewsHTML + `<h3>Raw Data:</h3><pre>${JSON.stringify(reviewsData, null, 2)}</pre>`);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-test on load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('Page loaded');
+            console.log('API URL:', window.API_BASE_URL);
+            testProductRating();
+        });
+    </script>
+</body>
+</html>

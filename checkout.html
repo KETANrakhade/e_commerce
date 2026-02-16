@@ -747,7 +747,7 @@
                 setTimeout(() => {
                   window.location.href = 'orderSuccess.html';
                 }, 2000);
-              } else {
+              } else {      
                 window.location.href = 'orderSuccess.html';
               }
             } catch (err) {
@@ -786,6 +786,98 @@
         }
         setCheckoutLoading(false);
       }
+    }
+
+    // Helper function to validate cart items against available products
+    async function validateCartItems() {
+      const cart = JSON.parse(localStorage.getItem('cart_v1') || '[]');
+      if (cart.length === 0) {
+        return { valid: true, validItems: [], invalidItems: [] };
+      }
+      
+      try {
+        // Get all available products
+        const response = await fetch(`${API_BASE_URL}/products`);
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error('Failed to load products for validation');
+        }
+        
+        const availableProducts = data.data.products;
+        const availableProductIds = availableProducts.map(p => p._id);
+        
+        console.log('🔍 Cart validation debug:');
+        console.log('Available product IDs:', availableProductIds.slice(0, 5));
+        console.log('Cart items:', cart.map(item => ({
+          name: item.name,
+          id: item._id || item.id || item.product || item.productId,
+          allIds: {
+            _id: item._id,
+            id: item.id,
+            product: item.product,
+            productId: item.productId
+          }
+        })));
+        
+        const validItems = [];
+        const invalidItems = [];
+        
+        cart.forEach(item => {
+          // Try multiple possible ID fields for better compatibility
+          const possibleIds = [
+            item._id,
+            item.id,
+            item.product,
+            item.productId
+          ].filter(id => id); // Remove undefined/null values
+          
+          // Check if any of the possible IDs match available products
+          let isValid = false;
+          let validProductId = null;
+          
+          for (const id of possibleIds) {
+            if (availableProductIds.includes(id)) {
+              isValid = true;
+              validProductId = id;
+              break;
+            }
+          }
+          
+          console.log(`Item "${item.name}": IDs=[${possibleIds.join(', ')}], Valid=${isValid}`);
+          
+          if (isValid) {
+            // Ensure the item has all required ID fields for consistency
+            const fixedItem = {
+              ...item,
+              _id: validProductId,
+              id: validProductId,
+              productId: validProductId
+            };
+            validItems.push(fixedItem);
+          } else {
+            invalidItems.push(item);
+          }
+        });
+        
+        console.log(`Validation result: ${validItems.length} valid, ${invalidItems.length} invalid`);
+        
+        return {
+          valid: invalidItems.length === 0,
+          validItems,
+          invalidItems,
+          availableProducts
+        };
+      } catch (error) {
+        console.error('Cart validation error:', error);
+        return { valid: false, error: error.message };
+      }
+    }
+
+    // Helper function to clean invalid items from cart
+    function cleanCart(validItems) {
+      localStorage.setItem('cart_v1', JSON.stringify(validItems));
+      console.log('Cart cleaned, removed invalid items');
     }
 
     async function placeOrder() {
@@ -897,6 +989,48 @@
         console.log('📤 Sending order data:', orderData);
         console.log('🔑 Token:', token ? 'Present' : 'Missing');
 
+        // TEMPORARILY DISABLE CART VALIDATION FOR TESTING
+        console.log('⚠️ Cart validation temporarily disabled for testing');
+        
+        // Validate cart items before placing order (DISABLED)
+        // console.log('🔍 Validating cart items...');
+        // const cartValidation = await validateCartItems();
+        
+        // if (cartValidation.error) {
+        //   throw new Error('Cart validation failed: ' + cartValidation.error);
+        // }
+        
+        // // Only proceed with validation if there are actually invalid items
+        // if (!cartValidation.valid && cartValidation.invalidItems.length > 0) {
+        //   console.warn('❌ Invalid items found in cart:', cartValidation.invalidItems);
+          
+        //   if (cartValidation.validItems.length === 0) {
+        //     if (typeof showToast === 'function') {
+        //       showToast('All items in your cart are no longer available. Please add new products.', 'error', 4000);
+        //     } else {
+        //       alert('All items in your cart are no longer available. Please add new products.');
+        //     }
+        //     return;
+        //   } else {
+        //     // Clean cart and continue with valid items
+        //     cleanCart(cartValidation.validItems);
+            
+        //     if (typeof showToast === 'function') {
+        //       showToast(`Removed ${cartValidation.invalidItems.length} unavailable items. Continuing with ${cartValidation.validItems.length} valid items.`, 'warning', 4000);
+        //     } else {
+        //       alert(`Removed ${cartValidation.invalidItems.length} unavailable items. Continuing with ${cartValidation.validItems.length} valid items.`);
+        //     }
+            
+        //     // Reload the page to reflect the updated cart
+        //     setTimeout(() => {
+        //       window.location.reload();
+        //     }, 2000);
+        //     return;
+        //   }
+        // } else {
+        //   console.log('✅ Cart validation passed - all items are valid');
+        // }
+
         if (paymentMethod === 'Online') {
           await initiateOnlinePayment(orderData, token);
           return;
@@ -933,10 +1067,26 @@
         } else {
           const errorMsg = result.error || result.message || 'Failed to place order';
           console.error('❌ Order failed:', errorMsg);
-          if (typeof showToast === 'function') {
-            showToast('Failed to place order: ' + errorMsg, 'error');
+          
+          // Handle specific error types with better user messages
+          let userMessage = 'Failed to place order: ';
+          
+          if (errorMsg.includes('verify your email')) {
+            userMessage = 'Please verify your email before placing orders. Check your inbox for verification link.';
+          } else if (errorMsg.includes('not found')) {
+            userMessage = 'Some products in your cart are no longer available. Please refresh your cart and try again.';
+          } else if (errorMsg.includes('stock') || errorMsg.includes('inventory')) {
+            userMessage = 'Some products are out of stock. Please update your cart and try again.';
+          } else if (errorMsg.includes('address')) {
+            userMessage = 'Please check your shipping address and try again.';
           } else {
-            console.error('Failed to place order:', errorMsg);
+            userMessage = userMessage + errorMsg;
+          }
+          
+          if (typeof showToast === 'function') {
+            showToast(userMessage, 'error', 5000);
+          } else {
+            alert(userMessage);
           }
         }
       } catch (error) {

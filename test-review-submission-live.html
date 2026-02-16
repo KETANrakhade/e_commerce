@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Review Submission</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .success { background: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 2px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 2px solid #ffeaa7; }
+        
+        .form-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .star-rating {
+            display: flex;
+            gap: 10px;
+            font-size: 2rem;
+            margin: 15px 0;
+        }
+        .star-rating i {
+            cursor: pointer;
+            color: #ddd;
+            transition: color 0.2s;
+        }
+        .star-rating i.active,
+        .star-rating i:hover {
+            color: #f39c12;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Review Submission Test</h1>
+    
+    <div id="status"></div>
+    
+    <!-- Step 1: Check Login -->
+    <div class="section">
+        <h2>Step 1: Check Login Status</h2>
+        <button onclick="checkLogin()">Check Login</button>
+        <div id="loginStatus"></div>
+    </div>
+    
+    <!-- Step 2: Get Products -->
+    <div class="section">
+        <h2>Step 2: Get Products</h2>
+        <button onclick="getProducts()">Load Products</button>
+        <div id="productsStatus"></div>
+    </div>
+    
+    <!-- Step 3: Submit Review -->
+    <div class="section">
+        <h2>Step 3: Submit Review</h2>
+        
+        <div class="form-group">
+            <label>Select Product:</label>
+            <select id="productSelect">
+                <option value="">-- Select a product --</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Rating:</label>
+            <div class="star-rating" id="starRating">
+                <i class="far fa-star" data-rating="1"></i>
+                <i class="far fa-star" data-rating="2"></i>
+                <i class="far fa-star" data-rating="3"></i>
+                <i class="far fa-star" data-rating="4"></i>
+                <i class="far fa-star" data-rating="5"></i>
+            </div>
+            <div id="selectedRating">Selected: 0 stars</div>
+        </div>
+        
+        <div class="form-group">
+            <label>Review Comment:</label>
+            <textarea id="reviewComment" placeholder="Write your review here...">This is a test review to verify the rating system is working!</textarea>
+        </div>
+        
+        <button onclick="submitReview()" id="submitBtn">Submit Review</button>
+        <div id="reviewStatus"></div>
+    </div>
+    
+    <!-- Step 4: Verify -->
+    <div class="section">
+        <h2>Step 4: Verify Review</h2>
+        <button onclick="verifyReview()">Check Database</button>
+        <div id="verifyStatus"></div>
+    </div>
+    
+    <script src="api-config.js"></script>
+    <script>
+        let selectedRating = 0;
+        let selectedProductId = null;
+        
+        function showStatus(message, type = 'info', elementId = 'status') {
+            const statusDiv = document.getElementById(elementId);
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+            console.log(message);
+        }
+        
+        // Check login status
+        function checkLogin() {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (!token) {
+                showStatus('❌ Not logged in! Please <a href="login.html">login first</a>', 'error', 'loginStatus');
+                return false;
+            }
+            
+            showStatus(`✅ Logged in as: ${user.name || user.email}<br>Token: ${token.substring(0, 30)}...`, 'success', 'loginStatus');
+            return true;
+        }
+        
+        // Get products
+        async function getProducts() {
+            showStatus('🔄 Loading products...', 'info', 'productsStatus');
+            
+            try {
+                const response = await fetch(`${window.API_BASE_URL}/products`);
+                const data = await response.json();
+                
+                if (!data.success || !data.data.products) {
+                    showStatus('❌ Failed to load products', 'error', 'productsStatus');
+                    return;
+                }
+                
+                const products = data.data.products;
+                const select = document.getElementById('productSelect');
+                select.innerHTML = '<option value="">-- Select a product --</option>';
+                
+                products.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product._id;
+                    option.textContent = `${product.name} (${product.rating || 0}★, ${product.numReviews || 0} reviews)`;
+                    select.appendChild(option);
+                });
+                
+                showStatus(`✅ Loaded ${products.length} products`, 'success', 'productsStatus');
+                
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error', 'productsStatus');
+            }
+        }
+        
+        // Setup star rating
+        document.querySelectorAll('#starRating i').forEach(star => {
+            star.addEventListener('click', function() {
+                selectedRating = parseInt(this.getAttribute('data-rating'));
+                updateStars();
+            });
+        });
+        
+        function updateStars() {
+            document.querySelectorAll('#starRating i').forEach((star, index) => {
+                if (index < selectedRating) {
+                    star.classList.remove('far');
+                    star.classList.add('fas', 'active');
+                } else {
+                    star.classList.remove('fas', 'active');
+                    star.classList.add('far');
+                }
+            });
+            document.getElementById('selectedRating').textContent = `Selected: ${selectedRating} stars`;
+        }
+        
+        // Submit review
+        async function submitReview() {
+            if (!checkLogin()) return;
+            
+            selectedProductId = document.getElementById('productSelect').value;
+            if (!selectedProductId) {
+                showStatus('❌ Please select a product', 'error', 'reviewStatus');
+                return;
+            }
+            
+            if (selectedRating === 0) {
+                showStatus('❌ Please select a rating', 'error', 'reviewStatus');
+                return;
+            }
+            
+            const comment = document.getElementById('reviewComment').value.trim();
+            if (!comment) {
+                showStatus('❌ Please write a review', 'error', 'reviewStatus');
+                return;
+            }
+            
+            showStatus('🔄 Submitting review...', 'info', 'reviewStatus');
+            document.getElementById('submitBtn').disabled = true;
+            
+            try {
+                const token = localStorage.getItem('token');
+                const url = `${window.API_BASE_URL}/reviews/${selectedProductId}`;
+                
+                console.log('📝 Submitting to:', url);
+                console.log('📝 Data:', { rating: selectedRating, comment });
+                console.log('🔑 Token:', token.substring(0, 30) + '...');
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        rating: selectedRating,
+                        comment: comment
+                    })
+                });
+                
+                console.log('📡 Response status:', response.status);
+                console.log('📡 Response ok:', response.ok);
+                
+                const data = await response.json();
+                console.log('📦 Response data:', data);
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        showStatus('❌ Session expired. Please <a href="login.html">login again</a>', 'error', 'reviewStatus');
+                        return;
+                    }
+                    
+                    if (response.status === 400) {
+                        showStatus(`❌ ${data.message || 'Bad request'}`, 'error', 'reviewStatus');
+                        return;
+                    }
+                    
+                    throw new Error(data.message || `HTTP ${response.status}`);
+                }
+                
+                showStatus(`✅ Review submitted successfully!<br><pre>${JSON.stringify(data, null, 2)}</pre>`, 'success', 'reviewStatus');
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
+                showStatus(`❌ Error: ${error.message}<br><pre>${error.stack}</pre>`, 'error', 'reviewStatus');
+            } finally {
+                document.getElementById('submitBtn').disabled = false;
+            }
+        }
+        
+        // Verify review
+        async function verifyReview() {
+            if (!selectedProductId) {
+                showStatus('❌ Please submit a review first', 'error', 'verifyStatus');
+                return;
+            }
+            
+            showStatus('🔄 Checking database...', 'info', 'verifyStatus');
+            
+            try {
+                // Get product
+                const productResponse = await fetch(`${window.API_BASE_URL}/products/${selectedProductId}`);
+                const productData = await productResponse.json();
+                
+                // Get reviews
+                const reviewsResponse = await fetch(`${window.API_BASE_URL}/reviews/${selectedProductId}`);
+                const reviewsData = await reviewsResponse.json();
+                
+                let html = '<h3>Product Info:</h3>';
+                html += `<pre>${JSON.stringify({
+                    name: productData.data.name,
+                    rating: productData.data.rating,
+                    numReviews: productData.data.numReviews
+                }, null, 2)}</pre>`;
+                
+                html += '<h3>Reviews:</h3>';
+                html += `<pre>${JSON.stringify(reviewsData.data, null, 2)}</pre>`;
+                
+                showStatus(`✅ Verification complete!<br>${html}`, 'success', 'verifyStatus');
+                
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error', 'verifyStatus');
+            }
+        }
+        
+        // Auto-check on load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🌐 API Base URL:', window.API_BASE_URL);
+            checkLogin();
+            getProducts();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Admin Product Creation</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Admin Product Creation with Discount</h1>
+    <div>
+        <button class="btn-primary" onclick="testAdminLogin()">1. Test Admin Login</button>
+        <button class="btn-success" onclick="testProductCreation()">2. Test Product Creation with Discount</button>
+        <button class="btn-primary" onclick="testRecentProducts()">3. Check Recent Products</button>
+    </div>
+    <div id="results"></div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5001/api';
+        let adminToken = null;
+
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            document.getElementById('results').appendChild(div);
+        }
+
+        async function testAdminLogin() {
+            try {
+                addResult('🔑 Testing admin login...', 'info');
+                
+                const response = await fetch(`${API_BASE_URL}/admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@pyramid.com',
+                        password: 'admin123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                addResult(`Response Status: ${response.status}`, 'info');
+                addResult(`Response Data: <pre>${JSON.stringify(data, null, 2)}</pre>`, 'info');
+
+                if (data.success && data.token) {
+                    adminToken = data.token;
+                    addResult('✅ Admin login successful!', 'success');
+                    addResult(`Token: ${adminToken.substring(0, 20)}...`, 'info');
+                } else {
+                    addResult('❌ Admin login failed', 'error');
+                    addResult(`Error: ${data.error || 'Unknown error'}`, 'error');
+                }
+
+            } catch (error) {
+                addResult(`❌ Login error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testProductCreation() {
+            if (!adminToken) {
+                addResult('⚠️ Please login first!', 'warning');
+                return;
+            }
+
+            try {
+                addResult('📦 Testing product creation with discount...', 'info');
+
+                // First get categories
+                const categoriesResponse = await fetch(`${API_BASE_URL}/categories`);
+                const categoriesData = await categoriesResponse.json();
+                
+                let categoryId = null;
+                if (categoriesData.success && categoriesData.data && categoriesData.data.categories) {
+                    const menCategory = categoriesData.data.categories.find(cat => 
+                        cat.name.toLowerCase().includes('men')
+                    );
+                    categoryId = menCategory ? menCategory._id : categoriesData.data.categories[0]._id;
+                    addResult(`✅ Using category: ${menCategory ? menCategory.name : categoriesData.data.categories[0].name}`, 'success');
+                } else {
+                    addResult('❌ Failed to get categories', 'error');
+                    return;
+                }
+
+                const productData = {
+                    name: `Debug Test Product - ${new Date().toISOString()}`,
+                    description: 'Test product to debug discount system',
+                    price: 1500,
+                    category: categoryId,
+                    stock: 10,
+                    imageUrls: ['https://via.placeholder.com/400x500/FF6B6B/FFFFFF?text=Debug+Test'],
+                    discount: {
+                        isOnSale: true,
+                        percentage: 25,
+                        saleLabel: 'DEBUG SALE'
+                    }
+                };
+
+                addResult(`Product Data: <pre>${JSON.stringify(productData, null, 2)}</pre>`, 'info');
+
+                const response = await fetch(`${API_BASE_URL}/admin/products`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify(productData)
+                });
+
+                const result = await response.json();
+                
+                addResult(`Response Status: ${response.status}`, 'info');
+                addResult(`Response Data: <pre>${JSON.stringify(result, null, 2)}</pre>`, 'info');
+
+                if (result.success) {
+                    addResult('✅ Product created successfully!', 'success');
+                    addResult(`Product ID: ${result.data._id}`, 'success');
+                    addResult(`Discount Data: <pre>${JSON.stringify(result.data.discount, null, 2)}</pre>`, 'success');
+                    
+                    // Test individual product fetch
+                    setTimeout(() => testIndividualProduct(result.data._id), 1000);
+                } else {
+                    addResult('❌ Product creation failed', 'error');
+                    addResult(`Error: ${result.error || 'Unknown error'}`, 'error');
+                }
+
+            } catch (error) {
+                addResult(`❌ Product creation error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testIndividualProduct(productId) {
+            try {
+                addResult(`🔍 Testing individual product fetch: ${productId}`, 'info');
+                
+                const response = await fetch(`${API_BASE_URL}/products/${productId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    addResult('✅ Individual product fetch successful!', 'success');
+                    addResult(`Product Name: ${data.data.name}`, 'info');
+                    addResult(`Product Price: ₹${data.data.price}`, 'info');
+                    addResult(`Discount Data: <pre>${JSON.stringify(data.data.discount, null, 2)}</pre>`, 'success');
+                    
+                    if (data.data.discount && data.data.discount.isOnSale) {
+                        addResult('✅ Discount data is present and correct!', 'success');
+                    } else {
+                        addResult('❌ Discount data is missing or incorrect!', 'error');
+                    }
+                } else {
+                    addResult('❌ Individual product fetch failed', 'error');
+                }
+
+            } catch (error) {
+                addResult(`❌ Individual product fetch error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testRecentProducts() {
+            try {
+                addResult('📋 Testing recent products...', 'info');
+                
+                const response = await fetch(`${API_BASE_URL}/products?limit=5&sort=createdAt&order=desc`);
+                const data = await response.json();
+                
+                if (data.success && data.data.products) {
+                    addResult(`✅ Found ${data.data.products.length} recent products`, 'success');
+                    
+                    data.data.products.forEach((product, index) => {
+                        const hasDiscount = product.discount && product.discount.isOnSale && product.discount.percentage > 0;
+                        addResult(`${index + 1}. ${product.name} - ₹${product.price} ${hasDiscount ? `(${product.discount.percentage}% OFF)` : '(No discount)'}`, hasDiscount ? 'success' : 'info');
+                    });
+                    
+                    const discountProducts = data.data.products.filter(p => 
+                        p.discount && p.discount.isOnSale && p.discount.percentage > 0
+                    );
+                    
+                    addResult(`Products with discounts: ${discountProducts.length}`, discountProducts.length > 0 ? 'success' : 'warning');
+                    
+                } else {
+                    addResult('❌ Failed to get recent products', 'error');
+                }
+
+            } catch (error) {
+                addResult(`❌ Recent products error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

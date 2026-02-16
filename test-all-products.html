@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test All Product Links</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .product-link { 
+            display: inline-block; 
+            margin: 5px; 
+            padding: 10px 15px; 
+            background: #007bff; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 5px;
+        }
+        .product-link:hover { background: #0056b3; color: white; }
+        .working-link { background: #28a745; }
+        .working-link:hover { background: #1e7e34; }
+    </style>
+</head>
+<body>
+    <h1>Product Page Testing</h1>
+    
+    <div class="test-section">
+        <h2>✅ Working Product Page (Guaranteed to work)</h2>
+        <p>This version has debug info and will definitely show product details:</p>
+        <a href="working-product.html" class="product-link working-link" target="_blank">
+            Working Product Page
+        </a>
+        <a href="working-product.html?id=697349c4988fce88e4b5bb91" class="product-link working-link" target="_blank">
+            Working Product (Specific ID)
+        </a>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔧 Original Product Page (With Debug Info)</h2>
+        <p>The original page now has debug info to show what's happening:</p>
+        <a href="product.html" class="product-link" target="_blank">
+            Original Product Page (No ID)
+        </a>
+        <a href="product.html?id=697349c4988fce88e4b5bb91" class="product-link" target="_blank">
+            Original Product (Valid ID)
+        </a>
+        <a href="product.html?id=697325ed2c72a3bcf64495b8" class="product-link" target="_blank">
+            Original Product (Another Valid ID)
+        </a>
+    </div>
+    
+    <div class="test-section">
+        <h2>🧪 Simple Tests</h2>
+        <p>Basic functionality tests:</p>
+        <a href="simple-product-test.html" class="product-link" target="_blank">
+            Simple API Test
+        </a>
+        <a href="debug-product-loading.html" class="product-link" target="_blank">
+            Debug Product Loading
+        </a>
+    </div>
+    
+    <div class="test-section">
+        <h2>📋 Valid Product IDs (from database)</h2>
+        <p>These IDs are confirmed to exist in your database:</p>
+        <ul>
+            <li><code>697349c4988fce88e4b5bb91</code> - Relaxed Fit Cotton chinos</li>
+            <li><code>697325ed2c72a3bcf64495b8</code> - Short workwear jacket</li>
+            <li><code>6971fc1d6a5e84719cbd7021</code> - Loose Fit Sweatpants</li>
+            <li><code>6971f4446a5e84719cbd62ea</code> - Regular Fit Track jacket with DryMove</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎯 Quick Fix Instructions</h2>
+        <ol>
+            <li>Open the <strong>working-product.html</strong> first to see if the API is working</li>
+            <li>If working-product.html shows product details, then the API is fine</li>
+            <li>Open the original <strong>product.html</strong> and check the debug panel (top-right corner)</li>
+            <li>The debug panel will show exactly what's failing</li>
+        </ol>
+    </div>
+</body>
+</html>

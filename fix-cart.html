@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Cart Issues</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+        .section h4 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success { background: #28a745; }
+        .danger { background: #dc3545; }
+        .warning { background: #ffc107; color: #000; }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .result.success { background: #d4edda; color: #155724; }
+        .result.error { background: #f8d7da; color: #721c24; }
+        .result.info { background: #d1ecf1; color: #0c5460; }
+        .result.warning { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛠️ Fix Cart Issues</h1>
+        <p>This tool helps fix common cart problems that prevent checkout.</p>
+        
+        <div class="section">
+            <h4>🔍 Diagnose Cart Issues</h4>
+            <button onclick="diagnoseCart()">🔍 Check Cart</button>
+            <div id="diagnoseResult"></div>
+        </div>
+        
+        <div class="section">
+            <h4>🧹 Fix Cart Problems</h4>
+            <button onclick="cleanCart()" class="warning">🧹 Clean Invalid Items</button>
+            <button onclick="clearCart()" class="danger">🗑️ Clear Entire Cart</button>
+            <button onclick="addValidProducts()" class="success">➕ Add Valid Products</button>
+            <div id="fixResult"></div>
+        </div>
+        
+        <div class="section">
+            <h4>🚀 Quick Actions</h4>
+            <button onclick="goToProducts()">🛍️ Browse Products</button>
+            <button onclick="goToCart()">🛒 View Cart</button>
+            <button onclick="goToCheckout()">💳 Try Checkout</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5001/api';
+        
+        async function diagnoseCart() {
+            const resultDiv = document.getElementById('diagnoseResult');
+            resultDiv.innerHTML = '<div class="result info">🔍 Diagnosing cart...</div>';
+            
+            try {
+                const cart = JSON.parse(localStorage.getItem('cart_v1') || '[]');
+                
+                if (cart.length === 0) {
+                    resultDiv.innerHTML = '<div class="result info">ℹ️ Cart is empty - no issues found</div>';
+                    return;
+                }
+                
+                // Get available products
+                const response = await fetch(`${API_BASE_URL}/products`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    resultDiv.innerHTML = '<div class="result error">❌ Cannot check products: ' + (data.error || 'API error') + '</div>';
+                    return;
+                }
+                
+                const availableProducts = data.data.products;
+                const availableProductIds = availableProducts.map(p => p._id);
+                
+                const validItems = [];
+                const invalidItems = [];
+                
+                cart.forEach(item => {
+                    const productId = item._id || item.id || item.product;
+                    if (availableProductIds.includes(productId)) {
+                        validItems.push(item);
+                    } else {
+                        invalidItems.push(item);
+                    }
+                });
+                
+                let html = `<div class="result info">📊 Cart Analysis:</div>`;
+                html += `<div class="result info">• Total items: ${cart.length}</div>`;
+                html += `<div class="result ${validItems.length > 0 ? 'success' : 'warning'}">• Valid items: ${validItems.length}</div>`;
+                html += `<div class="result ${invalidItems.length > 0 ? 'error' : 'success'}">• Invalid items: ${invalidItems.length}</div>`;
+                
+                if (invalidItems.length > 0) {
+                    html += '<div class="result error">❌ Invalid items found:</div>';
+                    invalidItems.forEach(item => {
+                        html += `<div class="result error">• ${item.name} (ID: ${item._id || item.id})</div>`;
+                    });
+                    html += '<div class="result warning">⚠️ These items are causing checkout failures</div>';
+                } else {
+                    html += '<div class="result success">✅ All cart items are valid</div>';
+                }
+                
+                resultDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="result error">❌ Error diagnosing cart: ' + error.message + '</div>';
+            }
+        }
+        
+        async function cleanCart() {
+            const resultDiv = document.getElementById('fixResult');
+            resultDiv.innerHTML = '<div class="result info">🧹 Cleaning cart...</div>';
+            
+            try {
+                const cart = JSON.parse(localStorage.getItem('cart_v1') || '[]');
+                
+                if (cart.length === 0) {
+                    resultDiv.innerHTML = '<div class="result info">ℹ️ Cart is already empty</div>';
+                    return;
+                }
+                
+                // Get available products
+                const response = await fetch(`${API_BASE_URL}/products`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    resultDiv.innerHTML = '<div class="result error">❌ Cannot validate products: ' + (data.error || 'API error') + '</div>';
+                    return;
+                }
+                
+                const availableProducts = data.data.products;
+                const availableProductIds = availableProducts.map(p => p._id);
+                
+                const validItems = cart.filter(item => {
+                    const productId = item._id || item.id || item.product;
+                    return availableProductIds.includes(productId);
+                });
+                
+                const removedCount = cart.length - validItems.length;
+                
+                localStorage.setItem('cart_v1', JSON.stringify(validItems));
+                
+                let html = `<div class="result success">✅ Cart cleaned successfully</div>`;
+                html += `<div class="result info">• Removed ${removedCount} invalid items</div>`;
+                html += `<div class="result info">• Kept ${validItems.length} valid items</div>`;
+                
+                if (validItems.length === 0) {
+                    html += '<div class="result warning">⚠️ Cart is now empty - add new products</div>';
+                }
+                
+                resultDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="result error">❌ Error cleaning cart: ' + error.message + '</div>';
+            }
+        }
+        
+        function clearCart() {
+            localStorage.removeItem('cart_v1');
+            document.getElementById('fixResult').innerHTML = '<div class="result success">✅ Cart cleared completely</div>';
+        }
+        
+        async function addValidProducts() {
+            const resultDiv = document.getElementById('fixResult');
+            resultDiv.innerHTML = '<div class="result info">➕ Adding valid products...</div>';
+            
+            try {
+                // Get available products
+                const response = await fetch(`${API_BASE_URL}/products?limit=3`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    resultDiv.innerHTML = '<div class="result error">❌ Cannot load products: ' + (data.error || 'API error') + '</div>';
+                    return;
+                }
+                
+                const products = data.data.products;
+                
+                if (products.length === 0) {
+                    resultDiv.innerHTML = '<div class="result warning">⚠️ No products available to add</div>';
+                    return;
+                }
+                
+                // Create cart with first 2 products
+                const testCart = products.slice(0, 2).map(product => ({
+                    _id: product._id,
+                    id: product._id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.images?.[0]?.url || 'placeholder.jpg',
+                    quantity: 1
+                }));
+                
+                localStorage.setItem('cart_v1', JSON.stringify(testCart));
+                
+                let html = '<div class="result success">✅ Added valid products to cart</div>';
+                testCart.forEach(item => {
+                    html += `<div class="result info">• ${item.name} - ₹${item.price}</div>`;
+                });
+                
+                resultDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="result error">❌ Error adding products: ' + error.message + '</div>';
+            }
+        }
+        
+        function goToProducts() {
+            window.location.href = 'index.html';
+        }
+        
+        function goToCart() {
+            window.location.href = 'cart.html';
+        }
+        
+        function goToCheckout() {
+            window.location.href = 'checkout.html';
+        }
+        
+        // Auto-diagnose on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(diagnoseCart, 500);
+        });
+    </script>
+</body>
+</html>

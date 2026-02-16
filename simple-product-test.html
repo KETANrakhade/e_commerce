@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Product Test</title>
+    <script src="config.js"></script>
+</head>
+<body>
+    <h1>Simple Product Test</h1>
+    <div id="productName">Loading...</div>
+    <div id="productPrice">Loading...</div>
+    <div id="debug"></div>
+
+    <script>
+        async function testProduct() {
+            const debug = document.getElementById('debug');
+            const nameEl = document.getElementById('productName');
+            const priceEl = document.getElementById('productPrice');
+            
+            try {
+                debug.innerHTML += '<p>CONFIG: ' + (CONFIG ? CONFIG.API_BASE_URL : 'Not loaded') + '</p>';
+                
+                // Test with first product ID from API
+                const productId = '697349c4988fce88e4b5bb91';
+                const url = `${CONFIG.API_BASE_URL}/products/${productId}`;
+                debug.innerHTML += '<p>Fetching: ' + url + '</p>';
+                
+                const response = await fetch(url);
+                debug.innerHTML += '<p>Response status: ' + response.status + '</p>';
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    debug.innerHTML += '<p>Response data: ' + JSON.stringify(data).substring(0, 200) + '...</p>';
+                    
+                    if (data.data) {
+                        nameEl.textContent = data.data.name;
+                        priceEl.textContent = 'Rs. ' + data.data.price;
+                        debug.innerHTML += '<p>✅ Product loaded successfully!</p>';
+                    } else {
+                        debug.innerHTML += '<p>❌ No data.data in response</p>';
+                    }
+                } else {
+                    const errorText = await response.text();
+                    debug.innerHTML += '<p>❌ Error: ' + errorText + '</p>';
+                }
+            } catch (error) {
+                debug.innerHTML += '<p>❌ Exception: ' + error.message + '</p>';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', testProduct);
+    </script>
+</body>
+</html>

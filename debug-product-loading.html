@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Debug Product Loading</title>
+    <script src="config.js"></script>
+</head>
+<body>
+    <h1>Product Loading Debug</h1>
+    <div id="results"></div>
+
+    <script>
+        async function debugProductLoading() {
+            const results = [];
+            
+            // Test 1: Check CONFIG
+            results.push(`CONFIG loaded: ${CONFIG ? 'Yes' : 'No'}`);
+            if (CONFIG) {
+                results.push(`API Base URL: ${CONFIG.API_BASE_URL}`);
+            }
+            
+            // Test 2: Get URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            results.push(`Product ID from URL: ${productId || 'None'}`);
+            
+            // Test 3: Try to fetch a valid product
+            const validProductId = '697325ed2c72a3bcf64495b8'; // From the API response
+            results.push(`Testing with valid product ID: ${validProductId}`);
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/products/${validProductId}`);
+                results.push(`API Response Status: ${response.status}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    results.push(`Product found: ${data.data?.name || 'No name'}`);
+                    results.push(`Product price: ${data.data?.price || 'No price'}`);
+                    results.push(`Has color variants: ${data.data?.hasColorVariants ? 'Yes' : 'No'}`);
+                } else {
+                    const errorData = await response.text();
+                    results.push(`API Error: ${errorData}`);
+                }
+            } catch (error) {
+                results.push(`Fetch Error: ${error.message}`);
+            }
+            
+            // Test 4: Check hardcoded products
+            const hardcodedProducts = [
+              {
+                id: 1,
+                name: "Loose Fit Fuzzy cardigan",
+                price: 2999,
+                mrp: 3299,
+                discount: "60% OFF",
+                images: [
+                  "img/men/new images/img-1-a.avif",
+                  "img/men/new images/img-1-b.avif",
+                  "img/men/new images/img-1-c.avif",
+                  "img/men/new images/img-1-d.avif"
+                ]
+              }
+            ];
+            
+            results.push(`Hardcoded products available: ${hardcodedProducts.length}`);
+            
+            // Display results
+            document.getElementById('results').innerHTML = 
+                '<h2>Debug Results:</h2>' + 
+                results.map(result => '<p>' + result + '</p>').join('');
+        }
+        
+        // Run debug when page loads
+        document.addEventListener('DOMContentLoaded', debugProductLoading);
+    </script>
+</body>
+</html>

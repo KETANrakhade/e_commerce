@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sale - Up to 70% Off | PYRAMID</title>
+    <link rel="icon" type="image/x-icon" href="/img/bars.png">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #65AAC3;
+            --secondary-color: #5F9FB6;
+            --accent-color: #2c3e50;
+            --sale-red: #e74c3c;
+            --sale-orange: #f39c12;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: var(--accent-color);
+            background: #f8f9fa;
+        }
+
+        /* Header */
+        .sale-header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 50%, #ff3838 100%);
+            color: white;
+            padding: 100px 0 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sale-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="sale-pattern" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23sale-pattern)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .sale-header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .sale-main-title {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: pulse-scale 2s infinite alternate;
+        }
+
+        .sale-main-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .sale-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        .sale-stat {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            min-width: 120px;
+        }
+
+        .sale-stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            display: block;
+            color: #ffd700;
+        }
+
+        .sale-stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: white !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-color) !important;
+        }
+
+        /* Filters */
+        .filters-section {
+            background: white;
+            padding: 30px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px;
+        }
+
+        .filter-group {
+            margin-bottom: 20px;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+
+        .filter-select {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(101, 170, 195, 0.1);
+        }
+
+        /* Products Grid */
+        .products-section {
+            padding: 40px 0;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .product-image {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.1);
+        }
+
+        .discount-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #ff3838, #ff6b6b);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(255, 56, 56, 0.4);
+            animation: bounce-in 0.6s ease;
+        }
+
+        .sale-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #ffd700;
+            color: #333;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .product-info {
+            padding: 25px;
+        }
+
+        .product-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .product-prices {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .current-price {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--sale-red);
+        }
+
+        .original-price {
+            font-size: 1.2rem;
+            color: #95a5a6;
+            text-decoration: line-through;
+        }
+
+        .savings {
+            background: #e8f5e8;
+            color: #27ae60;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .add-to-cart-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .add-to-cart-btn:hover {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(101, 170, 195, 0.4);
+        }
+
+        /* Loading and Empty States */
+        .loading-state,
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            grid-column: 1 / -1;
+        }
+
+        .loading-state i,
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* Pagination */
+        .pagination-section {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .pagination .page-link {
+            border: 2px solid #e9ecef;
+            color: var(--accent-color);
+            padding: 10px 15px;
+            margin: 0 5px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .pagination .page-link:hover,
+        .pagination .page-item.active .page-link {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Animations */
+        @keyframes pulse-scale {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+
+        @keyframes bounce-in {
+            0% { transform: scale(0) rotate(180deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sale-main-title {
+                font-size: 2.5rem;
+            }
+
+            .sale-stats {
+                gap: 20px;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+            }
+
+            .filters-section .row > div {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->                                    
+    <nav class="navbar navbar-expand-lg fixed-top top-line" id="mainNavbar">
+        <div class="container">
+            <img class="mx-2" src="img/pyramidal.png" width="40px" height="40px" alt="Pyramid Logo">
+            <a class="navbar-brand" id="viewHome" href="#">PYRAMID</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="#" id="viewHome2">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" id="viewMen">Men</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" id="viewWomen">Women</a></li>
+                   
+                </ul>
+                <div class="d-flex align-items-center">
+                    <span class="icon-btn" id="userProfile"><i class="fa-regular fa-user"></i></span>
+                    <span class="icon-btn position-relative" id="viewWishlist">
+                        <i class="fa-regular fa-heart"></i>
+                        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill"
+                            style="font-size: 0.7rem; display: none;"></span>
+                    </span>
+                    <span class="icon-btn position-relative" id="viewCart">
+                        <i class="bi bi-cart"></i>
+                        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill"
+                            id="cartCount" style="font-size: 0.7rem; display: none;">0</span>
+                    </span>
+                    <span class="icon-btn" id="adminPanel" title="Admin Panel" style="color: #ffd700; display: none;">
+                        <i class="fa-solid fa-crown"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sale Header -->
+    <section class="sale-header">
+        <div class="container">
+            <div class="sale-header-content">
+                <h1 class="sale-main-title">
+                    <i class="fas fa-fire me-3"></i>
+                    MEGA SALE
+                </h1>
+                <p class="sale-main-subtitle">Up to 70% off on selected items - Limited time only!</p>
+                
+                <div class="sale-stats">
+                    <div class="sale-stat">
+                        <span class="sale-stat-number" id="totalProducts">0</span>
+                        <span class="sale-stat-label">Products on Sale</span>
+                    </div>
+                    <div class="sale-stat">
+                        <span class="sale-stat-number">70%</span>
+                        <span class="sale-stat-label">Max Discount</span>
+                    </div>
+                    <div class="sale-stat">
+                        <span class="sale-stat-number" id="timeLeft">24h</span>
+                        <span class="sale-stat-label">Time Left</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filters Section -->
+    <section class="filters-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="filter-group">           
+                        <div class="filter-label">Category</div>
+                        <select class="form-select filter-select" id="categoryFilter">
+                            <option value="">All Categories</option>
+                            <option value="men">Men</option>
+                            <option value="women">Women</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-group">
+                        <div class="filter-label">Discount</div>
+                        <select class="form-select filter-select" id="discountFilter">
+                            <option value="">All Discounts</option>
+                            <option value="20">20% and above</option>
+                            <option value="30">30% and above</option>
+                            <option value="50">50% and above</option>
+                            <option value="60">60% and above</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-group">
+                        <div class="filter-label">Price Range</div>
+                        <select class="form-select filter-select" id="priceFilter">
+                            <option value="">All Prices</option>
+                            <option value="0-1000">Under ₹1,000</option>
+                            <option value="1000-2000">₹1,000 - ₹2,000</option>
+                            <option value="2000-5000">₹2,000 - ₹5,000</option>
+                            <option value="5000-999999">Above ₹5,000</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-group">
+                        <div class="filter-label">Sort By</div>
+                        <select class="form-select filter-select" id="sortFilter">
+                            <option value="discount-high">Highest Discount</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="name">Name A-Z</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products-section">
+        <div class="container">
+            <div class="products-grid" id="productsGrid">
+                <!-- Loading state -->
+                <div class="loading-state">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3">Loading amazing deals...</p>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-section" id="paginationSection" style="display: none;">
+                <nav>
+                    <ul class="pagination justify-content-center" id="pagination">
+                        <!-- Pagination will be generated here -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Sale Page JavaScript -->
+    <script>
+        const API_BASE_URL = 'http://localhost:5001/api';
+        let allProducts = [];
+        let saleProducts = [];
+        let currentPage = 1;
+        const productsPerPage = 12;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProducts();
+            setupFilters();
+            updateCartCount();
+        });
+
+        // Load all products and filter those with discounts
+        async function loadProducts() {
+            try {
+                console.log('🔍 Loading products for discount page...');
+                const response = await fetch(`${API_BASE_URL}/products?limit=100`);
+                const data = await response.json();
+                
+                console.log('📦 API Response:', data);
+                
+                if (data.success && data.data && data.data.products) {
+                    allProducts = data.data.products;
+                    
+                    // Filter products that have real discount data from backend
+                    const realSaleProducts = allProducts.filter(product => {
+                        const hasDiscount = product.discount && 
+                                          product.discount.isOnSale === true && 
+                                          product.discount.percentage > 0 &&
+                                          product.isActive !== false;
+                        
+                        if (hasDiscount) {
+                            console.log('✅ Found discount product:', {
+                                name: product.name,
+                                originalPrice: product.price,
+                                discountPercent: product.discount.percentage,
+                                salePrice: product.discount.salePrice
+                            });
+                        }
+                        
+                        return hasDiscount;
+                    });
+                    
+                    console.log('📦 Total products loaded:', allProducts.length);
+                    console.log('�️ Products with real discounts:', realSaleProducts.length);
+                    
+                    if (realSaleProducts.length > 0) {
+                        // Use real discount data
+                        saleProducts = realSaleProducts.map(product => ({
+                            ...product,
+                            originalPrice: product.price,
+                            salePrice: product.discount.salePrice || Math.round(product.price * (1 - product.discount.percentage / 100)),
+                            discount: product.discount.percentage,
+                            savings: product.price - (product.discount.salePrice || Math.round(product.price * (1 - product.discount.percentage / 100))),
+                            onSale: true,
+                            saleLabel: product.discount.saleLabel || 'SALE'
+                        }));
+                        
+                        console.log('✅ Using real discount data from backend');
+                        console.log('🎯 Sample discount product:', saleProducts[0]);
+                    } else {
+                        // Show message that no discounts are available
+                        console.log('⚠️ No products with real discounts found');
+                        saleProducts = [];
+                    }
+                    
+                    // Update stats
+                    document.getElementById('totalProducts').textContent = saleProducts.length;
+                    
+                    displayProducts(saleProducts);
+                } else {
+                    console.error('❌ Invalid API response:', data);
+                    showError('Failed to load products');
+                }
+            } catch (error) {
+                console.error('❌ Error loading products:', error);
+                showError('Unable to load products: ' + error.message);
+            }
+        }
+
+        // Generate sale products (every 3rd product gets a discount)
+        function generateSaleProducts(products) {
+            const saleItems = [];
+            
+            products.forEach((product, index) => {
+                // Every 3rd product gets a random discount for better demo
+                if ((index + 1) % 3 === 0) {
+                    const discountPercentages = [20, 30, 40, 50, 60, 70];
+                    const saleLabels = ['SALE', 'MEGA SALE', 'FLASH SALE', 'CLEARANCE', 'SUPER SALE'];
+                    
+                    const randomDiscount = discountPercentages[Math.floor(Math.random() * discountPercentages.length)];
+                    const randomLabel = saleLabels[Math.floor(Math.random() * saleLabels.length)];
+                    
+                    const originalPrice = getProductPrice(product);
+                    const salePrice = Math.round(originalPrice * (1 - randomDiscount / 100));
+                    const savings = originalPrice - salePrice;
+                    
+                    saleItems.push({
+                        ...product,
+                        originalPrice: originalPrice,
+                        salePrice: salePrice,
+                        discount: randomDiscount,
+                        savings: savings,
+                        onSale: true,
+                        saleLabel: randomLabel
+                    });
+                }
+            });
+            
+            return saleItems;
+        }
+
+        // Get product price (handle color variants)
+        function getProductPrice(product) {
+            if (product.hasColorVariants && product.colorVariants && product.colorVariants.length > 0) {
+                const defaultVariant = product.colorVariants.find(v => v.isDefault) || product.colorVariants[0];
+                return defaultVariant.finalPrice || product.price;
+            }
+            return product.price;
+        }
+
+        // Get product image
+        function getProductImage(product) {
+            // Check for color variant images first
+            if (product.hasColorVariants && product.colorVariants && product.colorVariants.length > 0) {
+                const defaultVariant = product.colorVariants.find(v => v.isDefault) || product.colorVariants[0];
+                if (defaultVariant.images && defaultVariant.images.length > 0) {
+                    return defaultVariant.images[0].url || defaultVariant.images[0];
+                }
+            }
+            
+            // Check regular product images
+            if (product.images && product.images.length > 0) {
+                return product.images[0].url || product.images[0];
+            }
+            
+            // Check imageUrls array
+            if (product.imageUrls && product.imageUrls.length > 0) {
+                return product.imageUrls[0];
+            }
+            
+            return 'img/placeholder-product.jpg';
+        }
+
+        // Display products
+        function displayProducts(products) {
+            const grid = document.getElementById('productsGrid');
+            
+            if (products.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <h3>No products found</h3>
+                        <p>Try adjusting your filters to see more results</p>
+                    </div>
+                `;
+                document.getElementById('paginationSection').style.display = 'none';
+                return;
+            }
+
+            // Calculate pagination
+            const totalPages = Math.ceil(products.length / productsPerPage);
+            const startIndex = (currentPage - 1) * productsPerPage;
+            const endIndex = startIndex + productsPerPage;
+            const currentProducts = products.slice(startIndex, endIndex);
+
+            // Generate product cards
+            grid.innerHTML = currentProducts.map(product => {
+                const productImage = getProductImage(product);
+                
+                return `
+                    <div class="product-card" onclick="viewProduct('${product._id}')">
+                        <div class="product-image">
+                            <img src="${productImage}" alt="${product.name}" loading="lazy" 
+                                 onerror="this.src='img/placeholder-product.jpg'">
+                            <div class="discount-badge">${product.discount}% OFF</div>
+                            <div class="sale-badge">${product.saleLabel || 'SALE'}</div>
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-name">${product.name}</h3>
+                            <div class="product-prices">
+                                <span class="current-price">₹${product.salePrice.toLocaleString()}</span>
+                                <span class="original-price">₹${product.originalPrice.toLocaleString()}</span>
+                                <span class="savings">Save ₹${product.savings.toLocaleString()}</span>
+                            </div>
+                            <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToCart('${product._id}', '${product.name}', ${product.salePrice}, '${productImage}')">
+                                <i class="fas fa-shopping-cart me-2"></i>
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Update pagination
+            updatePagination(totalPages);
+        }
+
+        // Update pagination
+        function updatePagination(totalPages) {
+            const paginationSection = document.getElementById('paginationSection');
+            const pagination = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                paginationSection.style.display = 'none';
+                return;
+            }
+            
+            paginationSection.style.display = 'block';
+            
+            let paginationHTML = '';
+            
+            // Previous button
+            if (currentPage > 1) {
+                paginationHTML += `<li class="page-item"><a class="page-link" href="#" onclick="changePage(${currentPage - 1})">Previous</a></li>`;
+            }
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    paginationHTML += `<li class="page-item active"><a class="page-link" href="#">${i}</a></li>`;
+                } else if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    paginationHTML += `<li class="page-item"><a class="page-link" href="#" onclick="changePage(${i})">${i}</a></li>`;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    paginationHTML += `<li class="page-item disabled"><a class="page-link" href="#">...</a></li>`;
+                }
+            }
+            
+            // Next button
+            if (currentPage < totalPages) {
+                paginationHTML += `<li class="page-item"><a class="page-link" href="#" onclick="changePage(${currentPage + 1})">Next</a></li>`;
+            }
+            
+            pagination.innerHTML = paginationHTML;
+        }
+
+        // Change page
+        function changePage(page) {
+            currentPage = page;
+            const filteredProducts = applyFilters();
+            displayProducts(filteredProducts);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Setup filters
+        function setupFilters() {
+            const filters = ['categoryFilter', 'discountFilter', 'priceFilter', 'sortFilter'];
+            
+            filters.forEach(filterId => {
+                document.getElementById(filterId).addEventListener('change', () => {
+                    currentPage = 1;
+                    const filteredProducts = applyFilters();
+                    displayProducts(filteredProducts);
+                });
+            });
+        }
+
+        // Apply filters
+        function applyFilters() {
+            let filtered = [...saleProducts];
+            
+            // Category filter
+            const category = document.getElementById('categoryFilter').value;
+            if (category) {
+                filtered = filtered.filter(product => 
+                    product.categoryName?.toLowerCase().includes(category) ||
+                    product.category?.name?.toLowerCase().includes(category)
+                );
+            }
+            
+            // Discount filter
+            const minDiscount = document.getElementById('discountFilter').value;
+            if (minDiscount) {
+                filtered = filtered.filter(product => product.discount >= parseInt(minDiscount));
+            }
+            
+            // Price filter
+            const priceRange = document.getElementById('priceFilter').value;
+            if (priceRange) {
+                const [min, max] = priceRange.split('-').map(Number);
+                filtered = filtered.filter(product => 
+                    product.salePrice >= min && product.salePrice <= max
+                );
+            }
+            
+            // Sort
+            const sort = document.getElementById('sortFilter').value;
+            switch (sort) {
+                case 'discount-high':
+                    filtered.sort((a, b) => b.discount - a.discount);
+                    break;
+                case 'price-low':
+                    filtered.sort((a, b) => a.salePrice - b.salePrice);
+                    break;
+                case 'price-high':
+                    filtered.sort((a, b) => b.salePrice - a.salePrice);
+                    break;
+                case 'name':
+                    filtered.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+            }
+            
+            return filtered;
+        }
+
+        // View product
+        function viewProduct(productId) {
+            window.location.href = `product.html?id=${productId}`;
+        }
+
+        // Add to cart
+        function addToCart(productId, name, price, image) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const cart = JSON.parse(localStorage.getItem('cart_v1') || '[]');
+            
+            const existingItem = cart.find(item => item._id === productId || item.id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    _id: productId,
+                    id: productId,
+                    productId: productId,
+                    name: name,
+                    price: price,
+                    image: image,
+                    quantity: 1
+                });
+            }
+            
+            localStorage.setItem('cart_v1', JSON.stringify(cart));
+            updateCartCount();
+            showToast('Added to cart successfully!', 'success');
+        }
+
+        // Update cart count
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart_v1') || '[]');
+            const count = cart.reduce((total, item) => total + item.quantity, 0);
+            const cartCountElement = document.getElementById('cartCount');
+            if (cartCountElement) {
+                cartCountElement.textContent = count;
+                cartCountElement.style.display = count > 0 ? 'inline' : 'none';
+            }
+        }
+
+        // Show error
+        function showError(message) {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                    <h3>Oops!</h3>
+                    <p>${message}</p>
+                    <button class="btn btn-primary" onclick="loadProducts()">Try Again</button>
+                </div>
+            `;
+        }
+
+        // Toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'primary'} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            let toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                document.body.appendChild(toastContainer);
+            }
+            
+            toastContainer.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+        // Navigation event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const viewHome = document.getElementById("viewHome");
+            if (viewHome) {
+                viewHome.addEventListener("click", function () {
+                    window.location.href = "index-backup.html";
+                });                               
+            }
+            
+            const viewHome2 = document.getElementById("viewHome2");
+            if (viewHome2) {
+                viewHome2.addEventListener("click", function () {
+                    window.location.href = "index-backup.html";
+                });
+            }
+            
+            const viewMen = document.getElementById("viewMen");
+            if (viewMen) {
+                viewMen.addEventListener("click", function () {
+                    window.location.href = "men-product.html";
+                });
+            }
+            
+            const viewWomen = document.getElementById("viewWomen");
+            if (viewWomen) {
+                viewWomen.addEventListener("click", function () {
+                    window.location.href = "women-product.html";
+                });
+            }
+            
+            const viewCart = document.getElementById("viewCart");
+            if (viewCart) {
+                viewCart.addEventListener("click", function () {
+                    window.location.href = "cart.html";
+                });
+            }
+
+            // Admin Panel Navigation
+            const adminPanel = document.getElementById("adminPanel");
+            if (adminPanel) {
+                adminPanel.addEventListener("click", function () {
+                    window.location.href = "http://localhost:9000";
+                });
+                
+                // Show crown icon if user is admin
+                try {
+                    const user = JSON.parse(localStorage.getItem('user') || '{}');
+                    if (user.role === 'admin') {
+                        adminPanel.style.display = 'inline-block';
+                    }
+                } catch (e) {
+                    console.error('Error checking admin status:', e);
+                }
+            }
+            
+            const userProfile = document.getElementById("userProfile");
+            if (userProfile) {
+                userProfile.addEventListener("click", function () {
+                    window.location.href = "login.html";
+                });
+            }
+            
+            const viewWishlist = document.getElementById("viewWishlist");
+            if (viewWishlist) {
+                viewWishlist.addEventListener("click", function () {
+                    window.location.href = "wishlist.html";
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

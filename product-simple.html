@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - PYRAMID</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f8f9fa;
+        }
+        .product-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .product-image {
+            width: 100%;
+            height: 500px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .product-info {
+            padding: 20px;
+        }
+        .product-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .product-price {
+            font-size: 1.5rem;
+            color: #e74c3c;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .original-price {
+            text-decoration: line-through;
+            color: #999;
+            margin-right: 10px;
+        }
+        .discount-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+        .btn-primary {
+            background: #007bff;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+        }
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="index-backup.html">
+                <img src="img/pyramidal.png" width="40" height="40" alt="Pyramid Logo">
+                PYRAMID
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="index-backup.html">Home</a>
+                <a class="nav-link" href="men-product.html">Men</a>
+                <a class="nav-link" href="women-product.html">Women</a>
+                <a class="nav-link" href="cart.html"><i class="fas fa-shopping-cart"></i></a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Product Section -->
+    <div class="product-container">
+        <div class="row">
+            <!-- Product Image -->
+            <div class="col-md-6">
+                <img id="productImage" src="img/placeholder-product.jpg" alt="Product Image" class="product-image">
+            </div>
+            
+            <!-- Product Info -->
+            <div class="col-md-6">
+                <div class="product-info">
+                    <h1 id="productName" class="product-title">Loading Product...</h1>
+                    
+                    <div class="product-price">
+                        <span id="salePrice">₹0</span>
+                        <span id="originalPrice" class="original-price" style="display: none;">₹0</span>
+                        <span id="discountBadge" class="discount-badge" style="display: none;">0% OFF</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p id="productDescription">Product description will appear here...</p>
+                    </div>
+                    
+                    <!-- Size Selection -->
+                    <div class="mb-3">
+                        <h5>Select Size:</h5>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-secondary">S</button>
+                            <button type="button" class="btn btn-outline-secondary">M</button>
+                            <button type="button" class="btn btn-outline-secondary">L</button>
+                            <button type="button" class="btn btn-outline-secondary">XL</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Add to Cart -->
+                    <div class="mb-3">
+                        <button id="addToCartBtn" class="btn btn-primary btn-lg">
+                            <i class="fas fa-shopping-cart me-2"></i>
+                            Add to Cart
+                        </button>
+                        <button class="btn btn-outline-danger btn-lg ms-2">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Product Details -->
+                    <div class="mt-4">
+                        <h5>Product Details:</h5>
+                        <ul>
+                            <li>Free shipping on orders over ₹999</li>
+                            <li>Easy returns within 30 days</li>
+                            <li>100% authentic products</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="config.js"></script>
+    <script>
+        // Simple product loading
+        async function loadProduct() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            
+            console.log('Loading product ID:', productId);
+            
+            if (!productId) {
+                document.getElementById('productName').textContent = 'No Product Selected';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/products/${productId}`);
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    const product = data.data;
+                    console.log('Product loaded:', product);
+                    
+                    // Update product info
+                    document.getElementById('productName').textContent = product.name;
+                    document.getElementById('productDescription').textContent = product.description || 'No description available';
+                    
+                    // Handle pricing and discounts
+                    if (product.discount && product.discount.isOnSale && product.discount.percentage > 0) {
+                        document.getElementById('salePrice').textContent = `₹${product.discount.salePrice}`;
+                        document.getElementById('originalPrice').textContent = `₹${product.price}`;
+                        document.getElementById('originalPrice').style.display = 'inline';
+                        document.getElementById('discountBadge').textContent = `${product.discount.percentage}% OFF`;
+                        document.getElementById('discountBadge').style.display = 'inline';
+                    } else {
+                        document.getElementById('salePrice').textContent = `₹${product.price}`;
+                    }
+                    
+                    // Handle images
+                    if (product.images && product.images.length > 0) {
+                        const imageUrl = product.images[0].url || product.images[0];
+                        document.getElementById('productImage').src = imageUrl;
+                    } else if (product.imageUrls && product.imageUrls.length > 0) {
+                        document.getElementById('productImage').src = product.imageUrls[0];
+                    }
+                    
+                } else {
+                    document.getElementById('productName').textContent = 'Product Not Found';
+                }
+            } catch (error) {
+                console.error('Error loading product:', error);
+                document.getElementById('productName').textContent = 'Error Loading Product';
+            }
+        }
+        
+        // Add to cart functionality
+        document.getElementById('addToCartBtn').addEventListener('click', function() {
+            alert('Product added to cart!');
+        });
+        
+        // Load product when page loads
+        document.addEventListener('DOMContentLoaded', loadProduct);
+    </script>
+</body>
+</html>

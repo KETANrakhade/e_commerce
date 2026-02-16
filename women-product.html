@@ -183,6 +183,54 @@
             z-index: 100;
         }
 
+        .filter-row-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Filter Button (Pill Style) */
+        .filter-btn-pill {
+            padding: 12px 30px;
+            border: 2px solid #ffe0f0;
+            background: white;
+            color: #2c3e50;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-btn-pill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .filter-btn-pill:hover::before {
+            left: 0;
+        }
+
+        .filter-btn-pill:hover {
+            color: white;
+            border-color: #ff9a9e;
+            transform: translateY(-2px);
+        }
+
+        /* Filter Tabs (Original Style) */
         .filter-tabs {
             display: flex;
             justify-content: center;
@@ -225,6 +273,357 @@
             color: white;
             border-color: #ff9a9e;
             transform: translateY(-2px);
+        }
+
+        /* Sort By Container */
+        .sort-by-container {
+            position: relative;
+        }
+
+        .sort-btn-pill {
+            padding: 12px 30px;
+            border: 2px solid #ffe0f0;
+            background: white;
+            color: #2c3e50;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sort-btn-pill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .sort-btn-pill:hover::before {
+            left: 0;
+        }
+
+        .sort-btn-pill:hover {
+            color: white;
+            border-color: #ff9a9e;
+            transform: translateY(-2px);
+        }
+
+        .sort-btn-pill i {
+            transition: transform 0.3s ease;
+        }
+
+        .sort-btn-pill.active i {
+            transform: rotate(180deg);
+        }
+
+        /* Sort Dropdown */
+        .sort-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            min-width: 220px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sort-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .sort-option {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .sort-option:first-child {
+            border-radius: 10px 10px 0 0;
+        }
+
+        .sort-option:last-child {
+            border-radius: 0 0 10px 10px;
+        }
+
+        .sort-option:hover {
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+            color: white;
+        }
+
+        .sort-option.active {
+            background: #f8f9fa;
+            color: #ff9a9e;
+            font-weight: 700;
+        }
+
+        /* Filter Overlay */
+        .filter-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .filter-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Filter Slide Panel */
+        .filter-panel {
+            position: fixed;
+            left: -400px;
+            top: 0;
+            width: 350px;
+            height: 100vh;
+            background: white;
+            z-index: 9999;
+            transition: left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .filter-panel.active {
+            left: 0;
+        }
+
+        .filter-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 2px solid #ffe0f0;
+            background: #fff5f8;
+        }
+
+        .filter-panel-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ff9a9e;
+            margin: 0;
+        }
+
+        .close-filter-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-filter-btn:hover {
+            color: #ff9a9e;
+            transform: rotate(90deg);
+        }
+
+        .filter-panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .filter-panel-footer {
+            padding: 20px;
+            border-top: 2px solid #ffe0f0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-group {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #ffe0f0;
+            padding-bottom: 15px;
+        }
+
+        .filter-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #ff9a9e;
+            margin-bottom: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .filter-title i {
+            transition: transform 0.3s ease;
+        }
+
+        .filter-title.collapsed i {
+            transform: rotate(-90deg);
+        }
+
+        .filter-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .filter-content.active {
+            max-height: 500px;
+        }
+
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .filter-checkbox input[type="checkbox"],
+        .filter-checkbox input[type="radio"] {
+            margin-right: 10px;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
+        .filter-checkbox:hover {
+            color: #ff9a9e;
+        }
+
+        /* Price Range */
+        .price-range-inputs {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .price-range-inputs input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ffe0f0;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .price-display {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        /* Filter Buttons */
+        .clear-filters-btn {
+            flex: 1;
+            padding: 12px;
+            background: white;
+            color: #ff9a9e;
+            border: 2px solid #ff9a9e;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clear-filters-btn:hover {
+            background: #ff9a9e;
+            color: white;
+        }
+
+        .apply-filters-btn {
+            flex: 2;
+            padding: 12px;
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .apply-filters-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 154, 158, 0.3);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .filter-panel {
+                width: 300px;
+                left: -300px;
+            }
+
+            .filter-row-wrapper {
+                gap: 10px;
+            }
+
+            .filter-tabs {
+                gap: 10px;
+                width: 100%;
+                justify-content: flex-start;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 5px;
+            }
+
+            .filter-tab {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+
+            .filter-btn-pill,
+            .sort-btn-pill {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .filter-section {
+                padding: 20px 0;
+            }
+
+            .filter-tab {
+                padding: 8px 15px;
+                font-size: 0.85rem;
+            }
+
+            .filter-btn-pill,
+            .sort-btn-pill {
+                padding: 8px 15px;
+                font-size: 0.85rem;
+            }
         }
 
         /* Product Grid */
@@ -370,6 +769,21 @@
             z-index: 10;
             box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
             animation: pulse 2s infinite;
+        }
+
+        .sale-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #e74c3c;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: capitalize;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
         }
 
         @keyframes pulse {
@@ -533,6 +947,100 @@
             100% {
                 transform: rotate(360deg);
             }
+        }
+
+        /* Wishlist Icon Styles */
+        .wishlist-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .wishlist-icon:hover {
+            background: white;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .wishlist-icon i {
+            font-size: 1.2rem;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .wishlist-icon:hover i {
+            color: #e74c3c;
+        }
+
+        /* Discount Badge Styles */
+        .discount-badge {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 10;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        /* Price Display Styles */
+        .price-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .current-price {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #ff9a9e;
+        }
+
+        .original-price {
+            font-size: 1.1rem;
+            color: #999;
+            text-decoration: line-through;
+        }
+
+        .discount-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+
+        .discount-percentage {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .savings {
+            color: #27ae60;
+            font-weight: 600;
         }
 
         /* Responsive Design */
@@ -710,10 +1218,11 @@
                     <li class="nav-item"><a class="nav-link" href="#" id="viewHome2">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="#" id="viewMen">Men</a></li>
                     <li class="nav-item"><a class="nav-link" href="#" id="viewWomen">Women</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#" id="discountSale">Sale</a></li>
+                    <li class="nav-item"><a class="nav-link" href="customer-care.html">Support</a></li>
                 </ul>
                 <div class="d-flex align-items-center">
                     <span class="icon-btn" id="userProfile"><i class="fa-regular fa-user"></i></span>
+                    <span class="icon-btn" id="viewOrders" title="My Orders"><i class="fas fa-box"></i></span>
                     <span class="icon-btn position-relative" id="viewWishlist">
                         <i class="fa-regular fa-heart"></i>
                         <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill"
@@ -743,16 +1252,233 @@
     <!-- Filter Section -->
     <section class="filter-section">
         <div class="container">
-            <div class="filter-tabs">
-                <div class="filter-tab active" data-filter="all">All Products</div>
-                <div class="filter-tab" data-filter="shirts">Shirts</div>
-                <div class="filter-tab" data-filter="dresses">Dresses</div>
-                <div class="filter-tab" data-filter="tops">Tops</div>
-                <div class="filter-tab" data-filter="jeans">Jeans</div>
-                <div class="filter-tab" data-filter="accessories">Accessories</div>
+            <div class="filter-row-wrapper">
+                <!-- Filter Button -->
+                <button class="filter-btn-pill" onclick="openFilterPanel()">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+
+                <!-- Category Filter Tabs (Original Style) -->
+                <div class="filter-tabs">
+                    <div class="filter-tab active" data-filter="all" onclick="applyQuickFilter('all')">All Products</div>
+                    <div class="filter-tab" data-filter="shirts" onclick="applyQuickFilter('shirts')">Shirts</div>
+                    <div class="filter-tab" data-filter="dresses" onclick="applyQuickFilter('dresses')">Dresses</div>
+                    <div class="filter-tab" data-filter="tops" onclick="applyQuickFilter('tops')">Tops</div>
+                    <div class="filter-tab" data-filter="jeans" onclick="applyQuickFilter('jeans')">Jeans</div>
+                    <div class="filter-tab" data-filter="accessories" onclick="applyQuickFilter('accessories')">Accessories</div>
+                    <div class="filter-tab" data-filter="beauty" onclick="applyQuickFilter('beauty')">Beauty</div>
+                </div>
+
+                <!-- Sort By Dropdown -->
+                <div class="sort-by-container">
+                    <button class="sort-btn-pill" onclick="toggleSortDropdown()">
+                        Sort By <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="sort-dropdown" id="sortDropdown">
+                        <div class="sort-option" onclick="applySortingFromMenu('featured')">Featured</div>
+                        <div class="sort-option" onclick="applySortingFromMenu('price-low')">Price: Low to High</div>
+                        <div class="sort-option" onclick="applySortingFromMenu('price-high')">Price: High to Low</div>
+                        <div class="sort-option" onclick="applySortingFromMenu('newest')">Newest to Oldest</div>
+                        <div class="sort-option" onclick="applySortingFromMenu('oldest')">Oldest to Newest</div>
+                        <div class="sort-option" onclick="applySortingFromMenu('discount')">Discount: High to Low</div>
+                        <div class="sort-option" onclick="applySortingFromMenu('availability')">In Stock Only</div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
+
+    <!-- Filter Slide Panel (Hidden by default) -->
+    <div class="filter-overlay" id="filterOverlay" onclick="closeFilterPanel()"></div>
+    <div class="filter-panel" id="filterPanel">
+        <div class="filter-panel-header">
+            <h3>FILTER</h3>
+            <button class="close-filter-btn" onclick="closeFilterPanel()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="filter-panel-content">
+            <!-- Category Filter -->
+            <div class="filter-group">
+                <h4 class="filter-title" onclick="toggleFilterGroup(this)">
+                    CATEGORY
+                    <i class="fas fa-chevron-down"></i>
+                </h4>
+                <div class="filter-content active">
+                    <label class="filter-checkbox">
+                        <input type="checkbox" value="all" checked onchange="applyAdvancedFilters()">
+                        <span>All Products</span>
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" value="shirts" onchange="applyAdvancedFilters()">
+                        <span>Shirts</span>
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" value="dresses" onchange="applyAdvancedFilters()">
+                        <span>Dresses</span>
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" value="tops" onchange="applyAdvancedFilters()">
+                        <span>Tops</span>
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" value="jeans" onchange="applyAdvancedFilters()">
+                        <span>Jeans</span>
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" value="accessories" onchange="applyAdvancedFilters()">
+                        <span>Accessories</span>
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" value="beauty" onchange="applyAdvancedFilters()">
+                        <span>Beauty</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Availability Filter -->
+            <div class="filter-group">
+                <h4 class="filter-title" onclick="toggleFilterGroup(this)">
+                    AVAILABILITY
+                    <i class="fas fa-chevron-down"></i>
+                </h4>
+                <div class="filter-content active">
+                    <label class="filter-checkbox">
+                        <input type="radio" name="availability" value="all" checked onchange="applyAdvancedFilters()">
+                        <span>All Products</span>
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="radio" name="availability" value="in-stock" onchange="applyAdvancedFilters()">
+                        <span>In Stock Only</span>
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="radio" name="availability" value="out-of-stock" onchange="applyAdvancedFilters()">
+                        <span>Out of Stock</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Price Range Filter -->
+            <div class="filter-group">
+                <h4 class="filter-title" onclick="toggleFilterGroup(this)">
+                    PRICE
+                    <i class="fas fa-chevron-down"></i>
+                </h4>
+                <div class="filter-content active">
+                    <div class="price-range-inputs">
+                        <input type="number" id="minPrice" placeholder="Min" value="0" onchange="applyAdvancedFilters()">
+                        <span>-</span>
+                        <input type="number" id="maxPrice" placeholder="Max" value="10000" onchange="applyAdvancedFilters()">
+                    </div>
+                    <div class="price-display">
+                        <span>₹<span id="minPriceDisplay">0</span></span>
+                        <span>₹<span id="maxPriceDisplay">10,000</span></span>
+                    </div>
+                    <input type="range" id="priceRangeMin" min="0" max="10000" value="0" step="100" oninput="updatePriceRange()">
+                    <input type="range" id="priceRangeMax" min="0" max="10000" value="10000" step="100" oninput="updatePriceRange()">
+                </div>
+            </div>
+
+            <!-- Discount Filter -->
+            <div class="filter-group">
+                <h4 class="filter-title" onclick="toggleFilterGroup(this)">
+                    DISCOUNT
+                    <i class="fas fa-chevron-down"></i>
+                </h4>
+                <div class="filter-content active">
+                    <label class="filter-checkbox">
+                        <input type="checkbox" value="0" checked onchange="applyAdvancedFilters()" name="discount">
+                        <span>All Products</span>
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" value="10" onchange="applyAdvancedFilters()" name="discount">
+                        <span>10% and above</span>
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" value="20" onchange="applyAdvancedFilters()" name="discount">
+                        <span>20% and above</span>
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" value="30" onchange="applyAdvancedFilters()" name="discount">
+                        <span>30% and above</span>
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" value="50" onchange="applyAdvancedFilters()" name="discount">
+                        <span>50% and above</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Rating Filter -->
+            <div class="filter-group">
+                <h4 class="filter-title" onclick="toggleFilterGroup(this)">
+                    RATING
+                    <i class="fas fa-chevron-down"></i>
+                </h4>
+                <div class="filter-content active">
+                    <label class="filter-checkbox">
+                        <input type="radio" name="rating" value="0" checked onchange="applyAdvancedFilters()">
+                        <span>All Ratings</span>
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="radio" name="rating" value="4" onchange="applyAdvancedFilters()">
+                        <span>
+                            <i class="fas fa-star" style="color: #f39c12;"></i>
+                            <i class="fas fa-star" style="color: #f39c12;"></i>
+                            <i class="fas fa-star" style="color: #f39c12;"></i>
+                            <i class="fas fa-star" style="color: #f39c12;"></i>
+                            <i class="far fa-star" style="color: #f39c12;"></i>
+                            & Up
+                        </span>
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="radio" name="rating" value="3" onchange="applyAdvancedFilters()">
+                        <span>
+                            <i class="fas fa-star" style="color: #f39c12;"></i>
+                            <i class="fas fa-star" style="color: #f39c12;"></i>
+                            <i class="fas fa-star" style="color: #f39c12;"></i>
+                            <i class="far fa-star" style="color: #f39c12;"></i>
+                            <i class="far fa-star" style="color: #f39c12;"></i>
+                            & Up
+                        </span>
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="radio" name="rating" value="2" onchange="applyAdvancedFilters()">
+                        <span>
+                            <i class="fas fa-star" style="color: #f39c12;"></i>
+                            <i class="fas fa-star" style="color: #f39c12;"></i>
+                            <i class="far fa-star" style="color: #f39c12;"></i>
+                            <i class="far fa-star" style="color: #f39c12;"></i>
+                            <i class="far fa-star" style="color: #f39c12;"></i>
+                            & Up
+                        </span>
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="radio" name="rating" value="1" onchange="applyAdvancedFilters()">
+                        <span>
+                            <i class="fas fa-star" style="color: #f39c12;"></i>
+                            <i class="far fa-star" style="color: #f39c12;"></i>
+                            <i class="far fa-star" style="color: #f39c12;"></i>
+                            <i class="far fa-star" style="color: #f39c12;"></i>
+                            <i class="far fa-star" style="color: #f39c12;"></i>
+                            & Up
+                        </span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Panel Footer -->
+        <div class="filter-panel-footer">
+            <button class="clear-filters-btn" onclick="clearAllFilters()">
+                <i class="fas fa-redo"></i> Clear All
+            </button>
+            <button class="apply-filters-btn" onclick="closeFilterPanel()">
+                View Products
+            </button>
+        </div>
+    </div>
     <!-- Products Section -->
     <section class="products-section animate-on-scroll">
         <div class="container">
@@ -884,6 +1610,11 @@
             
             // Update wishlist badge
             updateWishlistBadge();
+            
+            // Update wishlist icons
+            setTimeout(() => {
+                updateWishlistIcons();
+            }, 1000); // Wait for products to load
         });
 
         // Scroll Animations
@@ -904,6 +1635,238 @@
             document.querySelectorAll('.animate-on-scroll').forEach(el => {
                 observer.observe(el);
             });
+        }
+
+        // Global variables for filter panel
+        let currentPageProducts = [];
+        
+        // Filter Panel Functions
+        function openFilterPanel() {
+            const panel = document.getElementById('filterPanel');
+            const overlay = document.getElementById('filterOverlay');
+            panel.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeFilterPanel() {
+            const panel = document.getElementById('filterPanel');
+            const overlay = document.getElementById('filterOverlay');
+            panel.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+
+        // Quick Filter Tabs
+        function applyQuickFilter(filterValue) {
+            console.log(`🔍 Quick filter applied: ${filterValue}`);
+            
+            // Update active tab
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Apply filter using existing loader functions
+            if (filterValue === 'all') {
+                console.log('📦 Loading all products...');
+                if (typeof loadWomensProducts === 'function') {
+                    loadWomensProducts(1, 'all');
+                } else {
+                    applyFilter('all');
+                }
+            } else {
+                console.log(`📦 Loading products with filter: ${filterValue}`);
+                if (typeof loadWomensProductsWithFilter === 'function') {
+                    loadWomensProductsWithFilter(1, filterValue);
+                } else {
+                    applyFilter(filterValue);
+                }
+            }
+        }
+
+        // Sort Dropdown Toggle
+        function toggleSortDropdown() {
+            const dropdown = document.getElementById('sortDropdown');
+            const btn = event.target.closest('.sort-btn-pill');
+            dropdown.classList.toggle('active');
+            btn.classList.toggle('active');
+        }
+
+        // Close sort dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const sortContainer = document.querySelector('.sort-by-container');
+            if (sortContainer && !sortContainer.contains(event.target)) {
+                const dropdown = document.getElementById('sortDropdown');
+                const btn = document.querySelector('.sort-btn-pill');
+                if (dropdown) dropdown.classList.remove('active');
+                if (btn) btn.classList.remove('active');
+            }
+        });
+
+        // Sort from menu
+        function applySortingFromMenu(sortValue) {
+            console.log('🔄 Applying sort:', sortValue);
+            
+            // Update global sort variable from loader
+            if (typeof currentSortBy !== 'undefined') {
+                currentSortBy = sortValue || 'featured';
+            }
+            
+            // Close dropdown
+            const dropdown = document.getElementById('sortDropdown');
+            const btn = document.querySelector('.sort-btn-pill');
+            if (dropdown) dropdown.classList.remove('active');
+            if (btn) btn.classList.remove('active');
+            
+            // Apply sort using existing functions
+            if (typeof allProducts !== 'undefined' && allProducts && allProducts.length > 0) {
+                const sortedProducts = applySortToProducts(allProducts);
+                renderWomensProducts(sortedProducts);
+            }
+        }
+
+        function toggleFilterGroup(element) {
+            const content = element.nextElementSibling;
+            element.classList.toggle('collapsed');
+            content.classList.toggle('active');
+        }
+
+        function updatePriceRange() {
+            const minPrice = document.getElementById('priceRangeMin').value;
+            const maxPrice = document.getElementById('priceRangeMax').value;
+            document.getElementById('minPrice').value = minPrice;
+            document.getElementById('maxPrice').value = maxPrice;
+            document.getElementById('minPriceDisplay').textContent = parseInt(minPrice).toLocaleString();
+            document.getElementById('maxPriceDisplay').textContent = parseInt(maxPrice).toLocaleString();
+            applyAdvancedFilters();
+        }
+
+        function applyAdvancedFilters() {
+            console.log('🔍 Applying advanced filters from panel...');
+            
+            // Check if we have products to filter
+            if (typeof allProducts === 'undefined' || !allProducts || allProducts.length === 0) {
+                console.warn('⚠️ No products loaded yet');
+                return;
+            }
+
+            // Get all filter values
+            const categoryCheckboxes = document.querySelectorAll('.filter-panel .filter-checkbox input[type="checkbox"]:checked');
+            const categories = Array.from(categoryCheckboxes).map(cb => cb.value);
+            
+            const availabilityRadio = document.querySelector('.filter-panel input[name="availability"]:checked');
+            const availability = availabilityRadio ? availabilityRadio.value : 'all';
+            
+            const minPriceInput = document.getElementById('minPrice');
+            const maxPriceInput = document.getElementById('maxPrice');
+            const minPrice = minPriceInput ? (parseInt(minPriceInput.value) || 0) : 0;
+            const maxPrice = maxPriceInput ? (parseInt(maxPriceInput.value) || 10000) : 10000;
+            
+            const discountCheckboxes = document.querySelectorAll('.filter-panel input[name="discount"]:checked');
+            const discounts = Array.from(discountCheckboxes).map(cb => parseInt(cb.value));
+
+            const ratingRadio = document.querySelector('.filter-panel input[name="rating"]:checked');
+            const minRating = ratingRadio ? parseFloat(ratingRadio.value) : 0;
+
+            console.log('Filter values:', { categories, availability, minPrice, maxPrice, discounts, minRating });
+
+            // Filter products
+            let filteredProducts = [...allProducts];
+
+            // Apply category filter
+            if (!categories.includes('all') && categories.length > 0) {
+                filteredProducts = filteredProducts.filter(product => {
+                    const productCategory = getProductCategory(product);
+                    return categories.includes(productCategory);
+                });
+            }
+
+            // Apply availability filter
+            if (availability === 'in-stock') {
+                filteredProducts = filteredProducts.filter(p => p.stock > 0);
+            } else if (availability === 'out-of-stock') {
+                filteredProducts = filteredProducts.filter(p => p.stock === 0 || !p.stock);
+            }
+
+            // Apply price filter
+            filteredProducts = filteredProducts.filter(product => {
+                const price = product.discount?.isOnSale ? product.discount.salePrice : product.price;
+                return price >= minPrice && price <= maxPrice;
+            });
+
+            // Apply discount filter
+            if (!discounts.includes(0) && discounts.length > 0) {
+                const maxDiscount = Math.max(...discounts);
+                filteredProducts = filteredProducts.filter(product => {
+                    const discount = product.discount?.percentage || 0;
+                    return discount >= maxDiscount;
+                });
+            }
+
+            // Apply rating filter
+            if (minRating > 0) {
+                filteredProducts = filteredProducts.filter(product => {
+                    const rating = product.averageRating || product.rating || 0;
+                    return rating >= minRating;
+                });
+            }
+
+            console.log(`✅ Filtered ${filteredProducts.length} products from ${allProducts.length}`);
+
+            // Apply sorting and render
+            const sortedProducts = applySortToProducts(filteredProducts);
+            renderWomensProducts(sortedProducts);
+            
+            // Hide pagination when using advanced filters
+            const paginationContainer = document.getElementById('paginationContainer');
+            if (paginationContainer) {
+                paginationContainer.style.display = 'none';
+            }
+        }
+
+        function clearAllFilters() {
+            // Reset all checkboxes
+            document.querySelectorAll('.filter-checkbox input[type="checkbox"]').forEach(cb => {
+                cb.checked = cb.value === 'all' || cb.value === '0';
+            });
+
+            // Reset availability
+            const availabilityAll = document.querySelector('input[name="availability"][value="all"]');
+            if (availabilityAll) availabilityAll.checked = true;
+
+            // Reset rating
+            const ratingAll = document.querySelector('input[name="rating"][value="0"]');
+            if (ratingAll) ratingAll.checked = true;
+
+            // Reset price range
+            document.getElementById('minPrice').value = 0;
+            document.getElementById('maxPrice').value = 10000;
+            document.getElementById('priceRangeMin').value = 0;
+            document.getElementById('priceRangeMax').value = 10000;
+            document.getElementById('minPriceDisplay').textContent = '0';
+            document.getElementById('maxPriceDisplay').textContent = '10,000';
+
+            // Reset sort
+            if (typeof currentSortBy !== 'undefined') {
+                currentSortBy = 'featured';
+            }
+
+            // Reset filter tabs
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.getAttribute('data-filter') === 'all') {
+                    tab.classList.add('active');
+                }
+            });
+
+            // Close filter panel
+            closeFilterPanel();
+
+            // Reload products
+            if (typeof loadWomensProducts === 'function') {
+                loadWomensProducts(1, 'all');
+            }
         }
 
         // Filter Functionality
@@ -1030,6 +1993,24 @@
                     window.location.href = "cart.html";
                 });
             }
+
+            // Admin Panel Navigation
+            const adminPanel = document.getElementById("adminPanel");
+            if (adminPanel) {
+                adminPanel.addEventListener("click", function () {
+                    window.location.href = "http://localhost:9000";
+                });
+                
+                // Show crown icon if user is admin
+                try {
+                    const user = JSON.parse(localStorage.getItem('user') || '{}');
+                    if (user.role === 'admin') {
+                        adminPanel.style.display = 'inline-block';
+                    }
+                } catch (e) {
+                    console.error('Error checking admin status:', e);
+                }
+            }
         });
         document.getElementById("floatingCart").addEventListener("click", function () {
             window.location.href = "cart.html";
@@ -1043,10 +2024,123 @@
         document.getElementById("viewWishlist").addEventListener("click", function () {
             window.location.href = "wishlist.html";
         });
+        
+        const viewOrders = document.getElementById("viewOrders");
+        if (viewOrders) {
+            viewOrders.addEventListener("click", function () {
+                window.location.href = "orders.html";
+            });
+        }
 
         // Product Detail Navigation
         function goToDetail(id) {
             window.location.href = "women-item.html?id=" + id;
+        }
+
+        // Wishlist functionality
+        function toggleWishlist(productId, productName, imageUrl, price) {
+            console.log('🤍 Toggle wishlist for:', productName);
+            
+            let wishlist = JSON.parse(localStorage.getItem('wishlist_v1') || '[]');
+            const existingIndex = wishlist.findIndex(item => item.id === productId);
+            
+            if (existingIndex > -1) {
+                // Remove from wishlist
+                wishlist.splice(existingIndex, 1);
+                console.log('💔 Removed from wishlist:', productName);
+                showToast(`${productName} removed from wishlist`, 'error');
+            } else {
+                // Add to wishlist
+                const wishlistItem = {
+                    id: productId,
+                    name: productName,
+                    image: imageUrl,
+                    price: price,
+                    addedAt: new Date().toISOString()
+                };
+                wishlist.push(wishlistItem);
+                console.log('💖 Added to wishlist:', productName);
+                showToast(`${productName} added to wishlist`, 'success');
+            }
+            
+            localStorage.setItem('wishlist_v1', JSON.stringify(wishlist));
+            updateWishlistBadge();
+            updateWishlistIcons();
+        }
+
+        // Update wishlist icons based on current wishlist
+        function updateWishlistIcons() {
+            const wishlist = JSON.parse(localStorage.getItem('wishlist_v1') || '[]');
+            const wishlistIds = wishlist.map(item => item.id);
+            
+            document.querySelectorAll('.wishlist-icon').forEach(icon => {
+                const productCard = icon.closest('.product-card');
+                if (productCard) {
+                    const onclick = icon.getAttribute('onclick');
+                    const productIdMatch = onclick.match(/toggleWishlist\('([^']+)'/);
+                    if (productIdMatch) {
+                        const productId = productIdMatch[1];
+                        const heartIcon = icon.querySelector('i');
+                        if (wishlistIds.includes(productId)) {
+                            heartIcon.className = 'fas fa-heart';
+                            heartIcon.style.color = '#e74c3c';
+                        } else {
+                            heartIcon.className = 'far fa-heart';
+                            heartIcon.style.color = '';
+                        }
+                    }
+                }
+            });
+        }
+
+        // Toast notification system
+        function showToast(message, type = 'info') {
+            // Remove existing toasts
+            const existingToasts = document.querySelectorAll('.toast-notification');
+            existingToasts.forEach(toast => toast.remove());
+            
+            const toast = document.createElement('div');
+            toast.className = `toast-notification toast-${type}`;
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#3498db'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                font-weight: 500;
+                max-width: 300px;
+                animation: slideInRight 0.3s ease-out;
+            `;
+            
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            // Add animation keyframes if not already added
+            if (!document.querySelector('#toast-animations')) {
+                const style = document.createElement('style');
+                style.id = 'toast-animations';
+                style.textContent = `
+                    @keyframes slideInRight {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOutRight {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight 0.3s ease-out';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
         // Smooth Scroll for Internal Links
@@ -1064,8 +2158,8 @@
         });
         
     </script>
-    <script src="auth-check.js"></script>
-    <script src="women-products-loader.js"></script>
+    <script src="auth-check.js?v=2.0"></script>
+    <script src="women-products-loader.js?v=2.0"></script>
     
     <!-- DIRECT FIX SCRIPT - FORCE LOAD WOMEN'S PRODUCTS - DISABLED TO PREVENT DUPLICATES -->
     <!--

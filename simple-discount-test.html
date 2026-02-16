@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Discount Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .product { border: 1px solid #ccc; margin: 10px; padding: 15px; }
+        .discount { color: red; font-weight: bold; }
+        .price { font-size: 18px; }
+        .original-price { text-decoration: line-through; color: #999; }
+    </style>
+</head>
+<body>
+    <h1>Simple Discount Test</h1>
+    <button onclick="loadDiscountProducts()">Load Discount Products</button>
+    <div id="results"></div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5001/api';
+
+        async function loadDiscountProducts() {
+            try {
+                console.log('🔍 Loading products...');
+                const response = await fetch(`${API_BASE_URL}/products?limit=100`);
+                const data = await response.json();
+                
+                console.log('📦 API Response:', data);
+                
+                if (data.success && data.data && data.data.products) {
+                    const allProducts = data.data.products;
+                    console.log('📦 Total products:', allProducts.length);
+                    
+                    // Filter products with discounts - exact same logic as discount.html
+                    const discountedProducts = allProducts.filter(product => {
+                        const hasDiscount = product.discount && 
+                                          product.discount.isOnSale === true && 
+                                          product.discount.percentage > 0 &&
+                                          product.isActive !== false;
+                        
+                        console.log('🔍 Checking product:', product.name, {
+                            hasDiscount: !!product.discount,
+                            isOnSale: product.discount?.isOnSale,
+                            percentage: product.discount?.percentage,
+                            isActive: product.isActive,
+                            finalResult: hasDiscount
+                        });
+                        
+                        return hasDiscount;
+                    });
+                    
+                    console.log('🎯 Products with discounts:', discountedProducts.length);
+                    
+                    // Display results
+                    const resultsDiv = document.getElementById('results');
+                    
+                    if (discountedProducts.length === 0) {
+                        resultsDiv.innerHTML = '<p>No products with discounts found!</p>';
+                        return;
+                    }
+                    
+                    resultsDiv.innerHTML = `
+                        <h2>Found ${discountedProducts.length} products with discounts:</h2>
+                        ${discountedProducts.map(product => `
+                            <div class="product">
+                                <h3>${product.name}</h3>
+                                <div class="price">
+                                    <span class="original-price">₹${product.price}</span>
+                                    <span class="discount">${product.discount.percentage}% OFF</span>
+                                    <span>₹${product.discount.salePrice}</span>
+                                </div>
+                                <p>Sale Label: ${product.discount.saleLabel || 'SALE'}</p>
+                            </div>
+                        `).join('')}
+                    `;
+                } else {
+                    console.error('❌ Invalid API response:', data);
+                    document.getElementById('results').innerHTML = '<p>Error: Invalid API response</p>';
+                }
+            } catch (error) {
+                console.error('❌ Error:', error);
+                document.getElementById('results').innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+{
+  "productColorDataStructure": {
+    "description": "Complete data structure for products with color variants - Myntra style",
+    "example": {
+      "productId": "unique-product-identifier",
+      "title": "Product Name",
+      "brand": "Brand Name",
+      "category": "men/women/kids",
+      "subcategory": "tshirt/dress/jeans/etc",
+      "basePrice": 1299,
+      "originalPrice": 1999,
+      "discount": 35,
+      "rating": 4.2,
+      "ratingCount": 1247,
+      "material": "Cotton/Polyester/etc",
+      "description": "Detailed product description",
+      "features": [
+        "Feature 1",
+        "Feature 2",
+        "Feature 3"
+      ],
+      "careInstructions": [
+        "Machine wash cold",
+        "Do not bleach",
+        "Tumble dry low"
+      ],
+      "defaultColor": "black",
+      "availableSizes": ["S", "M", "L", "XL", "XXL"],
+      "colors": {
+        "colorKey": {
+          "name": "Display Name",
+          "hexCode": "#000000",
+          "sku": "Unique SKU",
+          "availability": "in-stock/low-stock/out-of-stock",
+          "stockCount": 50,
+          "images": [
+            "path/to/image1.jpg",
+            "path/to/image2.jpg",
+            "path/to/image3.jpg",
+            "path/to/image4.jpg"
+          ],
+          "thumbnail": "path/to/thumbnail.jpg",
+          "sizeChart": {
+            "S": { "chest": "36", "length": "26", "shoulder": "16" },
+            "M": { "chest": "38", "length": "27", "shoulder": "17" },
+            "L": { "chest": "40", "length": "28", "shoulder": "18" },
+            "XL": { "chest": "42", "length": "29", "shoulder": "19" },
+            "XXL": { "chest": "44", "length": "30", "shoulder": "20" }
+          },
+          "priceModifier": 0
+        }
+      },
+      "relatedProducts": [
+        "product-id-1",
+        "product-id-2",
+        "product-id-3"
+      ],
+      "tags": ["casual", "cotton", "summer"],
+      "seoData": {
+        "metaTitle": "SEO Title",
+        "metaDescription": "SEO Description",
+        "keywords": ["keyword1", "keyword2"]
+      }
+    }
+  },
+  "apiEndpoints": {
+    "getProduct": {
+      "method": "GET",
+      "url": "/api/products/:productId",
+      "description": "Get complete product data with all color variants"
+    },
+    "getProductColors": {
+      "method": "GET", 
+      "url": "/api/products/:productId/colors",
+      "description": "Get only color variants for a product"
+    },
+    "checkAvailability": {
+      "method": "GET",
+      "url": "/api/products/:productId/colors/:colorKey/availability",
+      "description": "Check real-time availability for specific color"
+    },
+    "updateStock": {
+      "method": "PUT",
+      "url": "/api/products/:productId/colors/:colorKey/stock",
+      "description": "Update stock count for specific color variant"
+    }
+  },
+  "databaseSchema": {
+    "mongodb": {
+      "collection": "products",
+      "indexes": [
+        { "productId": 1 },
+        { "category": 1, "subcategory": 1 },
+        { "colors.sku": 1 },
+        { "tags": 1 },
+        { "basePrice": 1 }
+      ],
+      "example": {
+        "_id": "ObjectId",
+        "productId": "men-tshirt-001",
+        "title": "Men's Premium Cotton T-Shirt",
+        "brand": "Pyramid Fashion",
+        "category": "men",
+        "subcategory": "tshirt",
+        "basePrice": 1299,
+        "originalPrice": 1999,
+        "discount": 35,
+        "rating": 4.2,
+        "ratingCount": 1247,
+        "material": "Premium Cotton",
+        "description": "Comfortable and stylish cotton t-shirt perfect for casual wear",
+        "defaultColor": "black",
+        "availableSizes": ["S", "M", "L", "XL", "XXL"],
+        "colors": {
+          "black": {
+            "name": "Jet Black",
+            "hexCode": "#000000",
+            "sku": "TSH-BLK-001",
+            "availability": "in-stock",
+            "stockCount": 45,
+            "images": [
+              "https://cdn.example.com/products/tsh-blk-001-1.jpg",
+              "https://cdn.example.com/products/tsh-blk-001-2.jpg",
+              "https://cdn.example.com/products/tsh-blk-001-3.jpg",
+              "https://cdn.example.com/products/tsh-blk-001-4.jpg"
+            ],
+            "thumbnail": "https://cdn.example.com/products/tsh-blk-001-thumb.jpg",
+            "priceModifier": 0
+          },
+          "white": {
+            "name": "Pure White",
+            "hexCode": "#FFFFFF",
+            "sku": "TSH-WHT-001", 
+            "availability": "in-stock",
+            "stockCount": 32,
+            "images": [
+              "https://cdn.example.com/products/tsh-wht-001-1.jpg",
+              "https://cdn.example.com/products/tsh-wht-001-2.jpg",
+              "https://cdn.example.com/products/tsh-wht-001-3.jpg",
+              "https://cdn.example.com/products/tsh-wht-001-4.jpg"
+            ],
+            "thumbnail": "https://cdn.example.com/products/tsh-wht-001-thumb.jpg",
+            "priceModifier": 0
+          }
+        },
+        "tags": ["casual", "cotton", "summer", "comfortable"],
+        "createdAt": "2024-01-01T00:00:00Z",
+        "updatedAt": "2024-01-15T10:30:00Z"
+      }
+    }
+  },
+  "frontendIntegration": {
+    "reactComponent": {
+      "description": "React component structure for color selection",
+      "example": {
+        "componentName": "ProductColorSelector",
+        "props": [
+          "productData",
+          "selectedColor", 
+          "onColorChange",
+          "onImageChange",
+          "className"
+        ],
+        "state": [
+          "currentColor",
+          "currentImageIndex",
+          "loading"
+        ],
+        "methods": [
+          "handleColorSelect",
+          "handleImageSelect", 
+          "preloadImages",
+          "updateProductDetails"
+        ]
+      }
+    },
+    "vanillaJS": {
+      "description": "Vanilla JavaScript implementation",
+      "globalFunctions": [
+        "loadProduct(productId)",
+        "selectColor(colorKey)",
+        "selectImage(imageIndex)",
+        "updateProductDetails()",
+        "renderColorThumbnails()"
+      ],
+      "eventListeners": [
+        "color-thumbnail click",
+        "image-thumbnail click",
+        "keyboard navigation",
+        "touch/swipe gestures"
+      ]
+    }
+  },
+  "performanceOptimizations": {
+    "imageOptimization": [
+      "Use WebP format with JPEG fallback",
+      "Implement lazy loading for non-visible images",
+      "Preload images for better UX",
+      "Use responsive images with srcset",
+      "Compress images appropriately"
+    ],
+    "caching": [
+      "Cache product data in localStorage",
+      "Use service workers for offline support",
+      "Implement CDN for image delivery",
+      "Cache API responses"
+    ],
+    "loadingStates": [
+      "Show skeleton loaders during color switch",
+      "Implement smooth transitions",
+      "Add loading indicators for image changes",
+      "Preload next/previous images"
+    ]
+  },
+  "accessibilityFeatures": {
+    "requirements": [
+      "Keyboard navigation support",
+      "Screen reader compatibility",
+      "High contrast mode support",
+      "Focus indicators",
+      "Alt text for all images",
+      "ARIA labels and roles"
+    ],
+    "implementation": [
+      "tabindex for color thumbnails",
+      "aria-selected for active color",
+      "role='button' for interactive elements",
+      "aria-label for color names",
+      "keyboard event handlers"
+    ]
+  }
+}

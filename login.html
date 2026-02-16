@@ -2033,7 +2033,7 @@
                 // Redirect after short delay
                 setTimeout(() => {
                     if (result.data.role === 'admin') {
-                        window.location.replace('http://localhost:8000');
+                        window.location.replace('http://localhost:9000');
                     } else {
                         window.location.replace('index-backup.html');
                     }
@@ -2170,7 +2170,7 @@
                     setTimeout(() => {
                         if (data.data.role === 'admin') {
                             console.log('🔑 Redirecting admin to admin panel');
-                            window.location.replace('http://localhost:8000');
+                            window.location.replace('http://localhost:9000');
                         } else {
                             console.log('👤 Redirecting user to homepage');
                             window.location.replace('index-backup.html');
@@ -2323,7 +2323,7 @@
 
         // Navigation functions
         function goToAdmin() {
-            window.location.href = 'http://localhost:8000';
+            window.location.href = 'http://localhost:9000';
         }
 
         function goToHomepage() {

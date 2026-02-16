@@ -35,7 +35,7 @@ const adminProtect = asyncHandler(async (req, res, next) => {
       req.user = user;
       next();
     } catch (error) {
-      console.error(error);
+      console.error('AdminAuth error:', error.message);
       res.status(401);
       throw new Error('Not authorized, token failed');
     }

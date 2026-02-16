@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Aggressive Product Debug</title>
+    <script src="config.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        .warning { background: #fff3cd; }
+    </style>
+</head>
+<body>
+    <h1>Aggressive Product Debug</h1>
+    <div id="results"></div>
+
+    <script>
+        async function aggressiveDebug() {
+            const results = document.getElementById('results');
+            
+            function addResult(title, content, type = 'info') {
+                const div = document.createElement('div');
+                div.className = `debug-section ${type}`;
+                div.innerHTML = `<h3>${title}</h3><pre>${content}</pre>`;
+                results.appendChild(div);
+            }
+            
+            // Test 1: Basic environment
+            addResult('1. Environment Check', 
+                `Window location: ${window.location.href}
+URL params: ${window.location.search}
+CONFIG exists: ${typeof CONFIG !== 'undefined'}
+CONFIG value: ${typeof CONFIG !== 'undefined' ? JSON.stringify(CONFIG, null, 2) : 'UNDEFINED'}`, 
+                typeof CONFIG !== 'undefined' ? 'success' : 'error');
+            
+            // Test 2: Get product ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            addResult('2. Product ID', 
+                `Product ID from URL: ${productId}
+Product ID length: ${productId ? productId.length : 'N/A'}`, 
+                productId ? 'success' : 'warning');
+            
+            // Test 3: Test API connectivity
+            if (typeof CONFIG !== 'undefined') {
+                try {
+                    const testUrl = `${CONFIG.API_BASE_URL}/products`;
+                    addResult('3. Testing API Base URL', `Trying: ${testUrl}`, 'info');
+                    
+                    const response = await fetch(testUrl);
+                    addResult('4. API Response', 
+                        `Status: ${response.status}
+Status Text: ${response.statusText}
+Headers: ${JSON.stringify([...response.headers.entries()], null, 2)}`, 
+                        response.ok ? 'success' : 'error');
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        addResult('5. API Data Structure', 
+                            `Success: ${data.success}
+Data type: ${typeof data.data}
+Products count: ${data.data && data.data.products ? data.data.products.length : 'N/A'}
+First product: ${data.data && data.data.products && data.data.products[0] ? data.data.products[0].name : 'N/A'}`, 
+                            'success');
+                    } else {
+                        const errorText = await response.text();
+                        addResult('5. API Error Details', errorText, 'error');
+                    }
+                } catch (error) {
+                    addResult('3. API Connection Error', 
+                        `Error: ${error.message}
+Stack: ${error.stack}`, 'error');
+                }
+            }
+            
+            // Test 4: Test specific product ID
+            if (typeof CONFIG !== 'undefined' && productId) {
+                try {
+                    const productUrl = `${CONFIG.API_BASE_URL}/products/${productId}`;
+                    addResult('6. Testing Specific Product', `Trying: ${productUrl}`, 'info');
+                    
+                    const response = await fetch(productUrl);
+                    addResult('7. Specific Product Response', 
+                        `Status: ${response.status}
+Status Text: ${response.statusText}`, 
+                        response.ok ? 'success' : 'error');
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        addResult('8. Product Data', 
+                            `Product name: ${data.data ? data.data.name : 'N/A'}
+Product price: ${data.data ? data.data.price : 'N/A'}
+Has color variants: ${data.data ? data.data.hasColorVariants : 'N/A'}
+Color variants count: ${data.data && data.data.colorVariants ? data.data.colorVariants.length : 'N/A'}`, 
+                            'success');
+                    } else {
+                        const errorText = await response.text();
+                        addResult('8. Product Error', errorText, 'error');
+                    }
+                } catch (error) {
+                    addResult('6. Product Fetch Error', 
+                        `Error: ${error.message}
+Stack: ${error.stack}`, 'error');
+                }
+            }
+            
+            // Test 5: Check if backend is running
+            try {
+                const healthUrl = `${CONFIG.API_BASE_URL}/products`;
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const response = await fetch(healthUrl, { 
+                    signal: controller.signal,
+                    mode: 'cors'
+                });
+                clearTimeout(timeoutId);
+                
+                addResult('9. Backend Health Check', 
+                    `Backend is responding: ${response.ok}
+CORS headers present: ${response.headers.get('access-control-allow-origin') ? 'Yes' : 'No'}`, 
+                    response.ok ? 'success' : 'error');
+                    
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    addResult('9. Backend Health Check', 'Backend is not responding (timeout)', 'error');
+                } else {
+                    addResult('9. Backend Health Check', `Error: ${error.message}`, 'error');
+                }
+            }
+            
+            // Test 6: Check HTML elements
+            const nameEl = document.getElementById('productName');
+            const priceEl = document.getElementById('productPrice');
+            
+            addResult('10. HTML Elements Check', 
+                `productName element exists: ${nameEl ? 'Yes' : 'No'}
+productPrice element exists: ${priceEl ? 'Yes' : 'No'}`, 
+                (nameEl && priceEl) ? 'success' : 'error');
+        }
+        
+        document.addEventListener('DOMContentLoaded', aggressiveDebug);
+    </script>
+    
+    <!-- Add the HTML elements to test -->
+    <div style="display: none;">
+        <h2 id="productName"></h2>
+        <span id="productPrice"></span>
+    </div>
+</body>
+</html>

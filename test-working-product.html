@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Working Product Links</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .product-link { 
+            display: block; 
+            margin: 10px 0; 
+            padding: 10px; 
+            background: #f0f0f0; 
+            text-decoration: none; 
+            border-radius: 5px;
+        }
+        .product-link:hover { background: #e0e0e0; }
+    </style>
+</head>
+<body>
+    <h1>Test Product Links</h1>
+    <p>Click on these links to test the product page with valid product IDs:</p>
+    
+    <h2>API Products (from database):</h2>
+    <a href="product.html?id=697325ed2c72a3bcf64495b8" class="product-link">
+        Short workwear jacket (API Product)
+    </a>
+    
+    <a href="product.html?id=697349c4988fce88e4b5bb91" class="product-link">
+        Relaxed Fit Cotton chinos (API Product)
+    </a>
+    
+    <a href="product.html?id=6971fc1d6a5e84719cbd7021" class="product-link">
+        Loose Fit Sweatpants (API Product)
+    </a>
+    
+    <h2>Hardcoded Products:</h2>
+    <a href="product.html?id=1" class="product-link">
+        Loose Fit Fuzzy cardigan (Hardcoded Product)
+    </a>
+    
+    <a href="product.html?id=2" class="product-link">
+        Regular Fit Chenille Jumper (Hardcoded Product)
+    </a>
+    
+    <h2>No ID (should load first available product):</h2>
+    <a href="product.html" class="product-link">
+        Product page without ID (fallback)
+    </a>
+    
+    <h2>Invalid ID (should load fallback):</h2>
+    <a href="product.html?id=invalid123" class="product-link">
+        Product page with invalid ID
+    </a>
+</body>
+</html>

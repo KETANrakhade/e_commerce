@@ -28,6 +28,7 @@ app.use(morgan('dev'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
+app.use('/api/products', require('./routes/colorVariantRoutes')); // NEW: Color variant routes
 app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/cart', require('./routes/cartRoutes'));
 app.use('/api/wishlist', require('./routes/wishlistRoutes'));
@@ -39,11 +40,15 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/payments', require('./routes/payment'));
 app.use('/api/test', require('./routes/test'));
+app.use('/api/customer-care', require('./routes/customerCareRoutes'));
 
 
 
-// serve uploads (if using local storage)  
-app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
+// serve uploads (if using local storage) - uploads folder is in parent directory
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// serve img directory from parent folder (root)
+app.use('/img', express.static(path.join(__dirname, '../img')));
 
 // error handlers
 app.use(require('./middleware/errorMiddleware'));

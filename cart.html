@@ -533,6 +533,7 @@
         </div>
     </div>
 
+    <script src="config.js"></script>
     <script>
         // Create animated background particles
         function createParticles() {
@@ -557,14 +558,21 @@
         });
 
         const CART_KEY = 'cart_v1';
-        function getCart() { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); }
-        function saveCart(c) { localStorage.setItem(CART_KEY, JSON.stringify(c)); }
+        
+        // Simple localStorage functions (like yesterday)
+        function getCart() { 
+            return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); 
+        }
+        
+        function saveCart(c) { 
+            localStorage.setItem(CART_KEY, JSON.stringify(c)); 
+        }
 
         function renderCart() {
             const cart = getCart();
             const container = document.getElementById("cartContent");
 
-            if (cart.length === 0) {
+            if (!cart || cart.length === 0) {
                 container.innerHTML = `
                     <div class="empty-cart">
                         <div class="empty-cart-icon">🛍️</div>
@@ -575,59 +583,66 @@
                         </button>
                     </div>
                 `;
-            } else {
-                let totalPrice = 0;
-                let itemsHtml = '';
-
-                cart.forEach((item, index) => {
-                    const itemTotal = item.price * item.quantity;
-                    totalPrice += itemTotal;
-
-                    itemsHtml += `
-                        <div class="cart-item d-flex align-items-center">
-                            <img src="${item.image || 'img/default-product.jpg'}" alt="${item.name}" class="item-image">
-                            <div class="item-details">
-                                <div class="item-name">${item.name}</div>
-                                <div class="item-price">₹${item.price} ${item.quantity > 1 ? `x ${item.quantity}` : ''}</div>
-                                <div class="quantity-controls">
-                                    <button class="quantity-btn" onclick="updateQuantity(${index}, -1)">-</button>
-                                    <span class="quantity-display">${item.quantity}</span>
-                                    <button class="quantity-btn" onclick="updateQuantity(${index}, 1)">+</button>
-                                    <button class="remove-btn ms-3" onclick="removeFromCart(${index})">
-                                        <i class="fas fa-trash"></i> Remove
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="item-total">₹${itemTotal}</div>
-                        </div>
-                    `; 
-                });
-
-                container.innerHTML = `
-                    <div class="cart-title">Your Items (${cart.length})</div>
-                    ${itemsHtml}
-                    <div class="cart-summary">
-                        <div class="summary-row">
-                            <span>Subtotal:</span>
-                            <span>₹${totalPrice}</span>
-                        </div>
-                        <div class="summary-row">
-                            <span>Shipping:</span>
-                            <span>Free</span>
-                        </div>
-                        <div class="summary-row">
-                            <span>Total:</span>
-                            <span>₹${totalPrice}</span>
-                        </div>
-                        <button class="checkout-btn" onclick="checkout()">
-                            <i class="fas fa-credit-card"></i> PROCEED TO CHECKOUT
-                        </button>
-                        <button class="continue-shopping" onclick="window.location.href='index-backup.html'">
-                            <i class="fas fa-arrow-left"></i> CONTINUE SHOPPING
-                        </button>
-                    </div>
-                `;
+                return;
             }
+
+            let totalPrice = 0;
+            let itemsHtml = '';
+
+            cart.forEach((item, index) => {
+                const itemTotal = item.price * item.quantity;
+                totalPrice += itemTotal;
+                
+                // Handle image URL - convert relative to absolute
+                let imageUrl = item.image || 'https://via.placeholder.com/80x80?text=No+Image';
+                if (imageUrl && !imageUrl.startsWith('http')) {
+                    imageUrl = `http://localhost:5001/${imageUrl}`;
+                }
+
+                itemsHtml += `
+                    <div class="cart-item d-flex align-items-center">
+                        <img src="${imageUrl}" alt="${item.name}" class="item-image" onerror="this.src='https://via.placeholder.com/80x80?text=No+Image'">
+                        <div class="item-details">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-price">₹${item.price} ${item.quantity > 1 ? `x ${item.quantity}` : ''}</div>
+                            <div class="quantity-controls">
+                                <button class="quantity-btn" onclick="updateQuantity(${index}, -1)">-</button>
+                                <span class="quantity-display">${item.quantity}</span>
+                                <button class="quantity-btn" onclick="updateQuantity(${index}, 1)">+</button>
+                                <button class="remove-btn ms-3" onclick="removeFromCart(${index})">
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                        <div class="item-total">₹${itemTotal}</div>
+                    </div>
+                `; 
+            });
+
+            container.innerHTML = `
+                <div class="cart-title">Your Items (${cart.length})</div>
+                ${itemsHtml}
+                <div class="cart-summary">
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span>₹${totalPrice}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping:</span>
+                        <span>Free</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Total:</span>
+                        <span>₹${totalPrice}</span>
+                    </div>
+                    <button class="checkout-btn" onclick="checkout()">
+                        <i class="fas fa-credit-card"></i> PROCEED TO CHECKOUT
+                    </button>
+                    <button class="continue-shopping" onclick="window.location.href='index-backup.html'">
+                        <i class="fas fa-arrow-left"></i> CONTINUE SHOPPING
+                    </button>
+                </div>
+            `;
         }
 
         function updateQuantity(index, change) {
@@ -654,9 +669,10 @@
         }
 
         // Initialize cart on page load
-        renderCart();
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCart();
+        });
     </script>
-    <script src="config.js"></script>
     <script src="api.js"></script>
     <script src="script.js"></script>
     <!-- <script src="cart-cleaner.js"></script> --> <!-- DISABLED: Was removing products from cart -->

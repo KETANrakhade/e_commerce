@@ -267,8 +267,9 @@ if ($action === 'view' && $orderId) {
                                         <input type="date" class="form-control" id="endDate" 
                                                value="<?php echo htmlspecialchars($endDate); ?>" placeholder="End Date">
                                     </div>
-                                    <div class="col-md-2">
-                                        <button type="button" class="btn btn-primary" onclick="applyFilters()">Filter</button>
+                                    <div class="col-md-4">
+                                        <button type="button" class="btn btn-primary me-2" onclick="applyFilters()">Filter</button>
+                                        <button type="button" class="btn btn-secondary" onclick="clearFilters()">Clear</button>
                                     </div>
                                 </div>
 
@@ -280,8 +281,20 @@ if ($action === 'view' && $orderId) {
                                                 <th scope="col">Customer</th>
                                                 <th scope="col">Date</th>
                                                 <th scope="col">Amount</th>
-                                                <th scope="col">Payment</th>
-                                                <th scope="col">Status</th>
+                                                <th scope="col">
+                                                    Payment
+                                                    <i class="bx bx-info-circle text-muted" 
+                                                       data-bs-toggle="tooltip" 
+                                                       data-bs-placement="top" 
+                                                       title="Payment Colors: Paid (Yellow), Unpaid (Brown)"></i>
+                                                </th>
+                                                <th scope="col">
+                                                    Status 
+                                                    <i class="bx bx-info-circle text-muted" 
+                                                       data-bs-toggle="tooltip" 
+                                                       data-bs-placement="top" 
+                                                       title="Order Status Colors: Pending (Orange), Confirmed (Blue), Processing (Light Blue), Shipped (Dark), Delivered (Green), Cancelled (Red)"></i>
+                                                </th>
                                                 <th scope="col">Action</th>
                                             </tr>
                                         </thead>
@@ -304,29 +317,47 @@ if ($action === 'view' && $orderId) {
                                                         <td><?php echo date('M d, Y', strtotime($ord['createdAt'])); ?></td>
                                                         <td>₹ <?php echo number_format($ord['totalPrice'], 2); ?></td>
                                                         <td>
-                                                            <span class="badge badge-pill badge-soft-<?php echo $ord['isPaid'] ? 'success' : 'warning'; ?> font-size-11">
+                                                            <span class="badge badge-pill badge-soft-<?php echo $ord['isPaid'] ? 'yellow' : 'brown'; ?> font-size-11">
                                                                 <?php echo $ord['isPaid'] ? 'Paid' : 'Unpaid'; ?>
                                                             </span>
                                                         </td>
                                                         <td>
                                                             <span class="badge badge-pill badge-soft-<?php 
-                                                                $statusClass = 'secondary';
-                                                                switch($ord['status']) {
-                                                                    case 'delivered':
-                                                                        $statusClass = 'success';
+                                                                $statusClass = 'secondary'; // Default fallback
+                                                                $statusLower = strtolower($ord['status']);
+                                                                switch($statusLower) {
+                                                                    case 'pending':
+                                                                        $statusClass = 'warning'; // Orange/Yellow for pending
                                                                         break;
-                                                                    case 'shipped':
-                                                                        $statusClass = 'info';
+                                                                    case 'confirmed':
+                                                                        $statusClass = 'primary'; // Blue for confirmed
                                                                         break;
                                                                     case 'processing':
-                                                                        $statusClass = 'warning';
+                                                                        $statusClass = 'info'; // Light blue for processing
+                                                                        break;
+                                                                    case 'shipped':
+                                                                        $statusClass = 'dark'; // Dark for shipped
+                                                                        break;
+                                                                    case 'delivered':
+                                                                        $statusClass = 'success'; // Green for delivered
                                                                         break;
                                                                     case 'cancelled':
-                                                                        $statusClass = 'danger';
+                                                                    case 'canceled':
+                                                                        $statusClass = 'danger'; // Red for cancelled
+                                                                        break;
+                                                                    case 'refunded':
+                                                                        $statusClass = 'secondary'; // Gray for refunded
+                                                                        break;
+                                                                    case 'on_hold':
+                                                                    case 'on-hold':
+                                                                        $statusClass = 'warning'; // Orange for on hold
+                                                                        break;
+                                                                    default:
+                                                                        $statusClass = 'light'; // Light gray for unknown status
                                                                         break;
                                                                 }
                                                                 echo $statusClass;
-                                                            ?> font-size-11"><?php echo ucfirst($ord['status']); ?></span>
+                                                            ?> status-<?php echo $statusLower; ?> font-size-11"><?php echo ucfirst($ord['status']); ?></span>
                                                         </td>
                                                         <td>
                                                             <div class="d-flex gap-3">
@@ -362,7 +393,7 @@ if ($action === 'view' && $orderId) {
                                                             <small class="text-muted">Make sure backend is running on port 5001</small>
                                                         <?php else: ?>
                                                             <div class="text-muted">
-                                                                <i class="bx bx-package"></i> No orders found
+                                                                <!-- <i class="bx bx-package"></i> No orders found -->
                                                             </div>
                                                             <small class="text-muted">Orders will appear here after customers make purchases</small>
                                                         <?php endif; ?>
@@ -411,47 +442,183 @@ if ($action === 'view' && $orderId) {
                 </div>
 
             <?php elseif ($action === 'view' && $order): ?>
-                <!-- Order Details -->
+                <!-- Enhanced Order Details -->
+                <style>
+                    .order-header {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        padding: 30px;
+                        border-radius: 10px 10px 0 0;
+                        margin: -20px -20px 0 -20px;
+                    }
+                    .order-id-badge {
+                        background: rgba(255, 255, 255, 0.2);
+                        padding: 8px 16px;
+                        border-radius: 20px;
+                        display: inline-block;
+                        font-size: 14px;
+                        backdrop-filter: blur(10px);
+                    }
+                    .info-card {
+                        background: #f8f9fa;
+                        border-radius: 10px;
+                        padding: 20px;
+                        height: 100%;
+                        border-left: 4px solid #667eea;
+                        transition: all 0.3s ease;
+                    }
+                    .info-card:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                    }
+                    .info-card h5 {
+                        color: #667eea;
+                        font-weight: 600;
+                        margin-bottom: 15px;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+                    .info-card h5 i {
+                        font-size: 20px;
+                    }
+                    .status-select-wrapper {
+                        background: white;
+                        padding: 20px;
+                        border-radius: 10px;
+                        border: 2px solid #e9ecef;
+                    }
+                    .status-select-wrapper select {
+                        border: 2px solid #667eea;
+                        border-radius: 8px;
+                        padding: 10px 15px;
+                        font-weight: 500;
+                    }
+                    .status-select-wrapper button {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border: none;
+                        padding: 10px 25px;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        transition: all 0.3s ease;
+                    }
+                    .status-select-wrapper button:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+                    }
+                    .payment-badge {
+                        padding: 6px 12px;
+                        border-radius: 20px;
+                        font-size: 13px;
+                        font-weight: 600;
+                    }
+                    .payment-badge.paid {
+                        background: #d4edda;
+                        color: #155724;
+                    }
+                    .payment-badge.unpaid {
+                        background: #f8d7da;
+                        color: #721c24;
+                    }
+                    .product-table {
+                        background: white;
+                        border-radius: 10px;
+                        overflow: hidden;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                    }
+                    .product-table thead {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                    }
+                    .product-table thead th {
+                        border: none;
+                        padding: 15px;
+                        font-weight: 600;
+                    }
+                    .product-table tbody td {
+                        padding: 15px;
+                        vertical-align: middle;
+                    }
+                    .product-img {
+                        width: 60px;
+                        height: 60px;
+                        object-fit: cover;
+                        border-radius: 8px;
+                        border: 2px solid #e9ecef;
+                    }
+                    .total-row {
+                        background: #f8f9fa;
+                        font-weight: 600;
+                    }
+                    .grand-total-row {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                    }
+                    .action-buttons .btn {
+                        border-radius: 8px;
+                        padding: 10px 20px;
+                        font-weight: 600;
+                        transition: all 0.3s ease;
+                    }
+                    .action-buttons .btn-primary {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border: none;
+                    }
+                    .action-buttons .btn:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                    }
+                </style>
+                
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-body">
-                                <div class="d-lg-flex">
-                                    <div class="flex-grow-1">
-                                        <div class="mb-3">
-                                            <h4 class="card-title mb-1">Order Details</h4>
-                                            <p class="text-muted mb-0">Order ID: <?php echo htmlspecialchars($order['orderNumber']); ?></p>
+                                <div class="order-header">
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                        <div>
+                                            <h3 class="mb-2" style="font-weight: 700;">Order Details</h3>
+                                            <div class="order-id-badge">
+                                                <i class="bx bx-receipt me-1"></i>
+                                                Order ID: <?php echo htmlspecialchars($order['orderNumber']); ?>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="flex-shrink-0">
-                                        <div class="d-flex gap-2 flex-wrap">
-                                            <button type="button" class="btn btn-primary" onclick="window.print()">
+                                        <div class="action-buttons d-flex gap-2 mt-3 mt-lg-0">
+                                            <button type="button" class="btn btn-light" onclick="window.print()">
                                                 <i class="bx bxs-printer me-1"></i> Print
                                             </button>
-                                            <button type="button" class="btn btn-secondary" onclick="window.location.href='index.php?page=orders'">
-                                                <i class="bx bx-arrow-back me-1"></i> Back to Orders
+                                            <button type="button" class="btn btn-light" onclick="window.location.href='index.php?page=orders'">
+                                                <i class="bx bx-arrow-back me-1"></i> Back
                                             </button>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="mt-4">
-                                            <h5 class="font-size-15 mb-3">Customer Information</h5>
-                                            <div class="text-muted">
-                                                <h5 class="font-size-16 mb-2"><?php echo htmlspecialchars($order['user']['name']); ?></h5>
-                                                <p class="mb-1"><?php echo htmlspecialchars($order['user']['email']); ?></p>
+                                <div class="row mt-4">
+                                    <div class="col-lg-6 mb-3">
+                                        <div class="info-card">
+                                            <h5><i class="bx bx-user"></i> Customer Information</h5>
+                                            <div class="text-dark">
+                                                <p class="mb-2" style="font-size: 16px; font-weight: 600;">
+                                                    <?php echo htmlspecialchars($order['user']['name']); ?>
+                                                </p>
+                                                <p class="mb-1 text-muted">
+                                                    <i class="bx bx-envelope me-1"></i>
+                                                    <?php echo htmlspecialchars($order['user']['email']); ?>
+                                                </p>
                                                 <?php if (!empty($order['user']['phone'])): ?>
-                                                    <p class="mb-1"><?php echo htmlspecialchars($order['user']['phone']); ?></p>
+                                                    <p class="mb-0 text-muted">
+                                                        <i class="bx bx-phone me-1"></i>
+                                                        <?php echo htmlspecialchars($order['user']['phone']); ?>
+                                                    </p>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-lg-6">
-                                        <div class="mt-4">
-                                            <h5 class="font-size-15 mb-3">Shipping Address</h5>
-                                            <div class="text-muted">
+                                    <div class="col-lg-6 mb-3">
+                                        <div class="info-card">
+                                            <h5><i class="bx bx-map"></i> Shipping Address</h5>
+                                            <div class="text-dark">
                                                 <p class="mb-1"><?php echo htmlspecialchars($order['shippingAddress']['address']); ?></p>
                                                 <p class="mb-1"><?php echo htmlspecialchars($order['shippingAddress']['city']); ?>, <?php echo htmlspecialchars($order['shippingAddress']['postalCode']); ?></p>
                                                 <p class="mb-0"><?php echo htmlspecialchars($order['shippingAddress']['country']); ?></p>
@@ -461,13 +628,15 @@ if ($action === 'view' && $orderId) {
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="mt-4">
-                                            <h5 class="font-size-15 mb-3">Order Status</h5>
+                                    <div class="col-lg-6 mb-3">
+                                        <div class="status-select-wrapper">
+                                            <h5 class="mb-3" style="color: #667eea; font-weight: 600;">
+                                                <i class="bx bx-package me-1"></i> Order Status
+                                            </h5>
                                             <form method="POST" action="index.php?page=orders&action=view&id=<?php echo $order['_id']; ?>">
                                                 <input type="hidden" name="action" value="update_status">
                                                 <div class="d-flex gap-2">
-                                                    <select name="status" class="form-select" style="max-width: 200px;">
+                                                    <select name="status" class="form-select">
                                                         <option value="pending" <?php echo $order['status'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
                                                         <option value="confirmed" <?php echo $order['status'] === 'confirmed' ? 'selected' : ''; ?>>Confirmed</option>
                                                         <option value="processing" <?php echo $order['status'] === 'processing' ? 'selected' : ''; ?>>Processing</option>
@@ -475,23 +644,32 @@ if ($action === 'view' && $orderId) {
                                                         <option value="delivered" <?php echo $order['status'] === 'delivered' ? 'selected' : ''; ?>>Delivered</option>
                                                         <option value="cancelled" <?php echo $order['status'] === 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
                                                     </select>
-                                                    <button type="submit" class="btn btn-primary">Update Status</button>
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class="bx bx-check me-1"></i> Update
+                                                    </button>
                                                 </div>
                                             </form>
                                         </div>
                                     </div>
-                                    <div class="col-lg-6">
-                                        <div class="mt-4">
-                                            <h5 class="font-size-15 mb-3">Payment Information</h5>
-                                            <div class="text-muted">
-                                                <p class="mb-1">Payment Method: <?php echo htmlspecialchars($order['paymentMethod']); ?></p>
-                                                <p class="mb-1">Payment Status: 
-                                                    <span class="badge badge-soft-<?php echo $order['isPaid'] ? 'success' : 'warning'; ?>">
-                                                        <?php echo $order['isPaid'] ? 'Paid' : 'Unpaid'; ?>
+                                    <div class="col-lg-6 mb-3">
+                                        <div class="info-card">
+                                            <h5><i class="bx bx-credit-card"></i> Payment Information</h5>
+                                            <div class="text-dark">
+                                                <p class="mb-2">
+                                                    <strong>Method:</strong> 
+                                                    <span class="text-uppercase"><?php echo htmlspecialchars($order['paymentMethod']); ?></span>
+                                                </p>
+                                                <p class="mb-2">
+                                                    <strong>Status:</strong> 
+                                                    <span class="payment-badge <?php echo $order['isPaid'] ? 'paid' : 'unpaid'; ?>">
+                                                        <?php echo $order['isPaid'] ? '✓ Paid' : '✗ Unpaid'; ?>
                                                     </span>
                                                 </p>
                                                 <?php if ($order['isPaid'] && !empty($order['paidAt'])): ?>
-                                                    <p class="mb-0">Paid At: <?php echo date('M d, Y H:i', strtotime($order['paidAt'])); ?></p>
+                                                    <p class="mb-0 text-muted">
+                                                        <i class="bx bx-time me-1"></i>
+                                                        Paid: <?php echo date('M d, Y H:i', strtotime($order['paidAt'])); ?>
+                                                    </p>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
@@ -499,9 +677,11 @@ if ($action === 'view' && $orderId) {
                                 </div>
 
                                 <div class="mt-4">
-                                    <h5 class="font-size-15 mb-3">Order Items</h5>
-                                    <div class="table-responsive">
-                                        <table class="table align-middle table-nowrap">
+                                    <h5 class="mb-3" style="color: #667eea; font-weight: 600;">
+                                        <i class="bx bx-shopping-bag me-1"></i> Order Items
+                                    </h5>
+                                    <div class="product-table">
+                                        <table class="table align-middle table-nowrap mb-0">
                                             <thead>
                                                 <tr>
                                                     <th scope="col">Product</th>
@@ -514,59 +694,69 @@ if ($action === 'view' && $orderId) {
                                                 <?php foreach ($order['orderItems'] as $item): ?>
                                                     <tr>
                                                         <td>
-                                                            <div class="d-flex">
+                                                            <div class="d-flex align-items-center">
                                                                 <div class="flex-shrink-0 me-3">
-                                                                    <?php if (!empty($item['image'])): ?>
-                                                                        <img src="<?php echo htmlspecialchars($item['image']); ?>" 
-                                                                             alt="" class="avatar-sm">
+                                                                    <?php if (!empty($item['image'])): 
+                                                                        $imageUrl = $item['image'];
+                                                                        if (strpos($imageUrl, 'http') !== 0) {
+                                                                            $imageUrl = 'http://localhost:5001/' . ltrim($imageUrl, '/');
+                                                                        }
+                                                                    ?>
+                                                                        <img src="<?php echo htmlspecialchars($imageUrl); ?>" 
+                                                                             alt="" class="product-img"
+                                                                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22%3E%3Crect fill=%22%23e9ecef%22 width=%2260%22 height=%2260%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2210%22%3ENo Image%3C/text%3E%3C/svg%3E'">
                                                                     <?php else: ?>
-                                                                        <div class="avatar-sm bg-light d-flex align-items-center justify-content-center">
-                                                                            <i class="bx bx-package"></i>
+                                                                        <div class="product-img bg-light d-flex align-items-center justify-content-center">
+                                                                            <i class="bx bx-package text-muted"></i>
                                                                         </div>
                                                                     <?php endif; ?>
                                                                 </div>
                                                                 <div class="flex-grow-1">
-                                                                    <h5 class="text-truncate font-size-14 mb-1">
+                                                                    <h6 class="mb-0" style="font-weight: 600;">
                                                                         <?php echo htmlspecialchars($item['name']); ?>
-                                                                    </h5>
+                                                                    </h6>
                                                                 </div>
                                                             </div>
                                                         </td>
-                                                        <td>₹ <?php echo number_format($item['price'], 2); ?></td>
-                                                        <td><?php echo $item['quantity']; ?></td>
-                                                        <td class="text-end">₹ <?php echo number_format($item['price'] * $item['quantity'], 2); ?></td>
+                                                        <td><strong>₹<?php echo number_format($item['price'], 2); ?></strong></td>
+                                                        <td>
+                                                            <span class="badge bg-light text-dark" style="font-size: 14px; padding: 6px 12px;">
+                                                                <?php echo $item['quantity']; ?>
+                                                            </span>
+                                                        </td>
+                                                        <td class="text-end"><strong>₹<?php echo number_format($item['price'] * $item['quantity'], 2); ?></strong></td>
                                                     </tr>
                                                 <?php endforeach; ?>
-                                                <tr>
+                                                <tr class="total-row">
                                                     <td colspan="3" class="text-end">
-                                                        <h6 class="m-0 fw-semibold">Sub Total:</h6>
+                                                        <strong>Sub Total:</strong>
                                                     </td>
                                                     <td class="text-end">
-                                                        <h6 class="m-0">₹ <?php echo number_format($order['itemsPrice'], 2); ?></h6>
+                                                        <strong>₹<?php echo number_format($order['itemsPrice'], 2); ?></strong>
                                                     </td>
                                                 </tr>
-                                                <tr>
-                                                    <td colspan="3" class="border-0 text-end">
+                                                <tr class="total-row">
+                                                    <td colspan="3" class="text-end">
                                                         <strong>Shipping:</strong>
                                                     </td>
-                                                    <td class="border-0 text-end">
-                                                        <h6 class="m-0">₹ <?php echo number_format($order['shippingPrice'], 2); ?></h6>
+                                                    <td class="text-end">
+                                                        <strong>₹<?php echo number_format($order['shippingPrice'], 2); ?></strong>
                                                     </td>
                                                 </tr>
-                                                <tr>
-                                                    <td colspan="3" class="border-0 text-end">
+                                                <tr class="total-row">
+                                                    <td colspan="3" class="text-end">
                                                         <strong>Tax:</strong>
                                                     </td>
-                                                    <td class="border-0 text-end">
-                                                        <h6 class="m-0">₹ <?php echo number_format($order['taxPrice'], 2); ?></h6>
+                                                    <td class="text-end">
+                                                        <strong>₹<?php echo number_format($order['taxPrice'], 2); ?></strong>
                                                     </td>
                                                 </tr>
-                                                <tr>
-                                                    <td colspan="3" class="border-0 text-end">
-                                                        <strong>Total:</strong>
+                                                <tr class="grand-total-row">
+                                                    <td colspan="3" class="text-end">
+                                                        <h5 class="mb-0" style="color: white;">Total:</h5>
                                                     </td>
-                                                    <td class="border-0 text-end">
-                                                        <h4 class="m-0 fw-semibold">₹ <?php echo number_format($order['totalPrice'], 2); ?></h4>
+                                                    <td class="text-end">
+                                                        <h4 class="mb-0" style="color: white; font-weight: 700;">₹<?php echo number_format($order['totalPrice'], 2); ?></h4>
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -633,8 +823,35 @@ if ($action === 'view' && $orderId) {
 </div>
 
 <script>
+// Custom CSS to prevent export button from appearing faded when disabled
+const style = document.createElement('style');
+style.textContent = `
+    .btn-success:disabled {
+        opacity: 1 !important;
+        background-color: #198754 !important;
+        border-color: #198754 !important;
+        color: #fff !important;
+    }
+    
+    .btn-success:disabled .mdi-spin {
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
+
 // Orders management JavaScript
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
     // Search functionality
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
@@ -647,6 +864,102 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Enhanced status badge styles
+const statusBadgeStyles = `
+<style>
+/* Enhanced Order Status Badge Colors */
+.badge-soft-primary {
+    color: #0d6efd !important;
+    background-color: rgba(13, 110, 253, 0.1) !important;
+    border: 1px solid rgba(13, 110, 253, 0.2) !important;
+}
+
+.badge-soft-info {
+    color: #0dcaf0 !important;
+    background-color: rgba(13, 202, 240, 0.1) !important;
+    border: 1px solid rgba(13, 202, 240, 0.2) !important;
+}
+
+.badge-soft-warning {
+    color: #fd7e14 !important;
+    background-color: rgba(253, 126, 20, 0.1) !important;
+    border: 1px solid rgba(253, 126, 20, 0.2) !important;
+}
+
+.badge-soft-success {
+    color: #198754 !important;
+    background-color: rgba(25, 135, 84, 0.1) !important;
+    border: 1px solid rgba(25, 135, 84, 0.2) !important;
+}
+
+.badge-soft-danger {
+    color: #dc3545 !important;
+    background-color: rgba(220, 53, 69, 0.1) !important;
+    border: 1px solid rgba(220, 53, 69, 0.2) !important;
+}
+
+.badge-soft-dark {
+    color: #212529 !important;
+    background-color: rgba(33, 37, 41, 0.1) !important;
+    border: 1px solid rgba(33, 37, 41, 0.2) !important;
+}
+
+.badge-soft-secondary {
+    color: #6c757d !important;
+    background-color: rgba(108, 117, 125, 0.1) !important;
+    border: 1px solid rgba(108, 117, 125, 0.2) !important;
+}
+
+.badge-soft-light {
+    color: #495057 !important;
+    background-color: rgba(248, 249, 250, 0.8) !important;
+    border: 1px solid rgba(222, 226, 230, 0.5) !important;
+}
+
+.badge-soft-brown {
+    color: #8B4513 !important;
+    background-color: rgba(139, 69, 19, 0.1) !important;
+    border: 1px solid rgba(139, 69, 19, 0.2) !important;
+}
+
+.badge-soft-yellow {
+    color: #B8860B !important;
+    background-color: rgba(255, 215, 0, 0.15) !important;
+    border: 1px solid rgba(255, 215, 0, 0.3) !important;
+}
+
+/* Status-specific enhancements */
+.status-pending {
+    animation: pulse-warning 2s infinite;
+}
+
+.status-processing {
+    animation: pulse-info 2s infinite;
+}
+
+@keyframes pulse-warning {
+    0% { box-shadow: 0 0 0 0 rgba(253, 126, 20, 0.4); }
+    70% { box-shadow: 0 0 0 4px rgba(253, 126, 20, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(253, 126, 20, 0); }
+}
+
+@keyframes pulse-info {
+    0% { box-shadow: 0 0 0 0 rgba(13, 202, 240, 0.4); }
+    70% { box-shadow: 0 0 0 4px rgba(13, 202, 240, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(13, 202, 240, 0); }
+}
+
+/* Hover effects for better UX */
+.badge-pill:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+}
+</style>
+`;
+
+// Inject the styles
+document.head.insertAdjacentHTML('beforeend', statusBadgeStyles);
 
 function applyFilters() {
     const search = document.getElementById('searchInput').value;
@@ -662,6 +975,17 @@ function applyFilters() {
     if (endDate) params.append('end_date', endDate);
     
     window.location.href = '?' + params.toString();
+}
+
+function clearFilters() {
+    // Clear all filter inputs
+    document.getElementById('searchInput').value = '';
+    document.getElementById('statusFilter').value = '';
+    document.getElementById('startDate').value = '';
+    document.getElementById('endDate').value = '';
+    
+    // Redirect to orders page without any filters
+    window.location.href = '?page=orders';
 }
 
 function updateOrderStatus(orderId, status) {
@@ -693,31 +1017,53 @@ function exportOrders() {
     const endDate = document.getElementById('endDate').value;
     
     const params = new URLSearchParams();
-    params.append('format', 'pdf'); // Changed from 'csv' to 'pdf'
+    params.append('format', 'pdf');
     if (status) params.append('status', status);
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
     
-    // Get auth token from session
-    const token = '<?php echo $_SESSION['admin_token'] ?? ''; ?>';
+    // Find the export button more reliably
+    const exportBtn = document.querySelector('button[onclick="exportOrders()"]');
+    if (!exportBtn) {
+        console.error('Export button not found');
+        return;
+    }
+    
+    // Store original button state
+    const originalText = exportBtn.innerHTML;
+    const originalDisabled = exportBtn.disabled;
     
     // Show loading state
-    const exportBtn = event.target;
-    const originalText = exportBtn.innerHTML;
     exportBtn.disabled = true;
     exportBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin me-1"></i> Generating PDF...';
     
-    // Fetch PDF with proper authentication
-    fetch(`http://localhost:5001/api/admin/orders/export?${params.toString()}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/pdf'
-        }
+    // Function to restore button state
+    const restoreButton = () => {
+        exportBtn.disabled = originalDisabled;
+        exportBtn.innerHTML = originalText;
+        
+        // Force a repaint to ensure visual update
+        exportBtn.style.opacity = '1';
+        exportBtn.offsetHeight; // Trigger reflow
+    };
+    
+    // Add timeout as fallback to ensure button is restored
+    const timeoutId = setTimeout(() => {
+        console.warn('Export timeout - restoring button');
+        restoreButton();
+    }, 30000); // 30 second timeout
+    
+    // Use PHP endpoint for proper authentication and session handling
+    fetch(`export-orders.php?${params.toString()}`, {
+        method: 'GET'
     })
     .then(response => {
+        clearTimeout(timeoutId); // Clear timeout since we got a response
+        
         if (!response.ok) {
-            throw new Error('Export failed');
+            return response.json().then(err => {
+                throw new Error(err.error || 'Export failed');
+            });
         }
         return response.blob();
     })
@@ -726,21 +1072,22 @@ function exportOrders() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `orders_${new Date().toISOString().split('T')[0]}.pdf`;
+        a.download = `orders_report_${new Date().toISOString().split('T')[0]}.pdf`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
         
-        // Reset button
-        exportBtn.disabled = false;
-        exportBtn.innerHTML = originalText;
+        // Reset button state
+        restoreButton();
     })
     .catch(error => {
+        clearTimeout(timeoutId); // Clear timeout since we got an error
         console.error('Export error:', error);
-        alert('Failed to export orders. Please try again.');
-        exportBtn.disabled = false;
-        exportBtn.innerHTML = originalText;
+        alert('Failed to export orders: ' + error.message);
+        
+        // Reset button state
+        restoreButton();
     });
 }
 </script>

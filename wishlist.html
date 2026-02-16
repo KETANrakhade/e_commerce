@@ -618,17 +618,26 @@
                     const result = await response.json();
                     const backendWishlist = result.data || [];
                     
+                    console.log('📦 Backend wishlist raw data:', backendWishlist);
+                    
                     // Convert backend wishlist format to localStorage format
-                    const formattedBackendWishlist = backendWishlist.map(product => ({
-                        _id: product._id,
-                        id: product._id,
-                        productId: product._id,
-                        name: product.name,
-                        price: product.price,
-                        image: product.images?.[0]?.url || product.imageUrls?.[0] || product.images?.[0],
-                        images: product.images,
-                        imageUrls: product.imageUrls
-                    }));
+                    const formattedBackendWishlist = backendWishlist.map(product => {
+                        const imageUrl = product.images?.[0]?.url || product.imageUrls?.[0] || product.images?.[0];
+                        console.log('🖼️ Product:', product.name, '- Image URL:', imageUrl);
+                        
+                        return {
+                            _id: product._id,
+                            id: product._id,
+                            productId: product._id,
+                            name: product.name,
+                            price: product.price,
+                            image: imageUrl,
+                            images: product.images,
+                            imageUrls: product.imageUrls
+                        };
+                    });
+                    
+                    console.log('✨ Formatted wishlist:', formattedBackendWishlist);
                     
                     // Merge backend and localStorage (backend takes priority for duplicates)
                     const mergedWishlist = [...formattedBackendWishlist];
@@ -710,13 +719,25 @@
                 
                 // Get the correct ID (handle _id, id, or productId)
                 const productId = item._id || item.id || item.productId;
-                const imageUrl = item.image || item.images?.[0]?.url || item.imageUrls?.[0] || 'img/default-product.jpg';
+                let imageUrl = item.image || item.images?.[0]?.url || item.imageUrls?.[0] || 'https://via.placeholder.com/300x400?text=No+Image';
+                
+                console.log('🎨 Rendering item:', item.name);
+                console.log('   Original image:', imageUrl);
+                
+                // Convert relative URL to absolute
+                if (imageUrl && !imageUrl.startsWith('http')) {
+                    imageUrl = `http://localhost:5001/${imageUrl}`;
+                    console.log('   Converted to:', imageUrl);
+                } else {
+                    console.log('   Already absolute or placeholder');
+                }
+                
                 const price = item.price || 0;
                 
                 card.innerHTML = `
                     <div class="card-image-container">
                         <img src="${imageUrl}" class="card-image" alt="${item.name || 'Product'}" 
-                             onerror="this.src='img/default-product.jpg'">
+                             onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
                         <div class="card-overlay"></div>
                         <div class="quick-actions">
                             <button class="quick-action-btn" onclick="removeFromWishlist('${productId}')" title="Remove from wishlist">
@@ -860,6 +881,8 @@
                 showSuccessMessage(`${item.name} quantity updated in cart`);
             } else {
                 cart.push({
+                    _id: productIdToUse,
+                    id: productIdToUse,
                     productId: productIdToUse,
                     name: item.name,
                     price: item.price,

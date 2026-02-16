@@ -12,6 +12,18 @@ const imageSchema = new mongoose.Schema({
   size: Number // File size in bytes
 }, { _id: false });
 
+// Color variant schema for managing different color options
+const colorVariantSchema = new mongoose.Schema({
+  colorName: { type: String, required: true }, // e.g., "Jet Black", "Navy Blue"
+  colorCode: { type: String }, // Hex color code for display (optional)
+  sku: { type: String, required: true }, // Unique SKU for this color variant
+  images: [imageSchema], // Images specific to this color variant
+  stock: { type: Number, default: 0 }, // Stock for this specific color
+  priceModifier: { type: Number, default: 0 }, // Price difference from base price
+  isActive: { type: Boolean, default: true }, // Whether this color is available
+  sortOrder: { type: Number, default: 0 } // For ordering colors in frontend
+}, { _id: true });
+
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   slug: { 
@@ -22,13 +34,28 @@ const productSchema = new mongoose.Schema({
     }
   },
   description: String,
-  price: { type: Number, required: true }, // store INR/INR paise conversion in frontend/backend
+  price: { type: Number, required: true }, // Base price - store INR/INR paise conversion in frontend/backend
   
-  // Enhanced image schema
+  // Discount system
+  discount: {
+    isOnSale: { type: Boolean, default: false }, // Whether product is on sale
+    percentage: { type: Number, default: 0, min: 0, max: 100 }, // Discount percentage (0-100)
+    salePrice: { type: Number, default: 0 }, // Calculated sale price
+    startDate: { type: Date }, // Sale start date (optional)
+    endDate: { type: Date }, // Sale end date (optional)
+    saleLabel: { type: String, default: '' } // Custom sale label like "MEGA SALE", "CLEARANCE", etc.
+  },
+  
+  // Enhanced image schema (for backward compatibility)
   images: [imageSchema], // Detailed image objects
   
   // Backward compatibility - simple image URLs array
   imageUrls: [String], // Simple URLs for backward compatibility
+  
+  // NEW: Color variants system
+  colorVariants: [colorVariantSchema], // Array of color variants
+  hasColorVariants: { type: Boolean, default: false }, // Flag to indicate if product has color variants
+  defaultColorVariant: { type: mongoose.Schema.Types.ObjectId }, // Reference to default color variant
   
   // Category and subcategory references
   category: { 
@@ -51,7 +78,7 @@ const productSchema = new mongoose.Schema({
   categoryName: String, // For backward compatibility
   brandName: String,    // For backward compatibility
   
-  stock: { type: Number, default: 0 },
+  stock: { type: Number, default: 0 }, // Total stock (sum of all color variants if applicable)
   isActive: { type: Boolean, default: true },
   featured: { type: Boolean, default: false },
   weight: Number,
@@ -65,7 +92,7 @@ const productSchema = new mongoose.Schema({
   seoDescription: String,
   
   // Additional product details
-  sku: { type: String, unique: true, sparse: true }, // Stock Keeping Unit
+  sku: { type: String, unique: true, sparse: true }, // Base SKU - color variants will have their own SKUs
   rating: { type: Number, default: 0, min: 0, max: 5 },
   numReviews: { type: Number, default: 0 },
   
@@ -84,10 +111,20 @@ productSchema.index({ isActive: 1 });
 productSchema.index({ featured: 1 });
 productSchema.index({ price: 1 });
 productSchema.index({ createdAt: -1 });
+productSchema.index({ hasColorVariants: 1 }); // NEW: Index for color variants
+productSchema.index({ 'colorVariants.sku': 1 }); // NEW: Index for color variant SKUs
+productSchema.index({ 'colorVariants.isActive': 1 }); // NEW: Index for active color variants
 
 // Update the updatedAt field before saving
 productSchema.pre('save', async function(next) {
   this.updatedAt = Date.now();
+  
+  // Calculate sale price if discount is set
+  if (this.discount && this.discount.isOnSale && this.discount.percentage > 0) {
+    this.discount.salePrice = Math.round(this.price * (1 - this.discount.percentage / 100));
+  } else {
+    this.discount.salePrice = 0;
+  }
   
   // Auto-generate slug if not provided or if name changed
   if (!this.slug || this.isModified('name')) {
@@ -113,7 +150,69 @@ productSchema.pre('save', async function(next) {
     this.slug = slug;
   }
   
+  // Update hasColorVariants flag based on colorVariants array
+  this.hasColorVariants = this.colorVariants && this.colorVariants.length > 0;
+  
+  // Calculate total stock from color variants if they exist
+  if (this.hasColorVariants) {
+    this.stock = this.colorVariants.reduce((total, variant) => total + (variant.stock || 0), 0);
+  }
+  
+  // Set default color variant if not set and variants exist
+  if (this.hasColorVariants && !this.defaultColorVariant && this.colorVariants.length > 0) {
+    this.defaultColorVariant = this.colorVariants[0]._id;
+  }
+  
   next();
 });
+
+// Virtual for getting active color variants
+productSchema.virtual('activeColorVariants').get(function() {
+  return this.colorVariants ? this.colorVariants.filter(variant => variant.isActive) : [];
+});
+
+// Method to add a new color variant
+productSchema.methods.addColorVariant = function(colorData) {
+  this.colorVariants.push(colorData);
+  this.hasColorVariants = true;
+  return this.colorVariants[this.colorVariants.length - 1];
+};
+
+// Method to update a color variant
+productSchema.methods.updateColorVariant = function(variantId, updateData) {
+  const variant = this.colorVariants.id(variantId);
+  if (variant) {
+    Object.assign(variant, updateData);
+    return variant;
+  }
+  return null;
+};
+
+// Method to remove a color variant
+productSchema.methods.removeColorVariant = function(variantId) {
+  const variant = this.colorVariants.id(variantId);
+  if (variant) {
+    this.colorVariants.pull(variantId);
+    this.hasColorVariants = this.colorVariants.length > 0;
+    
+    // Update default if removed variant was default
+    if (this.defaultColorVariant && this.defaultColorVariant.toString() === variantId.toString()) {
+      this.defaultColorVariant = this.colorVariants.length > 0 ? this.colorVariants[0]._id : null;
+    }
+    
+    return true;
+  }
+  return false;
+};
+
+// Method to get color variant by ID
+productSchema.methods.getColorVariant = function(variantId) {
+  return this.colorVariants.id(variantId);
+};
+
+// Static method to find products with color variants
+productSchema.statics.findWithColorVariants = function() {
+  return this.find({ hasColorVariants: true });
+};
 
 module.exports = mongoose.model('Product', productSchema);

@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Care | PYRAMID</title>
+    <link rel="icon" type="image/x-icon" href="/img/bars.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f8f9fa;
+            overflow-x: hidden;
+        }
+
+        /* Navbar */
+        .navbar {
+            backdrop-filter: blur(15px);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: #2c3e50 !important;
+            transition: all 0.3s ease;
+        }
+
+        .icon-btn {
+            margin: 0 8px;
+            font-size: 1.2rem;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 80px 0 60px;
+            margin-top: 76px;
+            color: white;
+            text-align: center;
+        }
+
+        .hero-section h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .hero-section p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        /* Main Container */
+        .care-container {
+            max-width: 1200px;
+            margin: -40px auto 60px;
+            padding: 0 20px;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-card i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .action-card h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .action-card p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .faq-section h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid #e9ecef;
+            padding: 20px 0;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .faq-question:hover {
+            color: #667eea;
+        }
+
+        .faq-question i {
+            transition: transform 0.3s ease;
+        }
+
+        .faq-question.active i {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            color: #666;
+            padding-top: 0;
+        }
+
+        .faq-answer.active {
+            max-height: 500px;
+            padding-top: 15px;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .contact-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .contact-method {
+            text-align: center;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .contact-method:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .contact-method i {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .contact-method h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .contact-method p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        /* Modern Modal Enhancements */
+        .modern-modal {
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideUp 0.4s ease;
+        }
+        
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modern-header {
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .modal-subtitle {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            font-weight: 400;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .modal-title i {
+            color: #667eea;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 5px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close-modal:hover {
+            color: #e74c3c;
+            transform: rotate(90deg);
+            background: #fee;
+        }
+        
+        /* Form Sections */
+        .form-section {
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-group label i {
+            color: #667eea;
+            font-size: 1rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .input-hint {
+            display: block;
+            color: #999;
+            font-size: 0.8rem;
+            margin-top: 6px;
+            font-style: italic;
+        }
+        
+        /* Return Info Box */
+        .return-info-box {
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 25px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+        
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .info-item i {
+            color: #28a745;
+            font-size: 1.1rem;
+        }
+        
+        /* Modal Footer */
+        .modal-footer {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 2px solid #f0f0f0;
+        }
+        
+        .btn-secondary {
+            flex: 1;
+            padding: 14px 20px;
+            background: white;
+            color: #666;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .submit-btn {
+            flex: 2;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .modern-submit {
+            font-size: 1.05rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                padding: 25px;
+                width: 95%;
+            }
+            
+            .modern-modal {
+                padding: 20px;
+            }
+            
+            .modal-title {
+                font-size: 1.4rem;
+            }
+            
+            .modal-footer {
+                flex-direction: column;
+            }
+            
+            .btn-secondary,
+            .submit-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <img class="mx-2" src="img/pyramidal.png" width="40px" height="40px" alt="Pyramid Logo">
+            <a class="navbar-brand" href="index-backup.html">PYRAMID</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="index-backup.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="men-product.html">Men</a></li>
+                    <li class="nav-item"><a class="nav-link" href="women-product.html">Women</a></li>
+                    <li class="nav-item"><a class="nav-link" href="orders.html">Orders</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="customer-care.html">Support</a></li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <span class="icon-btn" id="userProfile"><i class="fa-regular fa-user"></i></span>
+                    <span class="icon-btn" id="viewWishlist"><i class="fa-regular fa-heart"></i></span>
+                    <span class="icon-btn" id="viewCart"><i class="bi bi-cart"></i></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <h1>Customer Care</h1>
+        <p>We're here to help! Get support for returns, exchanges, and more.</p>
+    </section>
+
+    <!-- Main Container -->
+    <div class="care-container">
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <div class="action-card" onclick="openReturnModal()">
+                <i class="fas fa-undo"></i>
+                <h3>Return Product</h3>
+                <p>Easy returns within 7 days</p>
+            </div>
+
+            <div class="action-card" onclick="openExchangeModal()">
+                <i class="fas fa-exchange-alt"></i>
+                <h3>Exchange Product</h3>
+                <p>Exchange for size or color</p>
+            </div>
+
+            <div class="action-card" onclick="openTrackModal()">
+                <i class="fas fa-shipping-fast"></i>
+                <h3>Track Order</h3>
+                <p>Check your order status</p>
+            </div>
+
+            <div class="action-card" onclick="openSupportModal()">
+                <i class="fas fa-headset"></i>
+                <h3>Contact Support</h3>
+                <p>Get help from our team</p>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="faq-section">
+            <h2>Frequently Asked Questions</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>What is your return policy?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    We offer a 7-day return policy for most products. Items must be unused, unwashed, and in original packaging with tags attached. Refunds are processed within 5-7 business days after we receive the returned item.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>How do I exchange a product?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Click on "Exchange Product" above and fill in the form with your order details. You can exchange for a different size or color. Our team will arrange a pickup and deliver the exchanged item within 5-7 days.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>How long does shipping take?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Standard shipping takes 3-5 business days. Express shipping (available in select cities) takes 1-2 business days. You'll receive tracking information via email once your order ships.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>What payment methods do you accept?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    We accept all major credit/debit cards, UPI, net banking, and cash on delivery (COD). All payments are secure and encrypted.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>Can I cancel my order?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Yes, you can cancel your order before it ships. Go to "My Orders" and click "Cancel Order". If the order has already shipped, you can return it after delivery.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>How do I track my order?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    You can track your order by clicking "Track Order" above or visiting the "My Orders" page. You'll also receive tracking updates via email and SMS.
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="contact-section">
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: #2c3e50; margin-bottom: 10px;">Get in Touch</h2>
+            <p style="color: #666; margin-bottom: 20px;">Our customer care team is available 24/7 to assist you</p>
+
+            <div class="contact-methods">
+                <div class="contact-method">
+                    <i class="fas fa-phone"></i>
+                    <h4>Call Us</h4>
+                    <p>1800-XXX-XXXX</p>
+                    <p style="font-size: 0.8rem; color: #999;">Mon-Sun: 24/7</p>
+                </div>
+
+                <div class="contact-method">
+                    <i class="fas fa-envelope"></i>
+                    <h4>Email Us</h4>
+                    <p>support@pyramid.com</p>
+                    <p style="font-size: 0.8rem; color: #999;">Reply within 24 hours</p>
+                </div>
+
+                <div class="contact-method">
+                    <i class="fas fa-comments"></i>
+                    <h4>Live Chat</h4>
+                    <p>Chat with us</p>
+                    <p style="font-size: 0.8rem; color: #999;">Available 24/7</p>
+                </div>
+
+                <div class="contact-method">
+                    <i class="fab fa-whatsapp"></i>
+                    <h4>WhatsApp</h4>
+                    <p>+91-XXXXX-XXXXX</p>
+                    <p style="font-size: 0.8rem; color: #999;">Quick responses</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return Modal - Enhanced Myntra Style -->
+    <div class="modal-overlay" id="returnModal">
+        <div class="modal-content modern-modal">
+            <div class="modal-header modern-header">
+                <div>
+                    <h3 class="modal-title">
+                        <i class="fas fa-undo-alt"></i> Return Product
+                    </h3>
+                    <p class="modal-subtitle">Easy returns within 7 days of delivery</p>
+                </div>
+                <button class="close-modal" onclick="closeModal('returnModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="returnForm" onsubmit="submitReturn(event)">
+                <div class="form-section">
+                    <div class="form-group modern-input">
+                        <label>
+                            <i class="fas fa-receipt"></i> Order ID *
+                        </label>
+                        <input type="text" name="orderId" placeholder="e.g., ORD-1234567890" required>
+                        <small class="input-hint">Enter your order number from order confirmation</small>
+                    </div>
+                    
+                    <div class="form-group modern-input">
+                        <label>
+                            <i class="fas fa-box"></i> Product Name *
+                        </label>
+                        <input type="text" name="productName" placeholder="Enter the product you want to return" required>
+                        <small class="input-hint">Specify the exact product from your order</small>
+                    </div>
+                    
+                    <div class="form-group modern-select">
+                        <label>
+                            <i class="fas fa-question-circle"></i> Reason for Return *
+                        </label>
+                        <select name="reason" required>
+                            <option value="">Select a reason</option>
+                            <option value="size">Wrong Size / Doesn't Fit</option>
+                            <option value="defective">Defective / Damaged Product</option>
+                            <option value="different">Different from Description</option>
+                            <option value="quality">Quality Issues</option>
+                            <option value="color">Wrong Color Received</option>
+                            <option value="late">Delivered Too Late</option>
+                            <option value="changed_mind">Changed My Mind</option>
+                            <option value="other">Other Reason</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group modern-textarea">
+                        <label>
+                            <i class="fas fa-comment-dots"></i> Additional Details
+                        </label>
+                        <textarea name="details" rows="4" placeholder="Please provide more details about your return request (optional)"></textarea>
+                        <small class="input-hint">Help us understand your concern better</small>
+                    </div>
+                    
+                    <div class="return-info-box">
+                        <div class="info-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Free pickup from your address</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Refund within 5-7 business days</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Original packaging required</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeModal('returnModal')">
+                        Cancel
+                    </button>
+                    <button type="submit" class="submit-btn modern-submit">
+                        <i class="fas fa-paper-plane"></i> Submit Return Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Exchange Modal -->
+    <div class="modal-overlay" id="exchangeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Exchange Product</h3>
+                <button class="close-modal" onclick="closeModal('exchangeModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="exchangeForm" onsubmit="submitExchange(event)">
+                <div class="form-group">
+                    <label>Order ID *</label>
+                    <input type="text" name="orderId" placeholder="Enter your order ID" required>
+                </div>
+                <div class="form-group">
+                    <label>Product Name *</label>
+                    <input type="text" name="productName" placeholder="Enter product name" required>
+                </div>
+                <div class="form-group">
+                    <label>Exchange For *</label>
+                    <select name="exchangeType" required>
+                        <option value="">Select exchange type</option>
+                        <option value="size">Different Size</option>
+                        <option value="color">Different Color</option>
+                        <option value="both">Different Size & Color</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Preferred Size/Color</label>
+                    <input type="text" name="preference" placeholder="e.g., Size L, Blue Color">
+                </div>
+                <div class="form-group">
+                    <label>Additional Details</label>
+                    <textarea name="details" placeholder="Any additional information"></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Submit Exchange Request</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Track Order Modal -->
+    <div class="modal-overlay" id="trackModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Track Your Order</h3>
+                <button class="close-modal" onclick="closeModal('trackModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="trackForm" onsubmit="trackOrder(event)">
+                <div class="form-group">
+                    <label>Order ID *</label>
+                    <input type="text" name="orderId" placeholder="Enter your order ID" required>
+                </div>
+                <div class="form-group">
+                    <label>Email or Phone *</label>
+                    <input type="text" name="contact" placeholder="Enter email or phone number" required>
+                </div>
+                <button type="submit" class="submit-btn">Track Order</button>
+            </form>
+            <div id="trackingResult" style="margin-top: 20px; display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Support Modal -->
+    <div class="modal-overlay" id="supportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Contact Support</h3>
+                <button class="close-modal" onclick="closeModal('supportModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="supportForm" onsubmit="submitSupport(event)">
+                <div class="form-group">
+                    <label>Name *</label>
+                    <input type="text" name="name" placeholder="Enter your name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" name="phone" placeholder="Enter your phone number">
+                </div>
+                <div class="form-group">
+                    <label>Subject *</label>
+                    <input type="text" name="subject" placeholder="What can we help you with?" required>
+                </div>
+                <div class="form-group">
+                    <label>Message *</label>
+                    <textarea name="message" placeholder="Please describe your issue in detail" required></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Send Message</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="api-config.js"></script>
+    <script src="customer-care.js"></script>
+</body>
+</html>

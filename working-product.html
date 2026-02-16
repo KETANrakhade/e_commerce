@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Working Product Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <script src="config.js"></script>
+    <style>
+        .product-images img {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+        .color-variant-swatch {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            border: 3px solid #e1e5e9;
+            cursor: pointer;
+            margin: 5px;
+            background-size: cover;
+            background-position: center;
+        }
+        .color-variant-swatch.active {
+            border-color: #65AAC3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="product-images" id="productImages">
+                    <!-- Images will be loaded here -->
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h2 id="productName">Loading...</h2>
+                <div class="d-flex align-items-center mt-3">
+                    <span class="fs-3 fw-bold text-success" id="productPrice">Rs. 0</span>
+                    <span class="text-muted text-decoration-line-through ms-3" id="productMrp" style="display: none;"></span>
+                    <span class="badge bg-danger ms-2" id="productDiscount" style="display: none;"></span>
+                </div>
+                
+                <div id="colorVariantsSection" style="display: none;">
+                    <h6 class="mt-4">SELECT COLOR</h6>
+                    <div class="d-flex flex-wrap" id="colorVariantsContainer">
+                        <!-- Color swatches will be populated here -->
+                    </div>
+                    <small class="text-muted" id="selectedColorInfo">Selected: <span id="selectedColorName">-</span></small>
+                </div>
+                
+                <h6 class="mt-4">SELECT SIZE</h6>
+                <div class="size-options">
+                    <button class="btn btn-outline-secondary me-2">39</button>
+                    <button class="btn btn-outline-secondary me-2">40</button>
+                    <button class="btn btn-outline-secondary me-2">42</button>
+                    <button class="btn btn-outline-secondary me-2">44</button>
+                </div>
+                
+                <div class="mt-4">
+                    <button class="btn btn-primary btn-lg me-3" id="addToBagBtn">
+                        <i class="bi bi-bag-fill"></i> ADD TO BAG
+                    </button>
+                    <button class="btn btn-outline-primary btn-lg" id="wishlistBtn">
+                        <i class="bi bi-heart"></i> WISHLIST
+                    </button>
+                </div>
+                
+                <div id="debugInfo" class="mt-4 p-3 bg-light rounded">
+                    <h6>Debug Info:</h6>
+                    <div id="debugContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProduct = null;
+        let selectedColorVariant = null;
+
+        async function loadProduct() {
+            const debugContent = document.getElementById('debugContent');
+            
+            try {
+                debugContent.innerHTML += '<p>🔍 Starting product load...</p>';
+                debugContent.innerHTML += '<p>CONFIG: ' + (CONFIG ? CONFIG.API_BASE_URL : 'Not loaded') + '</p>';
+                
+                // Get product ID from URL or use default
+                const urlParams = new URLSearchParams(window.location.search);
+                let productId = urlParams.get('id') || '697349c4988fce88e4b5bb91';
+                
+                debugContent.innerHTML += '<p>Product ID: ' + productId + '</p>';
+                
+                const url = `${CONFIG.API_BASE_URL}/products/${productId}`;
+                debugContent.innerHTML += '<p>Fetching: ' + url + '</p>';
+                
+                const response = await fetch(url);
+                debugContent.innerHTML += '<p>Response status: ' + response.status + '</p>';
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    currentProduct = data.data;
+                    debugContent.innerHTML += '<p>✅ Product loaded: ' + currentProduct.name + '</p>';
+                    
+                    displayProduct(currentProduct);
+                } else {
+                    // Try to get first product from list
+                    debugContent.innerHTML += '<p>⚠️ Specific product not found, trying first product...</p>';
+                    const listResponse = await fetch(`${CONFIG.API_BASE_URL}/products`);
+                    
+                    if (listResponse.ok) {
+                        const listData = await listResponse.json();
+                        if (listData.data && listData.data.products && listData.data.products.length > 0) {
+                            currentProduct = listData.data.products[0];
+                            debugContent.innerHTML += '<p>✅ Using first product: ' + currentProduct.name + '</p>';
+                            displayProduct(currentProduct);
+                        } else {
+                            throw new Error('No products found');
+                        }
+                    } else {
+                        throw new Error('Failed to load products list');
+                    }
+                }
+            } catch (error) {
+                debugContent.innerHTML += '<p>❌ Error: ' + error.message + '</p>';
+                document.getElementById('productName').textContent = 'Error loading product';
+                document.getElementById('productPrice').textContent = 'Rs. 0';
+            }
+        }
+
+        function displayProduct(product) {
+            // Update basic info
+            document.getElementById('productName').textContent = product.name;
+            document.getElementById('productPrice').textContent = 'Rs. ' + product.price.toLocaleString();
+            
+            // Handle discount
+            if (product.discount && product.discount.isOnSale) {
+                document.getElementById('productMrp').style.display = 'inline';
+                document.getElementById('productMrp').textContent = 'Rs. ' + product.price.toLocaleString();
+                document.getElementById('productPrice').textContent = 'Rs. ' + product.discount.salePrice.toLocaleString();
+                document.getElementById('productDiscount').style.display = 'inline';
+                document.getElementById('productDiscount').textContent = product.discount.percentage + '% OFF';
+            }
+            
+            // Handle color variants
+            if (product.hasColorVariants && product.colorVariants && product.colorVariants.length > 0) {
+                document.getElementById('colorVariantsSection').style.display = 'block';
+                setupColorVariants(product);
+                
+                // Select first variant
+                selectColorVariant(product.colorVariants[0]);
+            } else {
+                // No color variants, show base product images
+                displayImages(product);
+            }
+        }
+
+        function setupColorVariants(product) {
+            const container = document.getElementById('colorVariantsContainer');
+            container.innerHTML = '';
+            
+            product.colorVariants.forEach(variant => {
+                const swatch = document.createElement('div');
+                swatch.className = 'color-variant-swatch';
+                swatch.setAttribute('data-variant-id', variant._id);
+                swatch.setAttribute('title', variant.colorName);
+                
+                if (variant.images && variant.images.length > 0) {
+                    const primaryImage = variant.images.find(img => img.isPrimary) || variant.images[0];
+                    swatch.style.backgroundImage = `url(${primaryImage.url})`;
+                } else {
+                    swatch.style.backgroundColor = variant.colorCode || '#ccc';
+                }
+                
+                swatch.addEventListener('click', () => selectColorVariant(variant));
+                container.appendChild(swatch);
+            });
+        }
+
+        function selectColorVariant(variant) {
+            selectedColorVariant = variant;
+            
+            // Update active swatch
+            document.querySelectorAll('.color-variant-swatch').forEach(swatch => {
+                swatch.classList.remove('active');
+            });
+            document.querySelector(`[data-variant-id="${variant._id}"]`).classList.add('active');
+            
+            // Update selected color info
+            document.getElementById('selectedColorName').textContent = variant.colorName;
+            
+            // Update price if variant has different price
+            if (variant.priceModifier && variant.priceModifier !== currentProduct.price) {
+                document.getElementById('productPrice').textContent = 'Rs. ' + variant.priceModifier.toLocaleString();
+            }
+            
+            // Display variant images
+            displayImages(currentProduct, variant);
+        }
+
+        function displayImages(product, variant = null) {
+            const container = document.getElementById('productImages');
+            container.innerHTML = '';
+            
+            let imagesToShow = [];
+            
+            if (variant && variant.images && variant.images.length > 0) {
+                imagesToShow = variant.images;
+            } else if (product.images && product.images.length > 0) {
+                imagesToShow = product.images;
+            }
+            
+            if (imagesToShow.length > 0) {
+                imagesToShow.slice(0, 4).forEach(image => {
+                    const img = document.createElement('img');
+                    img.src = image.url || image;
+                    img.alt = product.name;
+                    img.className = 'img-fluid';
+                    container.appendChild(img);
+                });
+            } else {
+                container.innerHTML = '<p class="text-muted">No images available</p>';
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', loadProduct);
+    </script>
+</body>
+</html>
