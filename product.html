@@ -628,6 +628,7 @@
     }
   </style>
   <script src="config.js"></script>
+  <script src="api-config.js"></script>
 </head>
 
 <body>
@@ -1591,16 +1592,26 @@
       const urlParams = new URLSearchParams(window.location.search);
       const productId = urlParams.get('id');
       
+      console.log('🔍 Loading reviews for product:', productId);
+      
       if (!productId) {
-        console.log('No product ID, skipping reviews');
+        console.log('❌ No product ID, skipping reviews');
         return;
       }
 
       try {
-        const response = await fetch(`${window.API_BASE_URL}/reviews/${productId}?page=${currentReviewPage}&limit=5`);
+        const apiBaseUrl = window.API_BASE_URL || 'http://localhost:5001/api';
+        const apiUrl = `${apiBaseUrl}/reviews/${productId}?page=${currentReviewPage}&limit=5`;
+        console.log('📡 Fetching reviews from:', apiUrl);
+        
+        const response = await fetch(apiUrl);
+        console.log('📊 Response status:', response.status);
+        
         const data = await response.json();
+        console.log('📦 Reviews data:', data);
 
         if (data.success && data.data) {
+          console.log('✅ Found', data.data.reviews.length, 'reviews');
           displayReviews(data.data.reviews);
           
           // Use product's overall rating for summary, not just current page reviews
@@ -1617,14 +1628,23 @@
           } else {
             document.getElementById('loadMoreContainer').style.display = 'none';
           }
+        } else {
+          console.log('⚠️ No reviews data in response');
+          document.getElementById('reviewsList').innerHTML = `
+            <div class="no-reviews">
+              <i class="fas fa-comment-slash"></i>
+              <h4>No Reviews Yet</h4>
+              <p>Be the first to review this product!</p>
+            </div>
+          `;
         }
       } catch (error) {
-        console.error('Error loading reviews:', error);
+        console.error('❌ Error loading reviews:', error);
         document.getElementById('reviewsList').innerHTML = `
           <div class="no-reviews">
-            <i class="fas fa-comment-slash"></i>
-            <h4>No Reviews Yet</h4>
-            <p>Be the first to review this product!</p>
+            <i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i>
+            <h4>Error Loading Reviews</h4>
+            <p>Please try refreshing the page.</p>
           </div>
         `;
       }
@@ -1751,6 +1771,7 @@
       loadProductReviews();
     }
   </script>
+  <script src="js/chat-widget.js"></script>
 </body>
 
 </html>
