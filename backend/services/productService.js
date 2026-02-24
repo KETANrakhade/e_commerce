@@ -133,6 +133,7 @@ class ProductService {
       seoTitle,
       seoDescription,
       featured = false,
+      trending = false,
       sku,
       discount
     } = productData;
@@ -322,6 +323,7 @@ class ProductService {
       seoTitle: seoTitle || name,
       seoDescription: seoDescription || description,
       featured: Boolean(featured),
+      trending: Boolean(trending),
       sku: generatedSku,
       colorVariants: processedColorVariants,
       hasColorVariants: hasColorVariantsFlag,

@@ -20,6 +20,7 @@ const createProductWithUpload = asyncHandler(async (req, res) => {
       seoTitle,
       seoDescription,
       featured,
+      trending,
       sku
     } = req.body;
 
@@ -101,6 +102,7 @@ const createProductWithUpload = asyncHandler(async (req, res) => {
       seoTitle: seoTitle || name,
       seoDescription: seoDescription || description,
       featured: Boolean(featured === 'true' || featured === true),
+      trending: Boolean(trending === 'true' || trending === true),
       sku: generatedSku
     });
 
@@ -144,6 +146,7 @@ const updateProductWithUpload = asyncHandler(async (req, res) => {
       seoTitle,
       seoDescription,
       featured,
+      trending,
       isActive,
       keepExistingImages
     } = req.body;
@@ -225,6 +228,7 @@ const updateProductWithUpload = asyncHandler(async (req, res) => {
     product.seoTitle = seoTitle || product.seoTitle;
     product.seoDescription = seoDescription || product.seoDescription;
     product.featured = featured !== undefined ? Boolean(featured === 'true' || featured === true) : product.featured;
+    product.trending = trending !== undefined ? Boolean(trending === 'true' || trending === true) : product.trending;
     product.isActive = isActive !== undefined ? Boolean(isActive === 'true' || isActive === true) : product.isActive;
 
     const updated = await product.save();

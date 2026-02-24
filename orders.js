@@ -19,8 +19,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (!user._id || !token) {
         console.error('❌ User not logged in');
-        alert('Please login to view your orders');
-        window.location.href = 'login.html';
+        showToast('Please login to view your orders', 'warning', 3000);
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 1000);
         return;
     }
     
@@ -67,8 +69,10 @@ async function loadOrders() {
         
         if (!token) {
             console.error('❌ No token found');
-            alert('Please login to view your orders');
-            window.location.href = 'login.html';
+            showToast('Please login to view your orders', 'warning', 3000);
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1000);
             return;
         }
         
@@ -92,10 +96,12 @@ async function loadOrders() {
         if (!response.ok) {
             if (response.status === 401) {
                 console.error('❌ Unauthorized - token expired');
-                alert('Your session has expired. Please login again.');
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = 'login.html';
+                showToast('Your session has expired. Please login again.', 'error', 3000);
+                setTimeout(() => {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = 'login.html';
+                }, 1000);
                 return;
             }
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -310,7 +316,7 @@ function openRatingModal(productId, productName, productImage, orderId) {
     
     if (!productId || productId === 'undefined' || productId === 'null') {
         console.error('❌ Invalid product ID:', productId);
-        alert('Error: Invalid product ID. Please try again or contact support.');
+        showToast('Error: Invalid product ID. Please try again or contact support.', 'error', 4000);
         return;
     }
     
@@ -350,13 +356,13 @@ function closeRatingModal() {
 // Submit review
 async function submitReview() {
     if (selectedRating === 0) {
-        alert('Please select a rating');
+        showToast('Please select a rating', 'warning', 3000);
         return;
     }
     
     const comment = document.getElementById('reviewComment').value.trim();
     if (!comment) {
-        alert('Please write a review');
+        showToast('Please write a review', 'warning', 3000);
         return;
     }
     
@@ -364,8 +370,10 @@ async function submitReview() {
         const token = localStorage.getItem('token');
         
         if (!token) {
-            alert('Please login to submit a review');
-            window.location.href = 'login.html';
+            showToast('Please login to submit a review', 'warning', 3000);
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1000);
             return;
         }
         
@@ -394,15 +402,17 @@ async function submitReview() {
         
         if (!response.ok) {
             if (response.status === 401) {
-                alert('Your session has expired. Please login again.');
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = 'login.html';
+                showToast('Your session has expired. Please login again.', 'error', 3000);
+                setTimeout(() => {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = 'login.html';
+                }, 1000);
                 return;
             }
             
             if (response.status === 400 && data.message) {
-                alert(data.message);
+                showToast(data.message, 'error', 4000);
                 return;
             }
             
@@ -410,13 +420,13 @@ async function submitReview() {
         }
         
         console.log('✅ Review submitted successfully:', data);
-        alert('Thank you for your review! 🌟');
+        showToast('Thank you for your review! 🌟', 'success', 3000);
         closeRatingModal();
         loadOrders();
         
     } catch (error) {
         console.error('❌ Error submitting review:', error);
-        alert(error.message || 'Failed to submit review. Please try again.');
+        showToast(error.message || 'Failed to submit review. Please try again.', 'error', 4000);
     }
 }
 
@@ -428,8 +438,10 @@ async function viewOrderDetails(orderId) {
         const token = localStorage.getItem('token');
         
         if (!token) {
-            alert('Please login to view order details');
-            window.location.href = 'login.html';
+            showToast('Please login to view order details', 'warning', 3000);
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1000);
             return;
         }
         
@@ -460,7 +472,7 @@ async function viewOrderDetails(orderId) {
         
     } catch (error) {
         console.error('❌ Error loading order details:', error);
-        alert('Failed to load order details. Please try again.');
+        showToast('Failed to load order details. Please try again.', 'error', 4000);
     }
 }
 
@@ -716,8 +728,10 @@ async function cancelOrder(orderId, orderNumber) {
         const token = localStorage.getItem('token');
         
         if (!token) {
-            alert('Please login to cancel order');
-            window.location.href = 'login.html';
+            showToast('Please login to cancel order', 'warning', 3000);
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1000);
             return;
         }
         
@@ -735,12 +749,12 @@ async function cancelOrder(orderId, orderNumber) {
             throw new Error(data.message || 'Failed to cancel order');
         }
         
-        alert('Order cancelled successfully!');
+        showToast('Order cancelled successfully!', 'success', 3000);
         loadOrders(); // Reload orders
         
     } catch (error) {
         console.error('❌ Error cancelling order:', error);
-        alert(error.message || 'Failed to cancel order. Please try again.');
+        showToast(error.message || 'Failed to cancel order. Please try again.', 'error', 4000);
     }
 }
 

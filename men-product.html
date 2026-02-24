@@ -155,7 +155,7 @@
 
         .hero-subtitle {
             font-size: 1.3rem;
-            color: #7f8c8d;
+            color: #394445;
             margin-bottom: 40px;
             animation: fadeInUp 1s ease-out 0.3s both;
         }
@@ -793,6 +793,34 @@
             box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
         }
 
+        .trending-badge {
+            position: absolute;
+            top: 60px;
+            left: 15px;
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 10;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+            animation: trendingPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes trendingPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 6px 20px rgba(255, 107, 53, 0.6);
+            }
+        }
+
         @keyframes pulse {
             0% {
                 transform: scale(1);
@@ -1343,29 +1371,38 @@
                 </h4>
                 <div class="filter-content active">
                     <label class="filter-checkbox">
-                        <input type="checkbox" value="all" checked onchange="applyFilters()">
-                        <span>All Products</span>
-                    </label>
-                    <label class="filter-checkbox">
-                        <input type="checkbox" value="shirts" onchange="applyFilters()">
+                        <input type="checkbox" value="shirts" data-filter-type="category" onchange="applyFilters()">
                         <span>Shirts</span>
                     </label>
                     <label class="filter-checkbox">
-                        <input type="checkbox" value="t-shirts" onchange="applyFilters()">
+                        <input type="checkbox" value="t-shirts" data-filter-type="category" onchange="applyFilters()">
                         <span>T-Shirts</span>
                     </label>
                     <label class="filter-checkbox">
-                        <input type="checkbox" value="jackets" onchange="applyFilters()">
+                        <input type="checkbox" value="jackets" data-filter-type="category" onchange="applyFilters()">
                         <span>Jackets</span>
                     </label>
                     <label class="filter-checkbox">
-                        <input type="checkbox" value="jeans" onchange="applyFilters()">
+                        <input type="checkbox" value="jeans" data-filter-type="category" onchange="applyFilters()">
                         <span>Jeans</span>
                     </label>
                     <label class="filter-checkbox">
-                        <input type="checkbox" value="accessories" onchange="applyFilters()">
+                        <input type="checkbox" value="accessories" data-filter-type="category" onchange="applyFilters()">
                         <span>Accessories</span>
                     </label>
+                </div>
+            </div>
+
+            <!-- Brand Filter -->
+            <div class="filter-group">
+                <h4 class="filter-title" onclick="toggleFilterGroup(this)">
+                    BRAND
+                    <i class="fas fa-chevron-down"></i>
+                </h4>
+                <div class="filter-content active" id="brandFilterContent">
+                    <div style="text-align: center; padding: 10px; color: #999;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading brands...
+                    </div>
                 </div>
             </div>
 
@@ -1377,11 +1414,7 @@
                 </h4>
                 <div class="filter-content active">
                     <label class="filter-checkbox">
-                        <input type="radio" name="availability" value="all" checked onchange="applyFilters()">
-                        <span>All Products</span>
-                    </label>
-                    <label class="filter-checkbox">
-                        <input type="radio" name="availability" value="in-stock" onchange="applyFilters()">
+                        <input type="radio" name="availability" value="in-stock" checked onchange="applyFilters()">
                         <span>In Stock Only</span>
                     </label>
                     <label class="filter-checkbox">
@@ -1419,10 +1452,6 @@
                     <i class="fas fa-chevron-down"></i>
                 </h4>
                 <div class="filter-content active">
-                    <label class="filter-checkbox">
-                        <input type="checkbox" value="0" checked onchange="applyFilters()" name="discount">
-                        <span>All Products</span>
-                    </label>
                     <label class="filter-checkbox">
                         <input type="checkbox" value="10" onchange="applyFilters()" name="discount">
                         <span>10% and above</span>
@@ -1577,6 +1606,9 @@
             // Initialize filter functionality
             initFilters();
 
+            // Load brands for filter
+            loadBrandsFilter();
+
             // Update cart badge
             updateCartBadge();
 
@@ -1711,17 +1743,57 @@
             }
         }
 
+        // Load brands for filter panel
+        async function loadBrandsFilter() {
+            try {
+                console.log('🏷️ Loading brands for filter...');
+                const response = await fetch(`${window.API_BASE_URL}/brands?limit=100`);
+                const data = await response.json();
+                
+                if (data.success && data.data.brands) {
+                    const brands = data.data.brands.filter(b => b.isActive);
+                    console.log(`✅ Loaded ${brands.length} active brands`);
+                    
+                    const brandFilterContent = document.getElementById('brandFilterContent');
+                    
+                    if (brands.length === 0) {
+                        brandFilterContent.innerHTML = '<p style="color: #999; font-size: 0.9rem;">No brands available</p>';
+                        return;
+                    }
+                    
+                    // Sort brands alphabetically
+                    brands.sort((a, b) => a.name.localeCompare(b.name));
+                    
+                    // Create brand checkboxes
+                    brandFilterContent.innerHTML = brands.map(brand => `
+                        <label class="filter-checkbox">
+                            <input type="checkbox" name="brand" value="${brand._id}" onchange="applyFilters()">
+                            <span>${brand.name}</span>
+                        </label>
+                    `).join('');
+                } else {
+                    throw new Error('Failed to load brands');
+                }
+            } catch (error) {
+                console.error('❌ Error loading brands:', error);
+                document.getElementById('brandFilterContent').innerHTML = '<p style="color: #e74c3c; font-size: 0.9rem;">Failed to load brands</p>';
+            }
+        }
+
         function applyFilters() {
-            console.log('🔍 Applying filters...');
+            console.log('🔍 ========== APPLY FILTERS CALLED ==========');
             
             // Check if we have products to filter
+            console.log('currentPageProducts:', currentPageProducts);
+            console.log('currentPageProducts length:', currentPageProducts?.length);
+            
             if (!currentPageProducts || currentPageProducts.length === 0) {
                 console.warn('⚠️ No products loaded yet');
                 return;
             }
 
             // Get all filter values
-            const categoryCheckboxes = document.querySelectorAll('.filter-panel .filter-checkbox input[type="checkbox"]:checked');
+            const categoryCheckboxes = document.querySelectorAll('.filter-panel input[data-filter-type="category"]:checked');
             const categories = Array.from(categoryCheckboxes).map(cb => cb.value);
             
             const availabilityRadio = document.querySelector('.filter-panel input[name="availability"]:checked');
@@ -1738,17 +1810,50 @@
             const ratingRadio = document.querySelector('.filter-panel input[name="rating"]:checked');
             const minRating = ratingRadio ? parseFloat(ratingRadio.value) : 0;
 
-            console.log('Filter values:', { categories, availability, minPrice, maxPrice, discounts, minRating });
+            // Get brand filter values
+            const brandCheckboxes = document.querySelectorAll('.filter-panel input[name="brand"]:checked');
+            const brands = Array.from(brandCheckboxes).map(cb => cb.value);
+
+            console.log('📊 Filter values:', { categories, availability, minPrice, maxPrice, discounts, minRating, brands });
 
             // Filter products
             let filteredProducts = [...currentPageProducts];
+            console.log(`🔢 Starting with ${filteredProducts.length} products`);
 
-            // Apply category filter
-            if (!categories.includes('all') && categories.length > 0) {
+            // Apply category filter (only if categories are selected)
+            if (categories.length > 0) {
+                console.log('🏷️ Applying category filter:', categories);
                 filteredProducts = filteredProducts.filter(product => {
                     const productCategory = getProductCategory(product);
                     return categories.includes(productCategory);
                 });
+                console.log(`✅ After category filter: ${filteredProducts.length} products`);
+            }
+
+            // Apply brand filter
+            if (brands.length > 0) {
+                console.log('🏷️ Applying brand filter:', brands);
+                const beforeBrandFilter = filteredProducts.length;
+                
+                filteredProducts = filteredProducts.filter(product => {
+                    // Check if product has brand as object or string
+                    const productBrandId = product.brand?._id || product.brand;
+                    const productBrandName = product.brand?.name || product.brandName || '';
+                    
+                    const matches = brands.some(brandId => {
+                        const match = brandId === productBrandId || 
+                               brandId === productBrandName.toLowerCase() ||
+                               brandId === productBrandName;
+                        return match;
+                    });
+                    
+                    if (matches) {
+                        console.log(`  ✅ MATCH: ${product.name} - Brand: ${productBrandName} (${productBrandId})`);
+                    }
+                    
+                    return matches;
+                });
+                console.log(`✅ After brand filter: ${filteredProducts.length} products (was ${beforeBrandFilter})`);
             }
 
             // Apply availability filter
@@ -1789,13 +1894,19 @@
         }
 
         function clearAllFilters() {
-            // Reset all checkboxes
+            // Reset all checkboxes (including brand checkboxes)
             document.querySelectorAll('.filter-checkbox input[type="checkbox"]').forEach(cb => {
                 cb.checked = cb.value === 'all' || cb.value === '0';
             });
 
+            // Reset brand checkboxes specifically
+            document.querySelectorAll('input[name="brand"]').forEach(cb => {
+                cb.checked = false;
+            });
+
             // Reset availability
-            document.querySelector('input[name="availability"][value="all"]').checked = true;
+            const availabilityAll = document.querySelector('input[name="availability"][value="in-stock"]');
+            if (availabilityAll) availabilityAll.checked = true;
 
             // Reset rating
             const ratingAll = document.querySelector('input[name="rating"][value="0"]');
@@ -1810,8 +1921,11 @@
             document.getElementById('maxPriceDisplay').textContent = '10,000';
 
             // Reset sort
-            document.querySelector('input[name="sortBy"][value="featured"]').checked = true;
-            currentSortBy = 'featured';
+            const featuredSort = document.querySelector('input[name="sortBy"][value="featured"]');
+            if (featuredSort) {
+                featuredSort.checked = true;
+                currentSortBy = 'featured';
+            }
 
             // Reload products
             loadMensProducts(1, 'all');

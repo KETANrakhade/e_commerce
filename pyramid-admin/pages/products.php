@@ -246,7 +246,8 @@ if ($_POST && isset($_POST['action'])) {
             'subcategory' => !empty($_POST['subcategory']) ? trim($_POST['subcategory']) : null,
             'stock' => max(0, intval($_POST['stock'] ?? 0)), // Ensure non-negative
             'isActive' => isset($_POST['isActive']) ? true : true, // Default to active
-            'featured' => isset($_POST['featured']) ? true : false
+            'featured' => isset($_POST['featured']) ? true : false,
+            'trending' => isset($_POST['trending']) ? true : false
         ];
         
         // Handle discount data
@@ -673,6 +674,7 @@ if ($_POST && isset($_POST['action'])) {
             'stock' => max(0, intval($_POST['stock'] ?? 0)),
             'brand' => trim($_POST['brand'] ?? ''),
             'featured' => isset($_POST['featured']),
+            'trending' => isset($_POST['trending']),
             'isActive' => isset($_POST['isActive'])
         ];
         
@@ -1896,16 +1898,25 @@ if ($action === 'edit' && $productId) {
                                                 <label class="form-check-label" for="featured">Featured Product</label>
                                             </div>
                                         </div>
-                                        <?php if ($action === 'edit'): ?>
-                                            <div class="col-sm-6">
-                                                <div class="form-check mb-3">
-                                                    <input class="form-check-input" type="checkbox" id="isActive" name="isActive" 
-                                                           <?php echo (!empty($product['isActive'])) ? 'checked' : ''; ?>>
-                                                    <label class="form-check-label" for="isActive">Active</label>
-                                                </div>
+                                        <div class="col-sm-6">
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" id="trending" name="trending" 
+                                                       <?php echo (!empty($product['trending'])) ? 'checked' : ''; ?>>
+                                                <label class="form-check-label" for="trending">Trending Product</label>
                                             </div>
-                                        <?php endif; ?>
+                                        </div>
                                     </div>
+                                    <?php if ($action === 'edit'): ?>
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" id="isActive" name="isActive" 
+                                                       <?php echo (!empty($product['isActive'])) ? 'checked' : ''; ?>>
+                                                <label class="form-check-label" for="isActive">Active</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <?php endif; ?>
 
                                     <div class="d-flex flex-wrap gap-2">
                                         <button type="submit" class="btn btn-primary waves-effect waves-light" id="submitBtn">

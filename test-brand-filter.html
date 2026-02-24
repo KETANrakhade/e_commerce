@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Brand Filter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .filter-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .product-card {
+            display: inline-block;
+            width: 200px;
+            margin: 10px;
+            padding: 15px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        label {
+            display: block;
+            margin: 5px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #34495e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Brand Filter Test</h1>
+        
+        <div class="filter-section">
+            <h3>Select Brands:</h3>
+            <div id="brandFilters"></div>
+            <button onclick="applyFilter()">Apply Filter</button>
+            <button onclick="clearFilter()">Clear Filter</button>
+        </div>
+
+        <div id="results">
+            <h3>Products:</h3>
+            <div id="productList"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5001/api';
+        let allProducts = [];
+
+        async function loadData() {
+            try {
+                // Load brands
+                const brandsResponse = await fetch(`${API_BASE_URL}/brands?limit=100`);
+                const brandsData = await brandsResponse.json();
+                const brands = brandsData.data.brands.filter(b => b.isActive).sort((a, b) => a.name.localeCompare(b.name));
+                
+                // Display brands
+                const brandFilters = document.getElementById('brandFilters');
+                brandFilters.innerHTML = brands.map(brand => `
+                    <label>
+                        <input type="checkbox" name="brand" value="${brand._id}">
+                        ${brand.name} (${brand._id})
+                    </label>
+                `).join('');
+
+                // Load products
+                const productsResponse = await fetch(`${API_BASE_URL}/products/category/men?limit=1000`);
+                const productsData = await productsResponse.json();
+                allProducts = productsData.data.products;
+                
+                displayProducts(allProducts);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function displayProducts(products) {
+            const productList = document.getElementById('productList');
+            productList.innerHTML = products.map(p => `
+                <div class="product-card">
+                    <h4>${p.name}</h4>
+                    <p><strong>Brand:</strong> ${p.brand?.name || 'N/A'}</p>
+                    <p><strong>Brand ID:</strong> ${p.brand?._id || 'N/A'}</p>
+                </div>
+            `).join('');
+        }
+
+        function applyFilter() {
+            const selectedBrands = Array.from(document.querySelectorAll('input[name="brand"]:checked')).map(cb => cb.value);
+            
+            console.log('Selected brands:', selectedBrands);
+            
+            if (selectedBrands.length === 0) {
+                displayProducts(allProducts);
+                return;
+            }
+
+            const filtered = allProducts.filter(product => {
+                const productBrandId = product.brand?._id || product.brand;
+                const matches = selectedBrands.includes(productBrandId);
+                
+                console.log(`Product: ${product.name}, Brand ID: ${productBrandId}, Matches: ${matches}`);
+                
+                return matches;
+            });
+
+            console.log(`Filtered ${filtered.length} products from ${allProducts.length}`);
+            displayProducts(filtered);
+        }
+
+        function clearFilter() {
+            document.querySelectorAll('input[name="brand"]').forEach(cb => cb.checked = false);
+            displayProducts(allProducts);
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

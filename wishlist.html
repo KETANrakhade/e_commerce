@@ -597,17 +597,20 @@
         // Load wishlist from backend if user is logged in, merge with localStorage
         async function loadWishlistFromBackend() {
             const token = localStorage.getItem('token');
-            const localWishlist = JSON.parse(localStorage.getItem("wishlist_v1") || '[]');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
             
-            if (!token) {
-                // Not logged in, use localStorage only
-                wishlist = localWishlist;
+            if (!token || !user._id) {
+                // Not logged in, clear wishlist and show empty state
+                console.log('⚠️ User not logged in, clearing wishlist');
+                wishlist = [];
+                localStorage.removeItem('wishlist_v1');
                 showWishlist();
                 updateWishlistBadge();
                 return;
             }
             
             try {
+                console.log('🔄 Loading wishlist from backend for user:', user._id);
                 const response = await fetch('http://localhost:5001/api/wishlist', {
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -639,31 +642,37 @@
                     
                     console.log('✨ Formatted wishlist:', formattedBackendWishlist);
                     
-                    // Merge backend and localStorage (backend takes priority for duplicates)
-                    const mergedWishlist = [...formattedBackendWishlist];
-                    const backendIds = new Set(formattedBackendWishlist.map(item => item._id || item.id || item.productId));
+                    // Use ONLY backend data (don't merge with localStorage)
+                    // This ensures each user sees only their own wishlist
+                    wishlist = formattedBackendWishlist;
                     
-                    // Add localStorage items that aren't in backend (for offline/fallback items)
-                    localWishlist.forEach(localItem => {
-                        const localId = localItem._id || localItem.id || localItem.productId;
-                        if (localId && !backendIds.has(localId)) {
-                            mergedWishlist.push(localItem);
-                        }
-                    });
-                    
-                    // Update wishlist and localStorage
-                    wishlist = mergedWishlist;
+                    // Update localStorage with backend data
                     localStorage.setItem("wishlist_v1", JSON.stringify(wishlist));
-                    console.log('✅ Wishlist synced: backend', formattedBackendWishlist.length, 'items, merged', mergedWishlist.length, 'total');
+                    console.log('✅ Wishlist loaded from backend:', wishlist.length, 'items');
+                } else if (response.status === 401) {
+                    // Token expired or invalid, clear everything and redirect to login
+                    console.log('⚠️ Unauthorized, clearing data and redirecting to login');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('wishlist_v1');
+                    localStorage.removeItem('cart_v1');
+                    wishlist = [];
+                    showSuccessMessage('Session expired. Please login again.');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                    return;
                 } else {
-                    // Backend failed, use localStorage
-                    console.log('⚠️ Failed to load wishlist from backend, using localStorage');
-                    wishlist = localWishlist;
+                    // Backend failed, clear wishlist for safety
+                    console.log('⚠️ Failed to load wishlist from backend, clearing for safety');
+                    wishlist = [];
+                    localStorage.removeItem('wishlist_v1');
                 }
             } catch (error) {
                 console.error('❌ Error loading wishlist from backend:', error);
-                // Use localStorage on error
-                wishlist = localWishlist;
+                // On error, clear wishlist for safety
+                wishlist = [];
+                localStorage.removeItem('wishlist_v1');
             }
             
             showWishlist();
@@ -931,6 +940,26 @@
 
         // Initialize wishlist display
         document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (!token || !user._id) {
+                // Not logged in, clear any stale wishlist data
+                console.log('🧹 Clearing stale wishlist data (not logged in)');
+                localStorage.removeItem('wishlist_v1');
+                wishlist = [];
+                showWishlist();
+                updateWishlistBadge();
+                
+                // Show message and redirect to login
+                showSuccessMessage('Please login to view your wishlist');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+                return;
+            }
+            
             // Load from backend first (if logged in), then show
             loadWishlistFromBackend();
         });

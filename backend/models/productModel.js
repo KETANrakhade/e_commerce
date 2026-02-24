@@ -81,6 +81,7 @@ const productSchema = new mongoose.Schema({
   stock: { type: Number, default: 0 }, // Total stock (sum of all color variants if applicable)
   isActive: { type: Boolean, default: true },
   featured: { type: Boolean, default: false },
+  trending: { type: Boolean, default: false }, // NEW: Mark product as trending
   weight: Number,
   dimensions: {
     length: Number,
@@ -109,6 +110,7 @@ productSchema.index({ categoryName: 1 }); // Backward compatibility
 productSchema.index({ brandName: 1 });    // Backward compatibility
 productSchema.index({ isActive: 1 });
 productSchema.index({ featured: 1 });
+productSchema.index({ trending: 1 }); // NEW: Index for trending products
 productSchema.index({ price: 1 });
 productSchema.index({ createdAt: -1 });
 productSchema.index({ hasColorVariants: 1 }); // NEW: Index for color variants

@@ -249,8 +249,14 @@ function renderWomensProducts(products) {
         // Handle pricing and discount display
         let priceDisplay = '';
         let saleBadge = ''; // Sale badge for top-left corner
+        let trendingBadge = ''; // Trending badge
         let originalPrice = product.price;
         let finalPrice = product.price;
+        
+        // Check if product is trending
+        if (product.trending) {
+            trendingBadge = `<div class="trending-badge">🔥 Trending</div>`;
+        }
         
         // Check if product has discount from backend
         if (product.discount && product.discount.isOnSale && product.discount.percentage > 0) {
@@ -348,6 +354,7 @@ function renderWomensProducts(products) {
             <div class="product-card ${outOfStockClass}" data-category="${categoryFilter}" onclick="goToDetail('${product._id}')">
                 <div class="product-image-container">
                     ${saleBadge}
+                    ${trendingBadge}
                     <img src="${imageUrl}" 
                          class="product-image" 
                          alt="${product.name}"
