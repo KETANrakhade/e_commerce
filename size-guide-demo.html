@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Size Guide Demo - Pyramid E-Commerce</title>
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+  
+  <!-- Size Guide CSS -->
+  <link rel="stylesheet" href="css/size-guide.css">
+  
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .demo-container {
+      background: white;
+      border-radius: 20px;
+      padding: 60px 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      max-width: 600px;
+    }
+    
+    .demo-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+    
+    .demo-subtitle {
+      font-size: 1.1rem;
+      color: #666;
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+    
+    .demo-button {
+      background: linear-gradient(135deg, #65AAC3, #5F9FB6);
+      color: white;
+      border: none;
+      padding: 18px 40px;
+      border-radius: 15px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(101, 170, 195, 0.4);
+    }
+    
+    .demo-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 40px rgba(101, 170, 195, 0.5);
+    }
+    
+    .demo-button i {
+      font-size: 1.5rem;
+    }
+    
+    .features-list {
+      text-align: left;
+      margin-top: 50px;
+      padding-top: 40px;
+      border-top: 2px solid #e9ecef;
+    }
+    
+    .features-list h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+    
+    .feature-item {
+      display: flex;
+      align-items: start;
+      gap: 12px;
+      margin-bottom: 15px;
+      color: #555;
+    }
+    
+    .feature-item i {
+      color: #65AAC3;
+      font-size: 1.2rem;
+      margin-top: 2px;
+    }
+    
+    .badge-demo {
+      display: inline-block;
+      background: #e74c3c;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <h1 class="demo-title">
+      Size Guide Feature
+      <span class="badge-demo">NEW</span>
+    </h1>
+    
+    <p class="demo-subtitle">
+      Click the button below to explore our comprehensive size guide with measurement instructions, 
+      size charts for men's and women's clothing, fit guides, and international size conversions.
+    </p>
+    
+    <button class="demo-button" data-bs-toggle="modal" data-bs-target="#sizeGuideModal">
+      <i class="bi bi-rulers"></i>
+      <span>Open Size Guide</span>
+    </button>
+    
+    <div class="features-list">
+      <h3>What's Included:</h3>
+      
+      <div class="feature-item">
+        <i class="bi bi-check-circle-fill"></i>
+        <span><strong>Measurement Instructions:</strong> Step-by-step guide with visual icons</span>
+      </div>
+      
+      <div class="feature-item">
+        <i class="bi bi-check-circle-fill"></i>
+        <span><strong>Size Charts:</strong> Complete tables for men's and women's clothing</span>
+      </div>
+      
+      <div class="feature-item">
+        <i class="bi bi-check-circle-fill"></i>
+        <span><strong>Fit Guide:</strong> Understand slim, regular, and relaxed fits</span>
+      </div>
+      
+      <div class="feature-item">
+        <i class="bi bi-check-circle-fill"></i>
+        <span><strong>International Conversion:</strong> US, UK, EU, and Japan sizes</span>
+      </div>
+      
+      <div class="feature-item">
+        <i class="bi bi-check-circle-fill"></i>
+        <span><strong>Measurement Tips:</strong> Best practices for accurate sizing</span>
+      </div>
+      
+      <div class="feature-item">
+        <i class="bi bi-check-circle-fill"></i>
+        <span><strong>Fully Responsive:</strong> Works perfectly on all devices</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Size Guide Modal Component -->
+  <script src="js/size-guide-modal.js"></script>
+</body>
+</html>

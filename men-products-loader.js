@@ -152,6 +152,13 @@ function renderMensProducts(products) {
     
     products.forEach((product, index) => {
         console.log(`🔄 Processing product ${index + 1}: ${product.name}`);
+        console.log(`   Product ID: ${product._id}`);
+        
+        // Validate product ID
+        if (!product._id) {
+            console.error(`❌ Product ${product.name} has no _id!`);
+            return; // Skip this product
+        }
         
         // Handle image URL - improved logic with color variant fallback
         let imageUrl = 'https://via.placeholder.com/400x500/65AAC3/FFFFFF?text=No+Image';
@@ -258,7 +265,7 @@ function renderMensProducts(products) {
         
         // Check if product is trending
         if (product.trending) {
-            trendingBadge = `<div class="trending-badge">🔥 Trending</div>`;
+            trendingBadge = `<div class="trending-badge">TRENDING</div>`;
         }
         
         // Check if product has discount from backend
@@ -287,18 +294,17 @@ function renderMensProducts(products) {
         // Check if product is out of stock
         const isOutOfStock = product.stock !== undefined && product.stock === 0;
         const outOfStockClass = isOutOfStock ? 'out-of-stock' : '';
-        const outOfStockBadge = isOutOfStock ? '<div class="out-of-stock-badge">OUT OF STOCK</div>' : '';
+        const outOfStockOverlay = isOutOfStock ? '<div class="out-of-stock-overlay"><div class="out-of-stock-text">Out of Stock</div></div>' : '';
         
         const productCard = `
-            <div class="product-card ${outOfStockClass}" data-category="${categoryFilter}" onclick="goToDetail('${product._id}')">
+            <div class="product-card ${outOfStockClass}" data-category="${categoryFilter}" data-product-id="${product._id}" onclick="console.log('Clicked product:', '${product._id}', '${product.name}'); goToDetail('${product._id}')">
                 <div class="product-image-container">
                     ${saleBadge}
-                    ${trendingBadge}
                     <img src="${imageUrl}" 
                          class="product-image" 
                          alt="${product.name}"
                          onerror="this.src='https://via.placeholder.com/400x500/ff6b6b/ffffff?text=Image+Error'">
-                    ${outOfStockBadge}
+                    ${outOfStockOverlay}
                     <div class="wishlist-icon" onclick="event.stopPropagation(); toggleWishlist('${product._id}', '${product.name}', '${imageUrl}', ${finalPrice})">
                         <i class="far fa-heart"></i>
                     </div>
@@ -309,6 +315,7 @@ function renderMensProducts(products) {
                     </div>
                 </div>
                 <div class="product-info">
+                    ${trendingBadge}
                     <h3 class="product-name">${product.name}</h3>
                     <div class="product-price">${priceDisplay}</div>
                     <div class="product-rating">
@@ -354,6 +361,8 @@ function viewProductDetails(productId) {
 
 // Go to detail page
 function goToDetail(productId) {
+    console.log('🔗 goToDetail called with ID:', productId);
+    console.log('🔗 Navigating to: product.html?id=' + productId);
     window.location.href = `product.html?id=${productId}`;
 }
 

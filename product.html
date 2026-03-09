@@ -95,8 +95,15 @@
 
     .main-slider {
       border-radius: 16px;
-      overflow: hidden;
+      overflow: visible;
       background: #f8f9fa;
+      position: relative;
+    }
+
+    .main-slider .splide__slide {
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
     }
 
     .main-slider .splide__slide img {
@@ -105,6 +112,159 @@
       object-fit: contain;
       border-radius: 16px;
       background: #fff;
+      cursor: crosshair;
+      transition: transform 0.3s ease;
+    }
+
+    .main-slider .splide__slide:hover img {
+      transform: scale(1.05);
+    }
+
+    /* Magnifying Glass Zoom Effect */
+    /* Myntra-style Zoom Modal */
+    .zoom-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      z-index: 99999;
+    }
+    
+    .zoom-modal.active {
+      display: flex;
+    }
+    
+    .zoom-thumbnails {
+      width: 80px;
+      height: 100%;
+      background: #f5f5f5;
+      overflow-y: auto;
+      padding: 10px 5px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .zoom-thumbnail {
+      width: 70px;
+      height: 90px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      object-fit: cover;
+      border-radius: 4px;
+      transition: border-color 0.2s;
+    }
+    
+    .zoom-thumbnail:hover {
+      border-color: #ddd;
+    }
+    
+    .zoom-thumbnail.active {
+      border-color: #ff3f6c;
+    }
+    
+    .zoom-main-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      cursor: crosshair;
+    }
+    
+    .zoom-main-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: transform 0.1s ease-out;
+      transform-origin: center center;
+    }
+    
+    .zoom-close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      color: #282c3f;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 100000;
+      background: white;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .zoom-close:hover {
+      background: #f5f5f5;
+    }
+    
+    @media (max-width: 768px) {
+      .zoom-thumbnails {
+        width: 60px;
+      }
+      
+      .zoom-thumbnail {
+        width: 50px;
+        height: 65px;
+      }
+    }
+      }
+      
+      .zoom-lens {
+        display: none !important;
+      }
+      
+      .zoom-container {
+        cursor: zoom-in;
+      }
+    }
+
+    /* Zoom Overlay */
+    .zoom-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 10000;
+      cursor: zoom-out;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .zoom-overlay.active {
+      display: flex;
+    }
+
+    .zoom-overlay img {
+      max-width: 95%;
+      max-height: 95%;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
+    .zoom-close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      color: white;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 10001;
+      transition: color 0.3s;
+    }
+
+    .zoom-close:hover {
+      color: #65aac3;
     }
 
     .thumbnail-slider {
@@ -626,6 +786,262 @@
       justify-content: center;
       font-weight: bold;
     }
+
+    /* Size Guide Modal Styles - Polished Myntra Style */
+    .size-guide-link {
+      background: none;
+      border: none;
+      color: #ff3f6c;
+      font-size: 0.875rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: color 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0;
+      text-decoration: underline;
+    }
+
+    .size-guide-link:hover {
+      color: #ff1744;
+    }
+
+    .size-guide-link i {
+      font-size: 0.875rem;
+    }
+
+    #sizeGuideModal .modal-dialog {
+      max-width: 600px;
+    }
+
+    #sizeGuideModal .modal-content {
+      border-radius: 4px;
+      border: none;
+      box-shadow: 0 4px 16px rgba(40, 44, 63, 0.15);
+    }
+
+    #sizeGuideModal .modal-header {
+      border-bottom: none;
+      padding: 20px 24px 0;
+    }
+
+    #sizeGuideModal .btn-close {
+      padding: 0;
+      margin: 0;
+      opacity: 0.5;
+      font-size: 1.2rem;
+    }
+
+    #sizeGuideModal .btn-close:hover {
+      opacity: 1;
+    }
+
+    #sizeGuideModal .modal-body {
+      padding: 0 24px 24px;
+    }
+
+    .size-guide-tabs {
+      border-bottom: 1px solid #e9e9ed;
+      margin-bottom: 0;
+    }
+
+    .size-guide-tabs .nav-item {
+      margin-bottom: 0;
+    }
+
+    .size-guide-tabs .nav-link {
+      border: none;
+      color: #94969f;
+      font-weight: 700;
+      font-size: 0.875rem;
+      padding: 16px 24px;
+      border-bottom: 2px solid transparent;
+      background: none;
+      text-transform: capitalize;
+      transition: all 0.2s ease;
+      margin-bottom: -1px;
+    }
+
+    .size-guide-tabs .nav-link:hover {
+      border-color: transparent;
+      color: #282c3f;
+    }
+
+    .size-guide-tabs .nav-link.active {
+      color: #ff3f6c;
+      border-bottom-color: #ff3f6c;
+      background: none;
+    }
+
+    .tab-content {
+      padding-top: 20px;
+    }
+
+    .size-chart-table {
+      margin: 0;
+      font-size: 0.875rem;
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .size-chart-table thead {
+      background: #fafbfc;
+    }
+
+    .size-chart-table thead th {
+      font-weight: 700;
+      padding: 14px 12px;
+      border: none;
+      color: #282c3f;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-align: left;
+      border-bottom: 1px solid #e9e9ed;
+    }
+
+    .size-chart-table thead th:first-child {
+      padding-left: 16px;
+    }
+
+    .size-chart-table tbody td {
+      padding: 14px 12px;
+      border-bottom: 1px solid #f5f5f6;
+      color: #282c3f;
+      font-size: 0.875rem;
+      text-align: left;
+    }
+
+    .size-chart-table tbody td:first-child {
+      padding-left: 16px;
+      font-weight: 600;
+    }
+
+    .size-chart-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .size-chart-table tbody tr:hover {
+      background: #fafbfc;
+    }
+
+    .size-chart-table input[type="radio"] {
+      accent-color: #ff3f6c;
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    .text-muted.small {
+      color: #94969f !important;
+      font-size: 0.75rem;
+      margin-bottom: 16px;
+    }
+
+    .measurement-diagram {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto 24px;
+      border-radius: 4px;
+    }
+
+    .measurement-instructions {
+      font-size: 0.875rem;
+    }
+
+    .measurement-instructions h6 {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: #282c3f;
+      margin-bottom: 16px;
+    }
+
+    .measurement-item {
+      display: flex;
+      padding: 12px 0;
+      border-bottom: 1px solid #f5f5f6;
+      color: #282c3f;
+      line-height: 1.6;
+    }
+
+    .measurement-item:last-child {
+      border-bottom: none;
+    }
+
+    .measurement-item strong {
+      color: #282c3f;
+      font-weight: 700;
+      display: inline-block;
+      min-width: 140px;
+      flex-shrink: 0;
+      font-size: 0.875rem;
+    }
+
+    .measurement-item span {
+      color: #535766;
+      font-size: 0.875rem;
+    }
+
+    /* Smooth animations */
+    #sizeGuideModal .modal.fade .modal-dialog {
+      transition: transform 0.2s ease-out;
+    }
+
+    #sizeGuideModal .modal.show .modal-dialog {
+      transform: none;
+    }
+
+    @media (max-width: 768px) {
+      #sizeGuideModal .modal-dialog {
+        margin: 0;
+        max-width: 100%;
+        height: 100%;
+      }
+
+      #sizeGuideModal .modal-content {
+        border-radius: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #sizeGuideModal .modal-body {
+        flex: 1;
+        overflow-y: auto;
+      }
+
+      .size-guide-tabs .nav-link {
+        padding: 14px 20px;
+        font-size: 0.875rem;
+      }
+
+      .size-chart-table {
+        font-size: 0.75rem;
+      }
+
+      .size-chart-table thead th,
+      .size-chart-table tbody td {
+        padding: 10px 8px;
+      }
+
+      .size-chart-table thead th:first-child,
+      .size-chart-table tbody td:first-child {
+        padding-left: 12px;
+      }
+
+      .measurement-item {
+        flex-direction: column;
+      }
+
+      .measurement-item strong {
+        margin-bottom: 4px;
+      }
+    }
   </style>
   <script src="config.js"></script>
   <script src="api-config.js"></script>
@@ -633,6 +1049,16 @@
 
 <body>
 
+  <!-- Myntra-style Zoom Modal -->
+  <div class="zoom-modal" id="zoomModal">
+    <div class="zoom-thumbnails" id="zoomThumbnails">
+      <!-- Thumbnails will be dynamically added -->
+    </div>
+    <div class="zoom-main-container" id="zoomMainContainer">
+      <span class="zoom-close" onclick="closeZoomModal()">&times;</span>
+      <img id="zoomModalImg" class="zoom-main-image" src="" alt="Zoomed Image">
+    </div>
+  </div>
 
   <!-- Success Popup -->
   <div class="success-popup" id="successPopup">
@@ -640,6 +1066,126 @@
       <i class="fas fa-check-circle"></i>
       <h4>Added to Cart!</h4>
       <p>Item successfully added to your cart</p>
+    </div>
+  </div>
+
+  <!-- Size Guide Modal -->
+  <div class="modal fade" id="sizeGuideModal" tabindex="-1" aria-labelledby="sizeGuideModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title" id="sizeGuideModalLabel"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pt-0">
+          <!-- Tabs -->
+          <ul class="nav nav-tabs size-guide-tabs mb-4" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="size-chart-tab" data-bs-toggle="tab" data-bs-target="#size-chart" type="button" role="tab">
+                Size Chart
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="how-to-measure-tab" data-bs-toggle="tab" data-bs-target="#how-to-measure" type="button" role="tab">
+                How to measure
+              </button>
+            </li>
+          </ul>
+
+          <!-- Tab Content -->
+          <div class="tab-content">
+            <!-- Size Chart Tab -->
+            <div class="tab-pane fade show active" id="size-chart" role="tabpanel">
+              <p class="text-muted small text-end mb-3">* Garment Measurements in Inches</p>
+              
+              <div class="table-responsive">
+                <table class="table size-chart-table">
+                  <thead>
+                    <tr>
+                      <th>Size</th>
+                      <th>Chest (in)</th>
+                      <th>Front Length (in)</th>
+                      <th>Across Shoulder (in)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><input type="radio" name="size" class="me-2">28</td>
+                      <td>35.5</td>
+                      <td>27.0</td>
+                      <td>15.5</td>
+                    </tr>
+                    <tr>
+                      <td><input type="radio" name="size" class="me-2">30</td>
+                      <td>37.5</td>
+                      <td>28.0</td>
+                      <td>16.0</td>
+                    </tr>
+                    <tr>
+                      <td><input type="radio" name="size" class="me-2">32</td>
+                      <td>39.5</td>
+                      <td>29.0</td>
+                      <td>16.5</td>
+                    </tr>
+                    <tr>
+                      <td><input type="radio" name="size" class="me-2">34</td>
+                      <td>41.5</td>
+                      <td>30.0</td>
+                      <td>17.5</td>
+                    </tr>
+                    <tr>
+                      <td><input type="radio" name="size" class="me-2">36</td>
+                      <td>43.5</td>
+                      <td>30.5</td>
+                      <td>18.0</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- How to Measure Tab -->
+            <div class="tab-pane fade" id="how-to-measure" role="tabpanel">
+              <h6 class="mb-3" style="font-size: 0.875rem; font-weight: 700; color: #282c3f;">How to measure yourself</h6>
+              <p class="text-muted small">* Garment Measurements in Inches</p>
+              
+              <div class="text-center mb-4">
+                <img src="https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=400&h=300&fit=crop" 
+                     alt="How to measure" 
+                     class="measurement-diagram"
+                     style="max-width: 100%; height: auto; border-radius: 8px;">
+              </div>
+              
+              <div class="measurement-instructions">
+                <div class="measurement-item">
+                  <strong>Collar:</strong>
+                  <span>Measure around the base of your neck</span>
+                </div>
+                <div class="measurement-item">
+                  <strong>Chest:</strong>
+                  <span>Measure around the fullest part of your chest</span>
+                </div>
+                <div class="measurement-item">
+                  <strong>Waist:</strong>
+                  <span>Measure around your natural waistline</span>
+                </div>
+                <div class="measurement-item">
+                  <strong>Sleeve Length:</strong>
+                  <span>Measure from shoulder seam to wrist</span>
+                </div>
+                <div class="measurement-item">
+                  <strong>Across Shoulder:</strong>
+                  <span>Measure from one shoulder edge to the other</span>
+                </div>
+                <div class="measurement-item">
+                  <strong>Length:</strong>
+                  <span>Measure from the highest point of shoulder to the hem</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -728,13 +1274,15 @@
           </div>
 
           <!-- Size Selection -->
-          <div class="selection-section">
-            <h6 class="selection-title">SELECT SIZE</h6>
-            <div class="size-options">
-              <button class="size-btn">39</button>
-              <button class="size-btn">40</button>
-              <button class="size-btn">42</button>
-              <button class="size-btn">44</button>
+          <div class="selection-section" id="sizeSelectionSection">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="selection-title mb-0">SELECT SIZE</h6>
+              <button class="size-guide-link" id="sizeGuideBtn" data-bs-toggle="modal" data-bs-target="#sizeGuideModal">
+                <i class="bi bi-rulers"></i> Size Guide
+              </button>
+            </div>
+            <div class="size-options" id="sizeOptions">
+              <!-- Sizes will be dynamically loaded based on category -->
             </div>
           </div>
 
@@ -1021,9 +1569,17 @@
         }
         console.log('✅ CONFIG loaded:', CONFIG.API_BASE_URL);
         
-        // Get product ID from URL or use default
+        // Get product ID from URL
         const urlParams = new URLSearchParams(window.location.search);
-        let productId = urlParams.get('id') || '697349c4988fce88e4b5bb91';
+        let productId = urlParams.get('id');
+        
+        if (!productId) {
+          console.error('❌ No product ID provided in URL');
+          // Try to load first available product instead
+          await loadFirstProduct();
+          return;
+        }
+        
         console.log('🔍 Product ID:', productId);
         
         const url = `${CONFIG.API_BASE_URL}/products/${productId}`;
@@ -1077,6 +1633,39 @@
       
       // Update basic info
       document.getElementById('productName').textContent = product.name;
+      
+      // Check stock and update button state
+      const addToBagBtn = document.getElementById('addToBagBtn');
+      const outOfStockBadge = document.getElementById('outOfStockBadge');
+      const isOutOfStock = !product.stock || product.stock === 0;
+      
+      if (isOutOfStock) {
+        // Show out of stock badge
+        if (outOfStockBadge) {
+          outOfStockBadge.style.display = 'block';
+        }
+        
+        // Disable add to bag button
+        if (addToBagBtn) {
+          addToBagBtn.disabled = true;
+          addToBagBtn.style.opacity = '0.5';
+          addToBagBtn.style.cursor = 'not-allowed';
+          addToBagBtn.innerHTML = '<i class="bi bi-x-circle"></i><span>OUT OF STOCK</span>';
+        }
+      } else {
+        // Hide out of stock badge
+        if (outOfStockBadge) {
+          outOfStockBadge.style.display = 'none';
+        }
+        
+        // Enable add to bag button
+        if (addToBagBtn) {
+          addToBagBtn.disabled = false;
+          addToBagBtn.style.opacity = '1';
+          addToBagBtn.style.cursor = 'pointer';
+          addToBagBtn.innerHTML = '<i class="bi bi-bag-fill"></i><span>ADD TO BAG</span>';
+        }
+      }
       
       // Handle pricing with discount - improved logic
       let displayPrice = product.price;
@@ -1160,6 +1749,100 @@
         console.log('📦 No color variants, showing base images');
         displayImages(product);
       }
+      
+      // Populate sizes based on category
+      populateSizeOptions(product);
+    }
+    
+    function populateSizeOptions(product) {
+      const sizeSection = document.getElementById('sizeSelectionSection');
+      const sizeOptions = document.getElementById('sizeOptions');
+      const sizeGuideBtn = document.getElementById('sizeGuideBtn');
+      
+      if (!sizeOptions) return;
+      
+      // Get category and subcategory (normalize to lowercase)
+      let category = '';
+      let subcategory = '';
+      let productName = (product.name || '').toLowerCase();
+      
+      if (typeof product.category === 'string') {
+        category = product.category.toLowerCase();
+      } else if (product.category && product.category.name) {
+        category = product.category.name.toLowerCase();
+      }
+      
+      if (typeof product.subcategory === 'string') {
+        subcategory = product.subcategory.toLowerCase();
+      } else if (product.subcategory && product.subcategory.name) {
+        subcategory = product.subcategory.name.toLowerCase();
+      }
+      
+      console.log('📏 Product category:', category);
+      console.log('📏 Product subcategory:', subcategory);
+      console.log('📏 Product name:', productName);
+      
+      // Combine all for checking
+      const fullCategory = `${category} ${subcategory} ${productName}`;
+      
+      // Define sizes based on category/subcategory/name
+      let sizes = [];
+      let showSizeGuide = true;
+      
+      // Check for shirts and t-shirts
+      if (fullCategory.includes('shirt') && !fullCategory.includes('t-shirt') && !fullCategory.includes('tshirt')) {
+        // Regular Shirts: S, M, L, XL, XXL
+        sizes = ['S', 'M', 'L', 'XL', 'XXL'];
+        console.log('✅ Detected as SHIRT - using letter sizes');
+      } else if (fullCategory.includes('t-shirt') || fullCategory.includes('tshirt') || fullCategory.includes('tee')) {
+        // T-Shirts: S, M, L, XL, XXL
+        sizes = ['S', 'M', 'L', 'XL', 'XXL'];
+        console.log('✅ Detected as T-SHIRT - using letter sizes');
+      } else if (fullCategory.includes('jean') || fullCategory.includes('pant') || fullCategory.includes('trouser')) {
+        // Jeans, Pants: 28, 30, 32, 34, 36
+        sizes = ['28', '30', '32', '34', '36'];
+        console.log('✅ Detected as JEANS/PANTS - using numeric sizes');
+      } else if (fullCategory.includes('jacket') || fullCategory.includes('coat') || fullCategory.includes('blazer')) {
+        // Jackets: 28, 30, 32, 34, 36
+        sizes = ['28', '30', '32', '34', '36'];
+        console.log('✅ Detected as JACKET - using numeric sizes');
+      } else if (fullCategory.includes('accessories') || fullCategory.includes('accessory')) {
+        // Accessories: No size needed
+        sizes = [];
+        showSizeGuide = false;
+        console.log('✅ Detected as ACCESSORY - no sizes');
+      } else {
+        // Default for other clothing: numeric sizes
+        sizes = ['28', '30', '32', '34', '36'];
+        console.log('⚠️ Unknown category - using default numeric sizes');
+      }
+      
+      // Hide/show size section based on whether sizes are needed
+      if (sizes.length === 0) {
+        sizeSection.style.display = 'none';
+        return;
+      } else {
+        sizeSection.style.display = 'block';
+      }
+      
+      // Show/hide size guide button
+      if (sizeGuideBtn) {
+        sizeGuideBtn.style.display = showSizeGuide ? 'block' : 'none';
+      }
+      
+      // Populate size buttons
+      sizeOptions.innerHTML = '';
+      sizes.forEach(size => {
+        const btn = document.createElement('button');
+        btn.className = 'size-btn';
+        btn.textContent = size;
+        sizeOptions.appendChild(btn);
+      });
+      
+      // Reinitialize size selection
+      initializeSizeSelection();
+      
+      console.log('✅ Populated', sizes.length, 'sizes for category:', category);
     }
 
     function setupColorVariants(product) {
@@ -1251,7 +1934,12 @@
       if (imagesToShow.length > 0) {
         imagesToShow.slice(0, 4).forEach(image => {
           const imgUrl = image.url || image;
-          primaryList.innerHTML += `<li class="splide__slide"><img src="${imgUrl}" alt="${product.name}"></li>`;
+          primaryList.innerHTML += `
+            <li class="splide__slide">
+              <div class="zoom-container" onclick="openZoomModal('${imgUrl}')">
+                <img src="${imgUrl}" alt="${product.name}" class="zoom-image">
+              </div>
+            </li>`;
           thumbnailList.innerHTML += `<li class="splide__slide"><img src="${imgUrl}" alt="${product.name}"></li>`;
         });
         
@@ -1299,10 +1987,129 @@
         window.primarySlider.sync(window.thumbnailSlider);
         window.primarySlider.mount();
         window.thumbnailSlider.mount();
+        
+        // Initialize click-to-zoom functionality
+        setTimeout(() => {
+          initializeClickToZoom();
+        }, 500);
       } catch (error) {
         console.error('Slider error:', error.message);
       }
     }
+
+    // Magnifying Glass Zoom Effect
+    // Magnifying Glass Zoom Effect - Now handled by js/image-zoom.js
+    // (Old function commented out to avoid conflicts)
+
+    // Myntra-style Zoom Modal Functions
+    let allProductImages = [];
+    let currentZoomIndex = 0;
+    
+    function openZoomModal(imageSrc) {
+      const modal = document.getElementById('zoomModal');
+      const modalImg = document.getElementById('zoomModalImg');
+      const thumbnailsContainer = document.getElementById('zoomThumbnails');
+      const mainContainer = document.getElementById('zoomMainContainer');
+      
+      if (!modal || !modalImg) return;
+      
+      // Get all product images
+      allProductImages = [];
+      const slides = document.querySelectorAll('#primary_slider .splide__slide img.zoom-image');
+      slides.forEach(img => {
+        allProductImages.push(img.src);
+      });
+      
+      // Find current image index
+      currentZoomIndex = allProductImages.indexOf(imageSrc);
+      if (currentZoomIndex === -1) currentZoomIndex = 0;
+      
+      // Populate thumbnails
+      thumbnailsContainer.innerHTML = '';
+      allProductImages.forEach((imgSrc, index) => {
+        const thumb = document.createElement('img');
+        thumb.src = imgSrc;
+        thumb.className = 'zoom-thumbnail' + (index === currentZoomIndex ? ' active' : '');
+        thumb.onclick = () => switchZoomImage(index);
+        thumbnailsContainer.appendChild(thumb);
+      });
+      
+      // Set main image
+      modalImg.src = allProductImages[currentZoomIndex];
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      
+      // Add mouse move zoom effect
+      mainContainer.onmousemove = (e) => {
+        const rect = mainContainer.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        
+        modalImg.style.transformOrigin = `${x}% ${y}%`;
+        modalImg.style.transform = 'scale(2)';
+      };
+      
+      mainContainer.onmouseleave = () => {
+        modalImg.style.transform = 'scale(1)';
+      };
+    }
+    
+    function switchZoomImage(index) {
+      currentZoomIndex = index;
+      const modalImg = document.getElementById('zoomModalImg');
+      const thumbnails = document.querySelectorAll('.zoom-thumbnail');
+      
+      // Update image
+      modalImg.src = allProductImages[index];
+      
+      // Update active thumbnail
+      thumbnails.forEach((thumb, i) => {
+        if (i === index) {
+          thumb.classList.add('active');
+        } else {
+          thumb.classList.remove('active');
+        }
+      });
+    }
+    
+    function closeZoomModal() {
+      const modal = document.getElementById('zoomModal');
+      const mainContainer = document.getElementById('zoomMainContainer');
+      
+      if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        
+        // Remove event listeners
+        if (mainContainer) {
+          mainContainer.onmousemove = null;
+          mainContainer.onmouseleave = null;
+        }
+      }
+    }
+    
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeZoomModal();
+      }
+    });
+
+    // Click-to-Zoom Functionality
+    function initializeClickToZoom() {
+      console.log('🔍 Click-to-zoom ready');
+      // Zoom is now handled by onclick in the HTML
+    }
+
+    // Close zoom on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && zoomOverlay.classList.contains('active')) {
+          closeZoom();
+        }
+      });
+
+      console.log('✅ Click-to-zoom initialized');
+    
 
     // Navigation event listeners
     document.getElementById("viewMen").addEventListener("click", function () {
@@ -1382,6 +2189,12 @@
       
       if (!currentProduct) {
         alert('Product not loaded');
+        return;
+      }
+
+      // Check if product is out of stock
+      if (!currentProduct.stock || currentProduct.stock === 0) {
+        alert('Sorry, this product is currently out of stock.');
         return;
       }
 
@@ -1582,6 +2395,81 @@
       if (wishlistBtn) {
         wishlistBtn.addEventListener('click', addToWishlist);
       }
+      
+      // Initialize zoom after a delay to ensure images are loaded
+      setTimeout(function() {
+        console.log('🔍 Initializing zoom from product.html...');
+        const containers = document.querySelectorAll('.zoom-container');
+        console.log('Found containers:', containers.length);
+        
+        containers.forEach(function(container, index) {
+          const img = container.querySelector('.zoom-image');
+          const lens = container.querySelector('.zoom-lens');
+          const result = container.querySelector('.zoom-result');
+          
+          if (!img || !lens || !result) {
+            console.warn('Missing elements in container', index);
+            return;
+          }
+          
+          const resultImg = result.querySelector('img');
+          if (!resultImg) {
+            console.warn('Missing result img in container', index);
+            return;
+          }
+          
+          console.log('Setting up zoom for container', index);
+          
+          // Wait for image to load
+          function setupZoom() {
+            const zoomLevel = 2.5;
+            resultImg.style.width = (img.naturalWidth * zoomLevel) + 'px';
+            resultImg.style.height = (img.naturalHeight * zoomLevel) + 'px';
+            
+            console.log('Zoom ready for container', index, {
+              imgSize: img.naturalWidth + 'x' + img.naturalHeight,
+              zoomedSize: resultImg.style.width + 'x' + resultImg.style.height
+            });
+            
+            container.addEventListener('mouseenter', function() {
+              console.log('Mouse entered container', index);
+              container.classList.add('zooming');
+            });
+            
+            container.addEventListener('mouseleave', function() {
+              console.log('Mouse left container', index);
+              container.classList.remove('zooming');
+            });
+            
+            container.addEventListener('mousemove', function(e) {
+              const rect = img.getBoundingClientRect();
+              let x = e.clientX - rect.left;
+              let y = e.clientY - rect.top;
+              
+              let lensX = x - (lens.offsetWidth / 2);
+              let lensY = y - (lens.offsetHeight / 2);
+              
+              lensX = Math.max(0, Math.min(lensX, rect.width - lens.offsetWidth));
+              lensY = Math.max(0, Math.min(lensY, rect.height - lens.offsetHeight));
+              
+              lens.style.left = lensX + 'px';
+              lens.style.top = lensY + 'px';
+              
+              const cx = result.offsetWidth / lens.offsetWidth;
+              const cy = result.offsetHeight / lens.offsetHeight;
+              
+              resultImg.style.left = '-' + (lensX * cx) + 'px';
+              resultImg.style.top = '-' + (lensY * cy) + 'px';
+            });
+          }
+          
+          if (img.complete && img.naturalWidth > 0) {
+            setupZoom();
+          } else {
+            img.addEventListener('load', setupZoom);
+          }
+        });
+      }, 2000);
     });
 
     // Reviews functionality
@@ -1771,6 +2659,13 @@
       loadProductReviews();
     }
   </script>
+  
+  <!-- Bootstrap JS Bundle (includes Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Image Zoom Script -->
+  <script src="js/image-zoom.js"></script>
+  
   <script src="js/chat-widget.js"></script>
 </body>
 

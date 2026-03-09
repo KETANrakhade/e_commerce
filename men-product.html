@@ -749,76 +749,91 @@
 
         /* Out of Stock Styles for Product Cards */
         .product-card.out-of-stock .product-image {
-            opacity: 0.5;
-            filter: grayscale(60%);
+            opacity: 1;
         }
 
         .product-card.out-of-stock {
-            cursor: not-allowed;
+            cursor: default;
         }
 
         .product-card.out-of-stock:hover {
             transform: translateY(-5px);
         }
 
-        .out-of-stock-badge {
+        .out-of-stock-overlay {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(2px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 15;
+        }
+
+        .out-of-stock-text {
+            font-size: 1.2rem;
             font-weight: 700;
+            color: #2c3e50;
             text-transform: uppercase;
             letter-spacing: 1px;
-            z-index: 10;
-            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
-            animation: pulse 2s infinite;
+            text-align: center;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Remove old out-of-stock-badge style */
+        .out-of-stock-badge {
+            display: none;
         }
 
         .sale-badge {
             position: absolute;
             top: 15px;
             left: 15px;
-            background: #e74c3c;
+            background: #27ae60;
             color: white;
-            padding: 8px 16px;
+            padding: 3px 16px;
             border-radius: 5px;
             font-size: 0.9rem;
             font-weight: 700;
             text-transform: capitalize;
             z-index: 10;
-            box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+            box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
         }
 
         .trending-badge {
             position: absolute;
-            top: 60px;
-            left: 15px;
-            background: linear-gradient(135deg, #FF6B35, #F7931E);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 700;
+            top: 0px;
+            left: 0px;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            color: rgb(0, 0, 0);
+            /* background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%); */
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 0.6rem;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
             z-index: 10;
-            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
-            animation: trendingPulse 2s ease-in-out infinite;
+            /* box-shadow: 0 2px 6px rgba(255, 107, 53, 0.3); */
         }
 
-        @keyframes trendingPulse {
-            0%, 100% {
-                transform: scale(1);
-                box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
-            }
-            50% {
-                transform: scale(1.05);
-                box-shadow: 0 6px 20px rgba(255, 107, 53, 0.6);
-            }
+        .trending-badge::before {
+            content: "🔥";
+            font-size: 0.7rem;
+        }
+
+        /* Remove the stacking rule since it's now in product-info */
+        .product-image-container:has(.sale-badge) .trending-badge {
+            top: 6px;
         }
 
         @keyframes pulse {
@@ -860,6 +875,7 @@
         }
 
         .product-info {
+            position: relative;
             padding: 15px;
             text-align: center;
             background: white;
