@@ -1,10 +1,15 @@
 // Frontend Configuration
 // This file centralizes all API endpoints and configuration
 
+// Detect environment
+const _isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const _API_BASE = _isDev ? 'http://localhost:5001/api' : 'https://ecommerce-drab-eight-28.vercel.app/api';
+const _BACKEND_BASE = _isDev ? 'http://localhost:5001' : 'https://ecommerce-drab-eight-28.vercel.app';
+
 const CONFIG = {
-  // API Base URL
-  API_BASE_URL: 'http://localhost:5001/api',
-  BACKEND_URL: 'http://localhost:5001',
+  // API Base URL (auto-detects dev vs production)
+  API_BASE_URL: _API_BASE,
+  BACKEND_URL: _BACKEND_BASE,
   
   // API Endpoints
   ENDPOINTS: {
