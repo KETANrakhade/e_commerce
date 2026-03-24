@@ -1670,8 +1670,14 @@
     }
 
     function updateProductDisplay(product, variant = null) {
-      const displayPrice = variant ? variant.finalPrice : product.price;
+      const displayPrice = (variant ? variant.finalPrice : product.price) || product.price || 0;
       const displayStock = variant ? variant.stock : product.stock;
+
+      // Always keep name visible
+      const nameEl = document.getElementById("productName");
+      if (nameEl && product.name) {
+        nameEl.textContent = product.name;
+      }
 
       // Debug logging for price issues
       console.log('🔍 Price Debug Info:');
