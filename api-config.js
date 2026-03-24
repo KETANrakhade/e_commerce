@@ -4,7 +4,9 @@ const API_CONFIG = {
     baseURL: 'http://localhost:5001/api'
   },
   production: {
-    baseURL: 'https://your-backend-app.vercel.app/api' // You'll update this after backend deployment
+    // ⚠️ UPDATE THIS after deploying backend to Vercel
+    // Example: 'https://pyramid-backend-xyz.vercel.app/api'
+    baseURL: 'https://ecommerce-drab-eight-28.vercel.app/api'
   }
 };
 
