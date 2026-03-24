@@ -1182,28 +1182,31 @@
       }
     ];
 
-    document.getElementById("viewMen").addEventListener("click", function () {
+    document.getElementById("viewMen")?.addEventListener("click", function () {
       window.location.href = "men-product.html";
     });
-    document.getElementById("viewWomen").addEventListener("click", function () {
+    document.getElementById("viewWomen")?.addEventListener("click", function () {
       window.location.href = "women-product.html";
     });
 
-    document.getElementById("viewWishlist").addEventListener("click", function () {
+    document.getElementById("viewWishlist")?.addEventListener("click", function () {
       window.location.href = "wishlist.html";
     });
 
-    document.getElementById("viewCart").addEventListener("click", function () {
+    document.getElementById("viewCart")?.addEventListener("click", function () {
       window.location.href = "cart.html";
     });
 
-    document.getElementById("viewHome").addEventListener("click", function () {
+    document.getElementById("viewHome")?.addEventListener("click", function () {
       window.location.href = "index.html";
     });
 
-    document.getElementById("discountSale").addEventListener("click", function () {
-      window.location.href = "discounts.html";
-    });
+    const discountSaleEl = document.getElementById("discountSale");
+    if (discountSaleEl) {
+      discountSaleEl.addEventListener("click", function () {
+        window.location.href = "discounts.html";
+      });
+    }
 
     // Cart functions
     const CART_KEY = 'cart_v1'; // Use same key as cart.html
